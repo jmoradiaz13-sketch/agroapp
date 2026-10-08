@@ -64,16 +64,38 @@ export interface FichaSueloLocal {
   fecha: string; // serie temporal, nunca se sobrescribe
   version: number;
   // Unidades almacenamiento: cmol/kg, mg/kg, %, dS/m (pH sin unidad)
+  tipoEvaluacion?: 'campo' | 'laboratorio' | 'mixta';
+  climaReciente?: string;
   profundidadCm?: number;
   laboratorio?: string;
+  // Físicas
+  texturaTacto?: string;
+  compactacion?: string;
+  infiltracion?: string;
+  estructuraDesc?: string;
+  densidadAparente?: number;
+  porosidadPct?: number;
+  capacidadCampoPct?: number;
+  pmpPct?: number;
+  colorMunsell?: string;
+  profundidadEfectivaCm?: number;
+  // Químicas campo
+  phCampo?: number;
+  ceCampo?: number;
+  carbonatos?: string;
+  sintomasVisuales?: string;
+  // Químicas laboratorio
   phAgua?: number;
   phKcl?: number;
   calcioCmolKg?: number;
   magnesioCmolKg?: number;
   potasioCmolKg?: number;
   sodioCmolKg?: number;
+  aluminioCmolKg?: number;
+  saturacionAlPct?: number;
   cicCmolKg?: number;
   fosforoMgKg?: number;
+  azufreMgKg?: number;
   materiaOrganicaPct?: number;
   nitrogenoPct?: number;
   conductividadDsM?: number;
@@ -85,6 +107,15 @@ export interface FichaSueloLocal {
   arenaPct?: number;
   limoPct?: number;
   arcillaPct?: number;
+  // Biológicas
+  lombricesConteo?: number;
+  nodulacion?: string;
+  olorSuelo?: string;
+  descomposicionMo?: string;
+  respiracionSuelo?: number;
+  carbonoBiomasa?: number;
+  micorrizas?: string;
+  coberturaVegetalPct?: number;
   referenciaBibliografica: string; // trazabilidad a src/*.pdf
   sincronizada: boolean;
 }
