@@ -1,0 +1,15 @@
+# Dependencias y compilados (no versionar)
+node_modules/
+dist/
+dist-ssr/
+
+# Entorno local (secretos)
+.env
+.env.local
+*.local
+
+# Logs y caché de editores
+*.log
+.vscode/
+.idea/
+.DS_Store

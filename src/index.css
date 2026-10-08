@@ -1,0 +1,106 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Modo campo: alto contraste y botones grandes (min 44x44px) */
+.boton-campo {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+/* === AgroForestapp: esquema sólido estilo OVACEN (fondo blanco + verde oscuro) === */
+:root {
+  --verde-solido: #1b5e20;
+  --verde-solido-oscuro: #124116;
+  --verde-acento: #43a047;
+  --negro: #141414;
+}
+
+body {
+  font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+  background: #ffffff;
+  color: #1a1a1a;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+.fondo-campo {
+  background-image:
+    linear-gradient(rgba(27, 67, 50, 0.55), rgba(27, 67, 50, 0.75)),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='400' viewBox='0 0 800 400'%3E%3Crect width='800' height='400' fill='%232d6a4f'/%3E%3Cpath d='M0 260 Q200 200 400 250 T800 230 L800 400 L0 400 Z' fill='%231b4332'/%3E%3Cpath d='M0 290 Q250 250 500 285 T800 275 L800 400 L0 400 Z' fill='%237f4f24' opacity='0.7'/%3E%3Ccircle cx='650' cy='80' r='45' fill='%23f4a261'/%3E%3Cpath d='M100 120 l15 -35 15 35 35 15 -35 15 -15 35 -15 -35 -35 -15 Z' fill='%23fefae0' opacity='0.6'/%3E%3C/svg%3E");
+  background-size: cover;
+  background-position: center;
+}
+
+.animacion-flotar {
+  animation: flotar 5s ease-in-out infinite;
+}
+@keyframes flotar {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.animacion-entrada {
+  animation: entrada 0.5s ease-out both;
+}
+@keyframes entrada {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.tarjeta-naturaleza {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.tarjeta-naturaleza:hover {
+  transform: translateY(-3px);
+}
+
+/* === Formularios y mensajes (esquema sólido blanco/verde/negro) === */
+.campo-entrada {
+  border: 1px solid #d4d4d4;
+  border-radius: 2px;
+  padding: 0.65rem 0.75rem;
+  min-height: 44px;
+  width: 100%;
+  font-size: 1rem;
+  background: #fff;
+  color: #1a1a1a;
+}
+.campo-entrada:focus {
+  outline: 2px solid #1b5e20;
+  outline-offset: 0;
+  border-color: #1b5e20;
+}
+.etiqueta-campo {
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: #404040;
+}
+.etiqueta-campo .campo-entrada {
+  text-transform: none;
+  font-weight: 400;
+}
+.mensaje-ok {
+  background: #f0fdf4;
+  border: 1px solid #86efac;
+  color: #14532d;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.85rem;
+}
+.mensaje-error {
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  color: #991b1b;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.85rem;
+}
+.mensaje-info {
+  background: #f5f5f5;
+  border-left: 4px solid #1b5e20;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.85rem;
+  color: #404040;
+}
