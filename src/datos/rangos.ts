@@ -1,5 +1,5 @@
 // Espejo local de aplicacion/datos/referencias.py (7 parámetros con rango validado).
-// NO INVENTAR DATOS: cada umbral cita su fuente en src/. Los parámetros fuera
+// Cada umbral cita su fuente registrada. Los parámetros fuera
 // de este catálogo se registran como serie temporal SIN interpretar.
 export interface RangoValidado {
   parametro: string;
@@ -50,6 +50,20 @@ export const RANGOS_VALIDADOS: RangoValidado[] = [
 ];
 
 export type Semaforo = 'bajo' | 'optimo' | 'alto' | 'sin-dato';
+
+export const COLOR_SEMAFORO: Record<Semaforo, string> = {
+  bajo: 'bg-red-600',
+  optimo: 'bg-[#1b5e20]',
+  alto: 'bg-amber-500',
+  'sin-dato': 'bg-neutral-300',
+};
+
+export const TEXTO_SEMAFORO: Record<Semaforo, string> = {
+  bajo: 'Bajo',
+  optimo: 'Óptimo',
+  alto: 'Alto',
+  'sin-dato': 'Sin dato',
+};
 
 export function semaforoPara(rango: RangoValidado, valor: number | undefined): Semaforo {
   if (valor === undefined || Number.isNaN(valor)) return 'sin-dato';

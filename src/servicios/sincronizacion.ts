@@ -41,6 +41,44 @@ export async function sincronizarPendientes(): Promise<{ enviadas: number; error
       errores += 1;
     }
   }
+  const fotos = await sincronizarFotos(token);
+  enviadas += fotos.enviadas;
+  errores += fotos.errores;
+  return { enviadas, errores };
+}
+
+// Cola de fotos: multipart por archivo, atadas a predio+versión en servidor.
+export async function sincronizarFotos(token: string | null): Promise<{ enviadas: number; errores: number }> {
+  if (!navigator.onLine) return { enviadas: 0, errores: 0 };
+  const pendientes = await baseDatos.fotos.filter((f) => !f.sincronizada).toArray();
+  let enviadas = 0;
+  let errores = 0;
+  for (const foto of pendientes) {
+    try {
+      const ficha = foto.fichaId ? await baseDatos.fichasSuelo.get(foto.fichaId) : undefined;
+      const forma = new FormData();
+      forma.append('archivo', foto.foto, `foto-${foto.id ?? 'tmp'}.jpg`);
+      forma.append('predio_identificador', foto.predioIdentificador);
+      if (ficha) forma.append('ficha_version', String(ficha.version));
+      if (foto.loteNombre) forma.append('lote_nombre', foto.loteNombre);
+      forma.append('tipo', foto.tipo);
+      if (foto.lat !== undefined) forma.append('lat', String(foto.lat));
+      if (foto.lng !== undefined) forma.append('lng', String(foto.lng));
+      if (foto.coberturaPct !== undefined) forma.append('cobertura_pct', String(foto.coberturaPct));
+      forma.append('fecha', foto.fecha);
+      const cabeceras: Record<string, string> = {};
+      if (token) cabeceras['Authorization'] = `Bearer ${token}`;
+      const respuesta = await fetch(`${URL_API}/fotos`, { method: 'POST', headers: cabeceras, body: forma });
+      if (respuesta.ok && foto.id) {
+        await baseDatos.fotos.update(foto.id, { sincronizada: true });
+        enviadas += 1;
+      } else {
+        errores += 1;
+      }
+    } catch {
+      errores += 1;
+    }
+  }
   return { enviadas, errores };
 }
 

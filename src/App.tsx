@@ -1,9 +1,9 @@
 import { Suspense, lazy, useEffect, useState } from 'react';
-import { Routes, Route, Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { Routes, Route, Link, NavLink, useLocation } from 'react-router-dom';
 import { PaginaIngreso } from './paginas/Ingreso';
-import { PaginaBibliografia } from './paginas/Bibliografia';
 import { PaginaPredios } from './paginas/Predios';
 import { PaginaInicio } from './paginas/Inicio';
+import { PaginaDiseno } from './paginas/Diseno';
 import { LogoArbolA } from './componentes/ui/Logo';
 import { iniciarSincronizacionAutomatica } from './servicios/sincronizacion';
 import { usoFlujo, type Paso } from './estado/usoFlujo';
@@ -20,9 +20,9 @@ const MENU_VERDE: { id: string; ruta: string; titulo: string }[] = [
   { id: 'predios', ruta: '/predios', titulo: 'Predios' },
   { id: 'lote', ruta: '/lote', titulo: 'Lotes' },
   { id: 'ficha', ruta: '/ficha', titulo: 'Análisis de suelos' },
+  { id: 'diseno', ruta: '/diseno', titulo: 'Diseño' },
   { id: 'diagnostico', ruta: '/diagnostico', titulo: 'Diagnóstico' },
   { id: 'informe', ruta: '/informe', titulo: 'Informe' },
-  { id: 'bibliografia', ruta: '/bibliografia', titulo: 'Biblioteca' },
 ];
 
 // Fila negra: herramientas reales con insignia de conectividad (AGENTS §4)
@@ -32,7 +32,6 @@ const MENU_NEGRO: { titulo: string; ruta?: string; insignia: string; proximo?: b
   { titulo: 'Análisis VSA', ruta: '/ficha', insignia: 'OFFLINE' },
   { titulo: 'Análisis lab', ruta: '/ficha', insignia: 'OFFLINE' },
   { titulo: 'Monitoreo', ruta: '/lote', insignia: 'OFFLINE' },
-  { titulo: 'Biblioteca', ruta: '/bibliografia', insignia: 'OFFLINE' },
   { titulo: 'Pendiente / RUSLE', insignia: 'MIXTO', proximo: true },
   { titulo: 'Capas IGAC', insignia: 'MIXTO', proximo: true },
   { titulo: 'NDVI satelital', insignia: 'ONLINE', proximo: true },
@@ -130,33 +129,6 @@ function BarraSuperior() {
   );
 }
 
-function StepperSecundario() {
-  const { paso, irPaso } = usoFlujo();
-  const navegar = useNavigate();
-  const ubicacion = useLocation();
-  if (ubicacion.pathname === '/' || ubicacion.pathname === '/ingreso' || ubicacion.pathname === '/bibliografia') return null;
-  const PASOS: { id: Paso; ruta: string; titulo: string }[] = [
-    { id: 'predios', ruta: '/predios', titulo: '1 Predios' },
-    { id: 'lote', ruta: '/lote', titulo: '2 Lote' },
-    { id: 'ficha', ruta: '/ficha', titulo: '3 Análisis' },
-    { id: 'diagnostico', ruta: '/diagnostico', titulo: '4 Diagnóstico' },
-    { id: 'informe', ruta: '/informe', titulo: '5 Informe' }
-  ];
-  return (
-    <nav className="flex gap-1.5 flex-wrap" aria-label="Progreso del flujo">
-      {PASOS.map((p) => (
-        <button
-          key={p.id}
-          className={`boton-campo px-3 py-1.5 rounded-sm text-xs font-semibold border-2 transition-all ${paso === p.id ? 'bg-[#1b5e20] text-white border-[#1b5e20] shadow' : 'bg-white text-neutral-600 border-neutral-200 hover:border-[#1b5e20]'}`}
-          onClick={() => { irPaso(p.id); navegar(p.ruta); }}
-        >
-          {p.titulo}
-        </button>
-      ))}
-    </nav>
-  );
-}
-
 export default function App() {
   const ubicacion = useLocation();
   const { fechaCache } = usoPredio();
@@ -176,17 +148,16 @@ export default function App() {
     <div className="min-h-screen flex flex-col">
       <BarraSuperior />
       <main className={`flex-1 w-full ${esInicio ? 'max-w-6xl' : 'max-w-4xl'} mx-auto p-4 grid gap-4 content-start`}>
-        <StepperSecundario />
         <Suspense fallback={<p className="font-medium text-[#1b5e20]">🌱 Cargando paso…</p>}>
           <Routes>
             <Route path="/" element={<PaginaInicio />} />
             <Route path="/predios" element={<PaginaPredios />} />
+            <Route path="/diseno" element={<PaginaDiseno />} />
             <Route path="/lote" element={<DashboardLote />} />
             <Route path="/ficha" element={<FichaLote />} />
             <Route path="/diagnostico" element={<DiagnosticoLote />} />
             <Route path="/informe" element={<InformePredio />} />
             <Route path="/ingreso" element={<PaginaIngreso />} />
-            <Route path="/bibliografia" element={<PaginaBibliografia />} />
           </Routes>
         </Suspense>
       </main>
@@ -205,7 +176,7 @@ export default function App() {
             <Link to="/ficha" className="text-xs text-white/60 hover:text-[#86efac] transition-colors">Análisis de suelos VSA</Link>
             <Link to="/diagnostico" className="text-xs text-white/60 hover:text-[#86efac] transition-colors">Diagnóstico agroecológico</Link>
             <Link to="/informe" className="text-xs text-white/60 hover:text-[#86efac] transition-colors">Informe del predio</Link>
-            <Link to="/bibliografia" className="text-xs text-white/60 hover:text-[#86efac] transition-colors">Biblioteca científica</Link>
+            <Link to="/diseno" className="text-xs text-white/60 hover:text-[#86efac] transition-colors">Diseño de agroecosistemas</Link>
           </nav>
           <div className="grid content-start gap-1" aria-label="Información">
             <p className="text-xs font-semibold tracking-wide text-white/90 mb-1">Información</p>

@@ -1,21 +1,20 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { usoFlujo } from '../estado/usoFlujo';
 import { usoPredio } from '../estado/usoPredio';
-import { baseDatos, etiquetaCache } from '../base_datos/local';
+import { etiquetaCache } from '../base_datos/local';
 
 const TARJETAS = [
   {
     titulo: 'Determina las características de tu suelo',
     subtitulo: 'Responde el análisis de suelos y conoce la fertilidad y salud de tu tierra.',
-    ruta: '/predios?accion=nuevo',
+    ruta: '/ficha',
     imagen: '/imagenes/3.jpg',
     alt: 'Manos sosteniendo tierra fértil',
   },
   {
     titulo: 'Diseño de sistemas de producción agroecológica',
     subtitulo: 'Combina cultivos, sombrío y coberturas para una finca productiva y resiliente.',
-    ruta: '/ficha',
+    ruta: '/diseno',
     imagen: '/imagenes/4.jpg',
     alt: 'Cultivos agroecológicos en campo',
   },
@@ -32,23 +31,16 @@ const CATEGORIAS = [
   { titulo: 'Predios', ruta: '/predios' },
   { titulo: 'Lotes', ruta: '/lote' },
   { titulo: 'Análisis de suelos', ruta: '/ficha' },
+  { titulo: 'Diseño', ruta: '/diseno' },
   { titulo: 'Diagnóstico', ruta: '/diagnostico' },
   { titulo: 'Informe', ruta: '/informe' },
-  { titulo: 'Biblioteca', ruta: '/bibliografia' },
   { titulo: 'Monitoreo', ruta: '/lote' },
   { titulo: 'VSA campo', ruta: '/ficha' },
 ];
 
-const PROFUNDIDAD = [
-  { icono: '🧪', titulo: 'Análisis de suelos', descripcion: 'Tabla profesional de laboratorio + VSA visual, versión inmutable por fecha.', ruta: '/ficha' },
-  { icono: '🗺️', titulo: 'Mapa y GPS', descripcion: 'Dibuja lotes offline, mide áreas y cachea capas por predio.', ruta: '/lote' },
-  { icono: '🌱', titulo: 'Diagnóstico', descripcion: 'Interpreta fertilidad y salud del suelo con respaldo bibliográfico.', ruta: '/diagnostico' },
-  { icono: '📄', titulo: 'Informe PDF', descripcion: 'Genera el informe agroecológico del predio para el productor.', ruta: '/informe' },
-];
-
 const HERRAMIENTAS = [
   { titulo: 'Análisis de suelos profesional', descripcion: 'Tabla completa de laboratorio: registre valores y verifique rangos validados.', ruta: '/ficha', etiqueta: 'Herramienta' },
-  { titulo: 'Buscador bibliográfico', descripcion: 'Encuentra la referencia que respalda cada recomendación.', ruta: '/bibliografia', etiqueta: 'Herramienta' },
+  { titulo: 'Diseños guardados', descripcion: 'Consulta las versiones de tus diseños agroecológicos.', ruta: '/diseno', etiqueta: 'Simulador' },
   { titulo: 'Historial de fichas', descripcion: 'Consulta la serie temporal de análisis por lote.', ruta: '/ficha', etiqueta: 'Hemeroteca' },
 ];
 
@@ -58,9 +50,9 @@ const DESTACADOS: { titulo: string; enlaces: { texto: string; ruta: string }[] }
     enlaces: [
       { texto: 'Registrar ficha de laboratorio', ruta: '/ficha' },
       { texto: 'Evaluación visual VSA en campo', ruta: '/ficha' },
-      { texto: 'Materia orgánica y pH: rangos', ruta: '/bibliografia' },
-      { texto: 'Cationes en cmol/kg', ruta: '/bibliografia' },
-      { texto: 'Fósforo y micronutrientes mg/kg', ruta: '/bibliografia' },
+      { texto: 'Materia orgánica y pH: rangos', ruta: '/ficha' },
+      { texto: 'Cationes en cmol/kg', ruta: '/ficha' },
+      { texto: 'Fósforo y micronutrientes mg/kg', ruta: '/ficha' },
     ],
   },
   {
@@ -79,49 +71,25 @@ const DESTACADOS: { titulo: string; enlaces: { texto: string; ruta: string }[] }
       { texto: 'Diagnóstico ponderado', ruta: '/diagnostico' },
       { texto: 'Estrategias agroecológicas', ruta: '/diagnostico' },
       { texto: 'Generar informe del predio', ruta: '/informe' },
-      { texto: 'Biblioteca científica', ruta: '/bibliografia' },
-      { texto: 'Especies de cacao Orinoquía', ruta: '/bibliografia' },
+      { texto: 'Diseño de agroecosistemas', ruta: '/diseno' },
+      { texto: 'Especies de cacao Orinoquía', ruta: '/diseno' },
     ],
   },
 ];
 
 export function PaginaInicio() {
   const navegar = useNavigate();
-  const { fijarPredio } = usoFlujo();
   const { fechaCache } = usoPredio();
   const [busqueda, setBusqueda] = useState('');
-  const [novedades, setNovedades] = useState<{ nombre: string; detalle: string; ruta: string; accion: () => void }[]>([]);
 
-  const irAgregarPredio = () => {
-    fijarPredio(null);
-    navegar('/predios?accion=nuevo');
+  const irEmpezar = () => {
+    navegar('/ficha');
   };
 
   const buscar = (e: React.FormEvent) => {
     e.preventDefault();
     navegar(busqueda.trim() ? `/predios?buscar=${encodeURIComponent(busqueda.trim())}` : '/predios');
   };
-
-  useEffect(() => {
-    let vivo = true;
-    (async () => {
-      try {
-        const predios = await baseDatos.predios.toArray();
-        if (!vivo) return;
-        setNovedades(
-          predios.slice(-3).reverse().map((p) => ({
-            nombre: p.nombre,
-            detalle: `${p.municipio ?? ''} ${p.departamento ?? ''} — ${p.areaTotalHa ?? '?'} ha`.trim(),
-            ruta: '/lote',
-            accion: () => fijarPredio(p.identificador),
-          }))
-        );
-      } catch {
-        if (vivo) setNovedades([]);
-      }
-    })();
-    return () => { vivo = false; };
-  }, [fijarPredio]);
 
   return (
     <div className="grid gap-8 animacion-entrada">
@@ -147,20 +115,20 @@ export function PaginaInicio() {
           i === 0 ? (
             <div
               key={t.titulo}
-              className="group text-left relative overflow-hidden bg-[#1c1c1c] text-white p-5 min-h-[190px] grid content-start gap-2"
+              className="group text-left relative overflow-hidden bg-[#1c1c1c] text-white p-5 min-h-[190px] grid content-start gap-2 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_16px_36px_-12px_rgba(0,0,0,0.55)]"
             >
               <img
                 src={t.imagen}
                 alt=""
                 aria-hidden="true"
                 loading="lazy"
-                className="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-60 group-focus-within:opacity-60 transition-opacity duration-500"
+                className="absolute inset-0 w-full h-full object-cover opacity-60 transition-transform duration-700 ease-out group-hover:scale-[1.06]"
               />
-              <span className="absolute inset-0 bg-black/35 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity duration-500" aria-hidden="true" />
-              <span className="relative text-[15px] font-semibold leading-snug drop-shadow">{t.titulo}</span>
-              <span className="relative text-[11px] leading-relaxed text-white/60 group-hover:text-white/85 transition-colors">{t.subtitulo}</span>
+            <span className="absolute inset-0 bg-black/35" aria-hidden="true" />
+            <span className="relative text-[15px] font-semibold leading-snug drop-shadow">{t.titulo}</span>
+            <span className="relative text-[11px] leading-relaxed text-white/85">{t.subtitulo}</span>
               <button
-                onClick={irAgregarPredio}
+                onClick={irEmpezar}
                 className="boton-campo relative mt-2 w-fit bg-[#1b5e20] text-white text-xs font-semibold px-4 py-2 rounded-sm border border-white/25 hover:bg-[#124116] transition-colors"
               >
                 Empezar
@@ -170,18 +138,18 @@ export function PaginaInicio() {
           <button
             key={t.titulo}
             onClick={() => navegar(t.ruta)}
-            className="group text-left relative overflow-hidden bg-[#1c1c1c] text-white p-5 min-h-[190px] grid content-start gap-2"
+            className="group text-left relative overflow-hidden bg-[#1c1c1c] text-white p-5 min-h-[190px] grid content-start gap-2 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_16px_36px_-12px_rgba(0,0,0,0.55)]"
           >
             <img
               src={t.imagen}
               alt=""
               aria-hidden="true"
               loading="lazy"
-              className="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-60 group-focus-visible:opacity-60 transition-opacity duration-500"
+              className="absolute inset-0 w-full h-full object-cover opacity-60 transition-transform duration-700 ease-out group-hover:scale-[1.06]"
             />
-            <span className="absolute inset-0 bg-black/35 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-opacity duration-500" aria-hidden="true" />
+            <span className="absolute inset-0 bg-black/35" aria-hidden="true" />
             <span className="relative text-[15px] font-semibold leading-snug drop-shadow">{t.titulo}</span>
-            <span className="relative text-[11px] leading-relaxed text-white/60 group-hover:text-white/85 transition-colors">{t.subtitulo}</span>
+            <span className="relative text-[11px] leading-relaxed text-white/85">{t.subtitulo}</span>
           </button>
           )
         ))}
@@ -203,10 +171,10 @@ export function PaginaInicio() {
               Gestión de la finca: cómo el diagnóstico por lotes ayuda a integrar nuevos manejos
             </h2>
             <p className="text-sm text-white/75 max-w-xl">
-              Dibujo offline con GPS, ficha VSA inmutable y recomendaciones trazables a bibliografía src/.
+              Dibujo offline con GPS, ficha VSA inmutable y recomendaciones con fuente registrada.
             </p>
             <div className="flex flex-wrap gap-2 mt-1">
-              <button onClick={irAgregarPredio} className="boton-campo bg-[#1b5e20] text-white font-semibold px-6 py-2.5 rounded-sm text-sm border border-white/25 hover:bg-[#124116] transition-colors">
+              <button onClick={irEmpezar} className="boton-campo bg-[#1b5e20] text-white font-semibold px-6 py-2.5 rounded-sm text-sm border border-white/25 hover:bg-[#124116] transition-colors">
                 Empezar
               </button>
               <button onClick={() => navegar('/predios')} className="boton-campo bg-white/15 text-white font-semibold px-6 py-2.5 rounded-sm text-sm border border-white/40 hover:bg-white/25">
@@ -230,53 +198,6 @@ export function PaginaInicio() {
             </button>
           ))}
         </aside>
-      </section>
-
-      {/* Secciones en profundidad */}
-      <section aria-label="Secciones en profundidad">
-        <h3 className="text-center text-sm font-medium tracking-wide text-neutral-500 mb-3">Secciones en profundidad</h3>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          {PROFUNDIDAD.map((s) => (
-            <button
-              key={s.titulo}
-              onClick={() => navegar(s.ruta)}
-              className="text-left border border-neutral-200 bg-white p-5 grid gap-2 hover:border-[#1b5e20] hover:shadow-md transition-all"
-            >
-              <span className="text-3xl" aria-hidden>{s.icono}</span>
-              <span className="text-sm font-semibold tracking-wide text-[#141414]">{s.titulo}</span>
-              <span className="text-xs text-neutral-500 leading-relaxed">{s.descripcion}</span>
-              <span className="text-xs font-semibold text-[#1b5e20]">Abrir →</span>
-            </button>
-          ))}
-        </div>
-
-        <div className="grid lg:grid-cols-3 gap-3 mt-3">
-          <button
-            onClick={() => navegar('/diagnostico')}
-            className="lg:col-span-2 text-left bg-[#1c1c1c] text-white p-6 grid content-start gap-2 hover:bg-[#1b5e20] transition-colors"
-          >
-            <span className="text-[11px] font-medium tracking-wide text-white/50">Caso de estudio</span>
-            <span className="font-display text-xl font-medium leading-snug">Diagnóstico por lotes en cacao: cómo priorizar manejos sin romper el suelo</span>
-            <span className="text-xs text-white/60 leading-relaxed">Comparamos escenarios de fertilidad y salud del suelo para decidir enmiendas, coberturas y sombrío con criterio agroecológico.</span>
-          </button>
-          <div className="border border-neutral-200 bg-white p-5" aria-label="Novedades">
-            <h4 className="text-sm font-medium tracking-wide text-[#141414] border-b border-neutral-200 pb-2 mb-2">Novedades</h4>
-            <p className="text-[11px] font-medium text-neutral-400 mb-2">Las últimas actualizaciones</p>
-            {novedades.length === 0 && (
-              <p className="text-xs text-neutral-500">Sin predios todavía. Agrega el primero para verlo aquí.</p>
-            )}
-            {novedades.map((n) => (
-              <button
-                key={n.nombre}
-                onClick={() => { n.accion(); navegar(n.ruta); }}
-                className="block w-full text-left py-2 border-b border-neutral-100 hover:bg-green-50 transition-colors"
-              >
-                <span className="block text-sm font-semibold text-[#1b5e20]">{n.nombre}</span>
-                <span className="block text-[11px] text-neutral-500">{n.detalle}</span>
-              </button>
-            ))}
-          </div>
-        </div>
       </section>
 
       {/* Herramientas */}
@@ -326,7 +247,7 @@ export function PaginaInicio() {
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <button onClick={irAgregarPredio} className="boton-campo bg-[#1b5e20] text-white text-sm font-semibold px-6 py-2.5 rounded-sm hover:bg-[#124116] transition-colors">
+          <button onClick={irEmpezar} className="boton-campo bg-[#1b5e20] text-white text-sm font-semibold px-6 py-2.5 rounded-sm hover:bg-[#124116] transition-colors">
             Empezar
           </button>
           <button onClick={() => navegar('/lote')} className="boton-campo bg-transparent text-white text-sm font-semibold px-6 py-2.5 rounded-sm border border-white/40 hover:bg-white/10 transition-colors">

@@ -55,6 +55,25 @@ body {
   transform: translateY(-3px);
 }
 
+/* Scroll horizontal sutil para barras de pestañas */
+.scroll-sutil {
+  scrollbar-width: thin;
+  scrollbar-color: #d4d4d4 transparent;
+}
+.scroll-sutil::-webkit-scrollbar {
+  height: 4px;
+}
+.scroll-sutil::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scroll-sutil::-webkit-scrollbar-thumb {
+  background: #d4d4d4;
+  border-radius: 9999px;
+}
+.scroll-sutil::-webkit-scrollbar-thumb:hover {
+  background: #1b5e20;
+}
+
 /* === Formularios y mensajes (esquema sólido blanco/verde/negro) === */
 .campo-entrada {
   border: 1px solid #d4d4d4;

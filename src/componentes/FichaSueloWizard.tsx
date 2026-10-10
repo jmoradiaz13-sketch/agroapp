@@ -1,19 +1,23 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useForm, type UseFormRegister } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { esquemaFichaSuelo, type FichaSueloFormulario } from '../esquemas/suelo';
 import { RANGOS_VALIDADOS, semaforoPara, type Semaforo } from '../datos/rangos';
+import { PropiedadesFisicas } from './PropiedadesFisicas';
+import { PropiedadesQuimicas } from './PropiedadesQuimicas';
+import { CapturaFoto } from './CapturaFoto';
+import { blobAUrl, coberturaVerde, type FotoLista } from '../servicios/fotos';
 import { baseDatos } from '../base_datos/local';
 import { Boton } from './ui/Boton';
 
 type Paso = 'general' | 'fisicas' | 'quimicas' | 'biologicas' | 'resumen';
 
 const PASOS: { id: Paso; titulo: string }[] = [
-  { id: 'general', titulo: '1 · General' },
-  { id: 'fisicas', titulo: '2 · Físicas' },
-  { id: 'quimicas', titulo: '3 · Químicas' },
-  { id: 'biologicas', titulo: '4 · Biológicas' },
-  { id: 'resumen', titulo: '5 · Resumen' },
+  { id: 'general', titulo: 'Datos del terreno' },
+  { id: 'fisicas', titulo: 'Propiedades físicas' },
+  { id: 'quimicas', titulo: 'Propiedades químicas' },
+  { id: 'biologicas', titulo: 'Propiedades biológicas' },
+  { id: 'resumen', titulo: 'Interpretación' },
 ];
 
 const INDICADORES_VSA = ['estructura', 'porosidad', 'color', 'lombrices', 'cobertura', 'erosion_visible'];
@@ -90,13 +94,25 @@ const TEXTO_SEMAFORO: Record<Semaforo, string> = {
   'sin-dato': 'Sin dato',
 };
 
-// Plan plan_fichas_suelo.md: wizard General → Físicas → Químicas → Biológicas → Resumen.
+// Campos que alimentan la barra de avance del wizard.
+const CAMPOS_AVANCE: (keyof FichaSueloFormulario)[] = [
+  'fecha', 'tipoEvaluacion', 'profundidadCm', 'climaReciente',
+  'texturaTacto', 'estructuraDesc', 'colorMunsell', 'profundidadEfectivaCm',
+  'arenaPct', 'limoPct', 'arcillaPct', 'densidadAparente',
+  'phAgua', 'conductividadDsM', 'materiaOrganicaPct', 'nitrogenoPct',
+  'calcioCmolKg', 'magnesioCmolKg', 'potasioCmolKg', 'fosforoMgKg',
+  'lombricesConteo', 'olorSuelo', 'respiracionSuelo',
+];
+
+// Wizard de caracterización: General → Físicas → Químicas → Biológicas → Resumen.
 // El técnico llena lo disponible; la interpretación usa solo rangos validados.
 export function FichaSueloWizard({ predioIdentificador }: { predioIdentificador: string }) {
   const [paso, setPaso] = useState<Paso>('general');
   const [puntajes, setPuntajes] = useState<Record<string, number>>({});
   const [mensaje, setMensaje] = useState('');
-  const { register, handleSubmit, watch, formState: { errors } } = useForm<FichaSueloFormulario>({
+  const [fotosEtapa, setFotosEtapa] = useState<FotoLista[]>([]);
+  const [fotoCobertura, setFotoCobertura] = useState<{ url: string; pct: number } | null>(null);
+  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<FichaSueloFormulario>({
     resolver: zodResolver(esquemaFichaSuelo),
     defaultValues: { predioIdentificador, fecha: new Date().toISOString().slice(0, 10), tipoEvaluacion: 'mixta' },
   });
@@ -104,7 +120,16 @@ export function FichaSueloWizard({ predioIdentificador }: { predioIdentificador:
 
   const alGuardar = async (datos: FichaSueloFormulario) => {
     const existentes = await baseDatos.fichasSuelo.where('predioIdentificador').equals(datos.predioIdentificador).count();
-    await baseDatos.fichasSuelo.add({ ...datos, version: existentes + 1, sincronizada: false });
+    const fichaId = await baseDatos.fichasSuelo.add({ ...datos, version: existentes + 1, sincronizada: false });
+    for (const f of fotosEtapa) {
+      await baseDatos.fotos.add({
+        fichaId, predioIdentificador: datos.predioIdentificador,
+        tipo: f.tipo, foto: f.blob, miniatura: f.miniatura,
+        lat: f.lat, lng: f.lng, coberturaPct: f.coberturaPct,
+        fecha: datos.fecha, sincronizada: false,
+      });
+    }
+    setFotosEtapa([]);
     const tocados = INDICADORES_VSA.filter((i) => puntajes[i] !== undefined);
     if (tocados.length > 0) {
       const vals = INDICADORES_VSA.map((i) => puntajes[i] ?? 0);
@@ -123,14 +148,27 @@ export function FichaSueloWizard({ predioIdentificador }: { predioIdentificador:
     return typeof v === 'number' && !Number.isNaN(v);
   }).length;
 
+  const avance = Math.round(
+    (CAMPOS_AVANCE.filter((c) => {
+      const v = valores[c];
+      return v !== undefined && v !== '' && !(typeof v === 'number' && Number.isNaN(v));
+    }).length / CAMPOS_AVANCE.length) * 100
+  );
+  const urlsFotos = useMemo(() => {
+    const urls = fotosEtapa.map((f) => blobAUrl(f.miniatura));
+    return urls;
+  }, [fotosEtapa]);
+  useEffect(() => () => { urlsFotos.forEach((u) => URL.revokeObjectURL(u)); }, [urlsFotos]);
+
   return (
     <form onSubmit={handleSubmit(alGuardar)} className="bg-white border border-neutral-200">
-      <div className="flex gap-1.5 flex-wrap p-3 border-b border-neutral-200" role="tablist" aria-label="Pasos de caracterización">
+      <div className="border-2 border-[#1b5e20] rounded-sm overflow-hidden">
+      <div className="scroll-sutil flex flex-nowrap gap-1.5 overflow-x-auto p-3 border-b border-neutral-200 bg-green-50/50" role="tablist" aria-label="Pasos de caracterización">
         {PASOS.map((p) => (
           <button
             key={p.id} type="button" role="tab" aria-selected={paso === p.id}
             onClick={() => setPaso(p.id)}
-            className={`boton-campo px-4 py-2 text-sm font-semibold rounded-sm transition-colors ${
+            className={`boton-campo shrink-0 whitespace-nowrap px-4 py-2 text-sm font-semibold rounded-sm transition-colors ${
               paso === p.id ? 'bg-[#1b5e20] text-white' : 'bg-white text-neutral-600 border border-neutral-300 hover:border-[#1b5e20]'
             }`}
           >
@@ -139,7 +177,17 @@ export function FichaSueloWizard({ predioIdentificador }: { predioIdentificador:
         ))}
       </div>
 
-      <div className="p-5 grid gap-5">
+      <div className="px-3 pb-3 border-b border-neutral-200 grid gap-1.5" aria-hidden={false}>
+        <div className="flex justify-between text-[11px] font-medium text-neutral-500">
+          <span>Avance de la ficha</span>
+          <span>{avance} %</span>
+        </div>
+        <div className="h-1.5 w-full bg-neutral-100 rounded-full overflow-hidden" role="progressbar" aria-valuenow={avance} aria-valuemin={0} aria-valuemax={100} aria-label="Avance de la ficha">
+          <div className="h-full bg-[#1b5e20] rounded-full transition-all duration-500 ease-out" style={{ width: `${avance}%` }} />
+        </div>
+      </div>
+
+      <div key={paso} className="animacion-entrada p-5 grid gap-5">
         {paso === 'general' && (
           <Grupo titulo="Información general">
             <div className="grid gap-4 sm:grid-cols-2">
@@ -161,80 +209,11 @@ export function FichaSueloWizard({ predioIdentificador }: { predioIdentificador:
         )}
 
         {paso === 'fisicas' && (
-          <>
-            <Grupo titulo="Campo: observación y tacto">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Sel etiqueta="Textura al tacto (cinta / amasado)" registro={register} nombre="texturaTacto" opciones={OPCIONES.texturaTacto} />
-                <Sel etiqueta="Compactación (cuchillo / varilla)" registro={register} nombre="compactacion" opciones={OPCIONES.compactacion} />
-                <Sel etiqueta="Infiltración básica (anillo / PVC)" registro={register} nombre="infiltracion" opciones={OPCIONES.infiltracion} />
-                <label className="etiqueta-campo">Estructura y terrones (DRES / VSA)
-                  <input className="campo-entrada" placeholder="Ej: granular friable" {...register('estructuraDesc')} />
-                </label>
-                <label className="etiqueta-campo">Color Munsell (seco / húmedo)
-                  <input className="campo-entrada" placeholder="Ej: 10YR 3/2 húmedo" {...register('colorMunsell')} />
-                </label>
-                <label className="etiqueta-campo">Profundidad efectiva (cm)
-                  <input className="campo-entrada" type="number" step="1" min="0" {...register('profundidadEfectivaCm')} />
-                </label>
-              </div>
-            </Grupo>
-            <Grupo titulo="Laboratorio: granulometría y física">
-              <Num etiqueta="Arena" unidad="%" paso="0.1" registro={register} nombre="arenaPct" />
-              <Num etiqueta="Limo" unidad="%" paso="0.1" registro={register} nombre="limoPct" />
-              <Num etiqueta="Arcilla" unidad="%" paso="0.1" registro={register} nombre="arcillaPct" />
-              <Num etiqueta="Densidad aparente" unidad="g/cm³" registro={register} nombre="densidadAparente" />
-              <Num etiqueta="Porosidad total" unidad="%" registro={register} nombre="porosidadPct" />
-              <Num etiqueta="Capacidad de campo" unidad="%" registro={register} nombre="capacidadCampoPct" />
-              <Num etiqueta="Punto de marchitez" unidad="%" registro={register} nombre="pmpPct" />
-              {errors.arcillaPct && <p className="mensaje-error">{errors.arcillaPct.message}</p>}
-            </Grupo>
-          </>
+          <PropiedadesFisicas registro={register} fijar={setValue} valores={valores} errorGranulometria={errors.arcillaPct?.message} alFoto={(f) => setFotosEtapa((v) => [...v, f])} alIrResumen={() => setPaso('resumen')} contexto={predioIdentificador} />
         )}
 
         {paso === 'quimicas' && (
-          <>
-            <Grupo titulo="Campo: equipo portátil y observación">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <label className="etiqueta-campo">pH portátil / tiras
-                  <input className="campo-entrada" type="number" step="0.1" min="0" {...register('phCampo')} />
-                </label>
-                <label className="etiqueta-campo">CE portátil (dS/m)
-                  <input className="campo-entrada" type="number" step="0.01" min="0" {...register('ceCampo')} />
-                </label>
-                <Sel etiqueta="Carbonatos (HCl / vinagre)" registro={register} nombre="carbonatos" opciones={OPCIONES.carbonatos} />
-              </div>
-              <label className="etiqueta-campo">Síntomas visuales en plantas (clorosis, necrosis)
-                <input className="campo-entrada" placeholder="Ej: clorosis en hojas inferiores" {...register('sintomasVisuales')} />
-              </label>
-            </Grupo>
-            <Grupo titulo="Laboratorio: acidez y salinidad">
-              <Num etiqueta="pH en agua" unidad="—" registro={register} nombre="phAgua" />
-              <Num etiqueta="pH en KCl" unidad="—" registro={register} nombre="phKcl" />
-              <Num etiqueta="Conductividad eléctrica" unidad="dS/m" registro={register} nombre="conductividadDsM" />
-            </Grupo>
-            <Grupo titulo="Laboratorio: materia orgánica y nitrógeno">
-              <Num etiqueta="Materia orgánica" unidad="%" registro={register} nombre="materiaOrganicaPct" />
-              <Num etiqueta="Nitrógeno total" unidad="%" registro={register} nombre="nitrogenoPct" />
-            </Grupo>
-            <Grupo titulo="Laboratorio: bases, CIC y acidez">
-              <Num etiqueta="Calcio" unidad="cmol/kg" registro={register} nombre="calcioCmolKg" />
-              <Num etiqueta="Magnesio" unidad="cmol/kg" registro={register} nombre="magnesioCmolKg" />
-              <Num etiqueta="Potasio" unidad="cmol/kg" registro={register} nombre="potasioCmolKg" />
-              <Num etiqueta="Sodio" unidad="cmol/kg" registro={register} nombre="sodioCmolKg" />
-              <Num etiqueta="CIC" unidad="cmol/kg" paso="0.1" registro={register} nombre="cicCmolKg" />
-              <Num etiqueta="Aluminio" unidad="cmol/kg" registro={register} nombre="aluminioCmolKg" />
-              <Num etiqueta="Saturación de Al" unidad="%" registro={register} nombre="saturacionAlPct" />
-            </Grupo>
-            <Grupo titulo="Laboratorio: fósforo, azufre y micros">
-              <Num etiqueta="Fósforo disponible" unidad="mg/kg" paso="0.1" registro={register} nombre="fosforoMgKg" />
-              <Num etiqueta="Azufre" unidad="mg/kg" paso="0.1" registro={register} nombre="azufreMgKg" />
-              <Num etiqueta="Hierro" unidad="mg/kg" paso="0.1" registro={register} nombre="hierroMgKg" />
-              <Num etiqueta="Manganeso" unidad="mg/kg" paso="0.1" registro={register} nombre="manganesoMgKg" />
-              <Num etiqueta="Zinc" unidad="mg/kg" paso="0.1" registro={register} nombre="zincMgKg" />
-              <Num etiqueta="Cobre" unidad="mg/kg" paso="0.1" registro={register} nombre="cobreMgKg" />
-              <Num etiqueta="Boro" unidad="mg/kg" paso="0.1" registro={register} nombre="boroMgKg" />
-            </Grupo>
-          </>
+          <PropiedadesQuimicas registro={register} valores={valores} alIrResumen={() => setPaso('resumen')} contexto={predioIdentificador} />
         )}
 
         {paso === 'biologicas' && (
@@ -275,6 +254,34 @@ export function FichaSueloWizard({ predioIdentificador }: { predioIdentificador:
               </label>
               <Num etiqueta="Cobertura vegetal" unidad="%" registro={register} nombre="coberturaVegetalPct" />
             </Grupo>
+            <div className="border border-neutral-200 bg-white p-4 grid gap-3">
+              <h4 className="text-sm font-semibold text-[#141414]">Cobertura por foto cenital (Canopeo)</h4>
+              <p className="text-xs text-neutral-500">Foto vertical a ≥ 60 cm del dosel. Método: Patrignani &amp; Ochsner 2015, 100 % offline.</p>
+              <div className="flex gap-2 flex-wrap items-center">
+                <CapturaFoto
+                  texto="Foto cenital"
+                  tipo="cobertura"
+                  alCapturar={async (f) => {
+                    const pct = await coberturaVerde(f.blob);
+                    setFotoCobertura({ url: blobAUrl(f.miniatura), pct });
+                    setFotosEtapa((v) => [...v.filter((x) => x.tipo !== 'cobertura'), { ...f, coberturaPct: pct }]);
+                  }}
+                />
+                {fotoCobertura && (
+                  <>
+                    <img src={fotoCobertura.url} alt="Miniatura de cobertura" className="w-16 h-16 object-cover rounded-sm border border-neutral-200" />
+                    <span className="text-sm">Cobertura: <strong className="font-semibold text-[#1b5e20]">{fotoCobertura.pct} %</strong></span>
+                    <button
+                      type="button"
+                      onClick={() => setValue('coberturaVegetalPct', fotoCobertura.pct)}
+                      className="boton-campo px-4 py-2 text-sm font-semibold rounded-sm bg-[#1b5e20] text-white hover:bg-[#124116] transition-colors"
+                    >
+                      Usar en la ficha
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
           </>
         )}
 
@@ -293,12 +300,28 @@ export function FichaSueloWizard({ predioIdentificador }: { predioIdentificador:
                 const num = typeof v === 'number' && !Number.isNaN(v) ? v : undefined;
                 const sem = semaforoPara(r, num);
                 return (
-                  <li key={r.parametro} className="border border-neutral-200 px-4 py-2.5 grid gap-1">
+                  <li key={r.parametro} className="border border-neutral-200 px-4 py-2.5 grid gap-1.5">
                     <span className="flex items-center gap-2 text-sm">
-                      <span className={`w-2.5 h-2.5 rounded-full ${COLOR_SEMAFORO[sem]}`} aria-hidden />
+                      <span className={`w-2.5 h-2.5 rounded-full transition-colors duration-500 ${COLOR_SEMAFORO[sem]}`} aria-hidden />
                       <strong className="font-semibold">{r.etiqueta}</strong>
                       <span className="text-neutral-500">{num !== undefined ? `${num} ${r.unidad}` : '—'} · {TEXTO_SEMAFORO[sem]}</span>
                     </span>
+                    {num !== undefined && (() => {
+                      const max = r.optimoMax * 1.5 || 1;
+                      const pct = (v: number) => Math.max(0, Math.min(100, (v / max) * 100));
+                      return (
+                        <span className="relative block h-1.5 rounded-full bg-neutral-100" aria-hidden>
+                          <span
+                            className="absolute inset-y-0 rounded-full bg-[#1b5e20]/25 transition-all duration-500"
+                            style={{ left: `${pct(r.optimoMin)}%`, width: `${Math.max(0, pct(r.optimoMax) - pct(r.optimoMin))}%` }}
+                          />
+                          <span
+                            className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full border-2 border-white shadow transition-all duration-500"
+                            style={{ left: `${pct(num)}%`, background: sem === 'optimo' ? '#1b5e20' : sem === 'bajo' ? '#dc2626' : '#f59e0b' }}
+                          />
+                        </span>
+                      );
+                    })()}
                     <details className="text-xs text-neutral-500">
                       <summary className="cursor-pointer text-[#1b5e20] font-medium">ⓘ Fuente del rango</summary>
                       <p className="mt-1">src/{r.fuente} · Óptimo {r.optimoMin}–{r.optimoMax} {r.unidad}</p>
@@ -307,18 +330,37 @@ export function FichaSueloWizard({ predioIdentificador }: { predioIdentificador:
                 );
               })}
             </ol>
-            <label className="etiqueta-campo">Referencia bibliográfica (src/) *
+            {fotosEtapa.length > 0 && (
+              <div className="grid gap-2">
+                <h4 className="text-sm font-semibold text-[#141414]">Fotos por guardar ({fotosEtapa.length})</h4>
+                <div className="flex gap-2 flex-wrap">
+                  {fotosEtapa.map((f, i) => (
+                    <span key={i} className="relative inline-block">
+                      <img src={urlsFotos[i]} alt={`Foto ${f.tipo}`} className="w-16 h-16 object-cover rounded-sm border border-neutral-200" />
+                      <button
+                        type="button" aria-label="Quitar foto"
+                        onClick={() => setFotosEtapa((v) => v.filter((_, j) => j !== i))}
+                        className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-[#141414] text-white text-xs grid place-items-center"
+                      >
+                        ✕
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+            <label className="etiqueta-campo">Referencia (opcional)
               <input
                 className="campo-entrada"
-                placeholder="Ej: guia_para_la_evaluacion_de_la_calidad_y_salud_del_suelo.pdf p.12-18"
+                placeholder="Ej: guía FAO, manual de campo, reporte de laboratorio"
                 {...register('referenciaBibliografica')}
               />
             </label>
-            {errors.referenciaBibliografica && <p className="mensaje-error">{errors.referenciaBibliografica.message}</p>}
             {mensaje && <p className="mensaje-ok">{mensaje}</p>}
             <div><Boton type="submit">Guardar ficha (offline)</Boton></div>
           </div>
         )}
+      </div>
       </div>
     </form>
   );

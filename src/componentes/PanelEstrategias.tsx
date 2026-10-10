@@ -1,12 +1,10 @@
 import { useEffect, useState } from 'react';
 import { baseDatos, type EstrategiaLocal } from '../base_datos/local';
-import { listarReferencias } from '../servicios/bibliografia';
 import { BotonSecundario } from './ui/Boton';
 
-// MVP 7: estrategias con especies respaldadas + estado + decisión técnico.
+// Estrategias con especies demostrativas + estado + decisión técnico.
 export function PanelEstrategias() {
   const [items, setItems] = useState<EstrategiaLocal[]>([]);
-  const refs = listarReferencias().filter((r) => r.categoria === 'agroforestry').slice(0, 3);
 
   const cargar = async () => setItems(await baseDatos.estrategias.toArray());
   useEffect(() => { void cargar(); }, []);
@@ -33,10 +31,7 @@ export function PanelEstrategias() {
           <div><BotonSecundario onClick={() => e.id && void avanzar(e)}>Avanzar estado</BotonSecundario></div>
         </article>
       ))}
-      <details className="bg-white border border-neutral-200 p-4">
-        <summary className="boton-campo text-sm font-semibold text-[#1b5e20] cursor-pointer">Especies respaldadas ({refs.length})</summary>
-        {refs.map((r) => <p key={r.id} className="text-sm text-neutral-600 mt-1">{r.titulo} — {r.fuente}</p>)}
-      </details>
+      <p className="text-xs text-neutral-500">Las especies se definen en el simulador de diseño; el banco de especies se trabajará más adelante.</p>
     </section>
   );
 }

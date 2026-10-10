@@ -21,7 +21,15 @@ export const esquemaFichaSuelo = z.object({
   compactacion: z.string().max(100).optional(),
   infiltracion: z.string().max(100).optional(),
   estructuraDesc: z.string().max(100).optional(),
+  estructuraVess: z.preprocess(
+    (v) => (v === '' || v === null || Number.isNaN(v) ? undefined : Number(v)),
+    z.number().int().min(1).max(5).optional()
+  ),
   colorMunsell: z.string().max(50).optional(),
+  munsellH: z.string().max(10).optional(),
+  munsellV: numero(10),
+  munsellC: numero(10),
+  colorEstado: z.string().max(20).optional(),
   profundidadEfectivaCm: numero(300),
   // Físicas laboratorio
   arenaPct: numero(100),
@@ -65,8 +73,8 @@ export const esquemaFichaSuelo = z.object({
   carbonoBiomasa: numero(10000),
   micorrizas: z.string().max(100).optional(),
   coberturaVegetalPct: numero(100),
-  // Regla NO INVENTAR DATOS: toda ficha exige fuente bibliográfica de src/
-  referenciaBibliografica: z.string().min(3, 'Indica la fuente en src/, ej: guia_para_la_evaluacion_de_la_calidad_y_salud_del_suelo.pdf p.12')
+  // Referencia opcional: se cuadra después (fuente registrada, no necesariamente PDF)
+  referenciaBibliografica: z.string().max(300).optional()
 }).superRefine((d, ctx) => {
   // Validación plan §3.2: la granulometría no puede sumar más de 100 %
   const partes = [d.arenaPct, d.limoPct, d.arcillaPct].filter((v): v is number => typeof v === 'number');

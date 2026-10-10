@@ -73,11 +73,16 @@ export interface FichaSueloLocal {
   compactacion?: string;
   infiltracion?: string;
   estructuraDesc?: string;
+  estructuraVess?: number;
   densidadAparente?: number;
   porosidadPct?: number;
   capacidadCampoPct?: number;
   pmpPct?: number;
   colorMunsell?: string;
+  munsellH?: string;
+  munsellV?: number;
+  munsellC?: number;
+  colorEstado?: string;
   profundidadEfectivaCm?: number;
   // Químicas campo
   phCampo?: number;
@@ -116,7 +121,63 @@ export interface FichaSueloLocal {
   carbonoBiomasa?: number;
   micorrizas?: string;
   coberturaVegetalPct?: number;
-  referenciaBibliografica: string; // trazabilidad a src/*.pdf
+  referenciaBibliografica?: string; // fuente registrada (opcional)
+  sincronizada: boolean;
+}
+
+export interface UsoSueloDiseno {
+  uso: string;
+  porcentaje: number;
+}
+
+export interface ComponenteDiseno {
+  rol: string;
+  especie: string;
+  detalle?: string;
+}
+
+export interface DisenoLocal {
+  id?: number;
+  predioIdentificador: string; // 'sin-predio' cuando se simula desde cero
+  loteNombre?: string;
+  nombreUnidad: string;
+  fecha: string;
+  version: number;
+  areaTotalHa?: number;
+  zonaClima?: string;
+  objetivo?: string;
+  tipoDiseno?: string;
+  nivelTransicion?: number; // 1-4 Gliessman
+  usosSuelo: UsoSueloDiseno[];
+  componentes: ComponenteDiseno[];
+  rotacionAsociacion?: string;
+  referenciaBibliografica?: string; // opcional en el simulador
+  sincronizada: boolean;
+}
+
+export interface FotoLocal {
+  id?: number;
+  fichaId?: number; // local; se resuelve al sincronizar por predio+versión
+  predioIdentificador: string;
+  loteNombre?: string;
+  tipo: 'muestra' | 'vess' | 'cobertura' | 'punto';
+  foto: Blob;
+  miniatura: Blob;
+  lat?: number;
+  lng?: number;
+  coberturaPct?: number;
+  fecha: string;
+  sincronizada: boolean;
+}
+
+export interface PuntoMuestreoLocal {
+  id?: number;
+  predioIdentificador: string;
+  loteNombre?: string;
+  codigo: string; // MU-AAAAMMDD-nn
+  lat: number;
+  lng: number;
+  fecha: string;
   sincronizada: boolean;
 }
 
@@ -147,6 +208,9 @@ class BaseDatosAgroApp extends Dexie {
   lotes!: Table<LoteLocal, number>;
   monitoreos!: Table<MonitoreoLocal, number>;
   estrategias!: Table<EstrategiaLocal, number>;
+  disenos!: Table<DisenoLocal, number>;
+  fotos!: Table<FotoLocal, number>;
+  puntosMuestreo!: Table<PuntoMuestreoLocal, number>;
 
   constructor() {
     super('agroapp_campo');
@@ -164,6 +228,15 @@ class BaseDatosAgroApp extends Dexie {
       lotes: '++id, predioIdentificador, nombre',
       monitoreos: '++id, loteNombre, fecha',
       estrategias: '++id, loteNombre, tipo'
+    });
+    // Simulador de diseño agroecológico: diseños versionados por unidad
+    this.version(4).stores({
+      disenos: '++id, predioIdentificador, fecha, version'
+    });
+    // Fase A campo con fotos: fotos por ficha/muestra + puntos GPS de muestreo
+    this.version(5).stores({
+      fotos: '++id, fichaId, predioIdentificador, tipo',
+      puntosMuestreo: '++id, predioIdentificador, codigo'
     });
   }
 }
