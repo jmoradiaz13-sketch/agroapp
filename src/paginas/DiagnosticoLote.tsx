@@ -18,7 +18,7 @@ export function DiagnosticoLote() {
       <EncabezadoPagina
         kicker="Paso 4 · Diagnóstico agroecológico"
         titulo="Diagnóstico del lote"
-        descripcion="Interpreta fertilidad y salud del suelo con trazabilidad bibliográfica. El sistema sugiere, el técnico decide."
+        descripcion="Interpreta fertilidad y salud del suelo con rangos validados. El sistema sugiere, el técnico decide."
       />
       <Suspense fallback={<p className="mensaje-info">Cargando gráfico…</p>}>
         <GraficoPesado predioIdentificador={id} />

@@ -8,6 +8,7 @@ import { EncabezadoPagina } from '../componentes/ui/EncabezadoPagina';
 import { MapaEditor } from '../componentes/MapaEditor';
 import { CaracterizacionLote } from '../componentes/CaracterizacionLote';
 import { PanelMonitoreo } from '../componentes/PanelMonitoreo';
+import { PuntosMuestreo } from '../componentes/PuntosMuestreo';
 
 // Paso 2: dashboard del predio con lotes y mapa único.
 export function DashboardLote() {
@@ -55,6 +56,7 @@ export function DashboardLote() {
         ))}
       </div>
       <MapaEditor identificador={predioIdentificador} />
+      <PuntosMuestreo predioIdentificador={predioIdentificador} />
       <CaracterizacionLote predioIdentificador={predioIdentificador} />
       <PanelMonitoreo />
       <Tarjeta titulo="Siguiente paso">

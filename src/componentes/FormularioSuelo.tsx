@@ -153,7 +153,7 @@ export function FormularioSuelo({ predioIdentificador }: { predioIdentificador: 
         </fieldset>
       ))}
 
-      <label className="etiqueta-campo">Referencia bibliográfica (src/) *
+      <label className="etiqueta-campo">Referencia (opcional)
         <input
           className="campo-entrada"
           placeholder="Ej: guia_para_la_evaluacion_de_la_calidad_y_salud_del_suelo.pdf p.12-18"

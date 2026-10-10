@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import { useEffect, useState } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
 import * as turf from '@turf/turf';
 import 'leaflet/dist/leaflet.css';
 import { baseDatos, tamanoCachePredio, LIMITE_CACHE_PREDIO_BYTES } from '../base_datos/local';
@@ -16,6 +16,12 @@ export function MapaEditor({ identificador }: { identificador: string }) {
   const [modo, setModo] = useState<'ver' | 'dibujar'>('ver');
   const [puntos, setPuntos] = useState<[number, number][]>([]);
   const [mensaje, setMensaje] = useState('');
+  const [muestreo, setMuestreo] = useState<{ codigo: string; lat: number; lng: number }[]>([]);
+
+  useEffect(() => {
+    void baseDatos.puntosMuestreo.where('predioIdentificador').equals(identificador).toArray()
+      .then((lista) => setMuestreo(lista.map((p) => ({ codigo: p.codigo, lat: p.lat, lng: p.lng }))));
+  }, [identificador, modo]);
 
   const guardar = async () => {
     if (puntos.length < 3) { setMensaje('Toca ≥3 puntos en modo dibujar'); return; }
@@ -54,8 +60,13 @@ export function MapaEditor({ identificador }: { identificador: string }) {
         <TileLayer url="https://tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap" />
         {modo === 'dibujar' && <Toques alAgregar={(p) => setPuntos((v) => [...v, p])} />}
         {puntos.length > 0 && <Marker position={[puntos[puntos.length - 1][1], puntos[puntos.length - 1][0]]} />}
+        {muestreo.map((m) => (
+          <Marker key={m.codigo} position={[m.lat, m.lng]}>
+            <Popup>{m.codigo} · punto de muestreo</Popup>
+          </Marker>
+        ))}
       </MapContainer>
-      <p className="text-sm">Puntos: {puntos.length} {modo === 'dibujar' ? '— toca el mapa' : '— tiles cacheados funcionan offline'}</p>
+      <p className="text-sm">Puntos: {puntos.length} · Muestreo: {muestreo.length} {modo === 'dibujar' ? '— toca el mapa' : '— tiles cacheados funcionan offline'}</p>
       {mensaje && <p className="mensaje-ok text-sm">{mensaje}</p>}
     </Tarjeta>
   );
