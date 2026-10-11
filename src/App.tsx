@@ -14,27 +14,29 @@ const DashboardLote = lazy(() => import('./paginas/DashboardLote').then((m) => (
 const FichaLote = lazy(() => import('./paginas/FichaLote').then((m) => ({ default: m.FichaLote })));
 const DiagnosticoLote = lazy(() => import('./paginas/DiagnosticoLote').then((m) => ({ default: m.DiagnosticoLote })));
 const InformePredio = lazy(() => import('./paginas/InformePredio').then((m) => ({ default: m.InformePredio })));
+const SigRestauracion = lazy(() => import('./paginas/SigRestauracion').then((m) => ({ default: m.SigRestauracion })));
 
 const MENU_VERDE: { id: string; ruta: string; titulo: string }[] = [
   { id: 'inicio', ruta: '/', titulo: 'Inicio' },
   { id: 'predios', ruta: '/predios', titulo: 'Predios' },
   { id: 'lote', ruta: '/lote', titulo: 'Lotes' },
   { id: 'ficha', ruta: '/ficha', titulo: 'Análisis de suelos' },
+  { id: 'sig', ruta: '/sig', titulo: 'SIG' },
   { id: 'diseno', ruta: '/diseno', titulo: 'Diseño' },
   { id: 'diagnostico', ruta: '/diagnostico', titulo: 'Diagnóstico' },
   { id: 'informe', ruta: '/informe', titulo: 'Informe' },
 ];
 
-// Fila negra: herramientas reales con insignia de conectividad (AGENTS §4)
-// + funciones futuras marcadas PRÓXIMO (no enlazan a rutas inexistentes).
+// Fila negra: herramientas reales con insignia de conectividad (AGENTS §4).
+// Las SIG enlazan a /sig (ya no son PRÓXIMO sin ruta).
 const MENU_NEGRO: { titulo: string; ruta?: string; insignia: string; proximo?: boolean }[] = [
   { titulo: 'Mapa GPS', ruta: '/lote', insignia: 'OFFLINE' },
   { titulo: 'Análisis VSA', ruta: '/ficha', insignia: 'OFFLINE' },
   { titulo: 'Análisis lab', ruta: '/ficha', insignia: 'OFFLINE' },
   { titulo: 'Monitoreo', ruta: '/lote', insignia: 'OFFLINE' },
-  { titulo: 'Pendiente / RUSLE', insignia: 'MIXTO', proximo: true },
-  { titulo: 'Capas IGAC', insignia: 'MIXTO', proximo: true },
-  { titulo: 'NDVI satelital', insignia: 'ONLINE', proximo: true },
+  { titulo: 'Pendiente / RUSLE', ruta: '/sig', insignia: 'MIXTO' },
+  { titulo: 'Capas IGAC', ruta: '/sig', insignia: 'MIXTO' },
+  { titulo: 'NDVI satelital', ruta: '/sig', insignia: 'ONLINE' },
 ];
 
 function BarraSuperior() {
@@ -47,39 +49,31 @@ function BarraSuperior() {
     <header className="sticky top-0 z-50 shadow-campo">
       {/* Fila 1 verde oscuro sólido estilo referencia interfaz.png */}
       <div className="bg-[#1b5e20]">
-        <div className="max-w-6xl mx-auto px-4 py-1.5 flex items-center justify-between gap-3">
-          <Link to="/" className="flex items-center gap-2 shrink-0" aria-label="AgroForestapp inicio">
-            <span className="w-14 h-14 rounded-xl bg-white grid place-items-center shadow" aria-hidden>
-              <LogoArbolA className="w-10 h-10 text-[#1b5e20]" />
+        <div className="max-w-6xl mx-auto px-3 sm:px-4 py-1.5 flex items-center justify-between gap-2 sm:gap-3">
+          <Link to="/" className="flex items-center gap-2 shrink-0 min-w-0" aria-label="AgroForestapp inicio">
+            <span className="w-10 h-10 md:w-14 md:h-14 rounded-xl bg-white grid place-items-center shadow shrink-0" aria-hidden>
+              <LogoArbolA className="w-7 h-7 md:w-10 md:h-10 text-[#1b5e20]" />
             </span>
-            <span className="leading-none grid">
-              <span className="text-base font-bold tracking-tight text-white whitespace-nowrap">AGROFORESTAPP</span>
-              <span className="text-[11px] font-medium tracking-wide text-white/60">Gestión de fincas y suelos</span>
+            <span className="leading-none grid min-w-0">
+              <span className="text-sm md:text-base font-bold tracking-tight text-white">AGROFORESTAPP</span>
+              <span className="text-[10px] md:text-[11px] font-medium tracking-wide text-white/60">Gestión de fincas y suelos</span>
             </span>
           </Link>
           <nav className="hidden xl:flex items-center gap-4 text-[13px] font-medium text-white/90" aria-label="Secciones">
             {MENU_VERDE.slice(1).map((m) => (
-              <NavLink key={m.id} to={m.ruta} className="px-2 py-1 rounded-sm hover:bg-white/15 hover:shadow-[inset_0_0_10px_rgba(255,255,255,0.2)] transition-all">
+              <NavLink key={m.id} to={m.ruta} className={({ isActive }) => `px-2 py-1 rounded-sm transition-all ${isActive ? 'bg-white/20 text-white shadow-[inset_0_0_10px_rgba(255,255,255,0.2)]' : 'hover:bg-white/15 hover:shadow-[inset_0_0_10px_rgba(255,255,255,0.2)]'}`}>
                 {m.titulo}
               </NavLink>
             ))}
           </nav>
-          <div className="hidden md:flex items-center gap-2 text-[12px] font-medium text-white">
+          <div className="hidden md:flex items-center gap-2 text-[12px] font-medium text-white shrink-0">
             <span className="border border-white/40 rounded px-1.5 py-0.5">ES-CO</span>
             <NavLink to="/ingreso" className="boton-campo inline-flex items-center gap-1.5 bg-white text-[#1b5e20] rounded px-3 py-1 text-[12px] font-semibold hover:bg-green-100 transition-colors">
               <span aria-hidden>👤</span> Ingreso
             </NavLink>
-            <button
-              className="xl:hidden boton-campo text-2xl font-semibold px-2 text-white"
-              onClick={() => setAbierto((v) => !v)}
-              aria-label="Abrir menú"
-              aria-expanded={abierto}
-            >
-              {abierto ? '✕' : '☰'}
-            </button>
           </div>
           <button
-            className="md:hidden boton-campo text-2xl font-semibold text-white px-2"
+            className="xl:hidden boton-campo w-11 h-11 grid place-items-center text-2xl font-semibold text-white px-2 shrink-0"
             onClick={() => setAbierto((v) => !v)}
             aria-label="Abrir menú"
             aria-expanded={abierto}
@@ -90,21 +84,21 @@ function BarraSuperior() {
         {abierto && (
           <nav className="xl:hidden px-4 pb-3 grid grid-cols-2 gap-1.5 animacion-entrada" aria-label="Menú móvil">
             {MENU_VERDE.map((m) => (
-              <NavLink key={m.id} to={m.ruta} className="boton-campo bg-white/15 text-white rounded px-3 py-2 text-xs font-semibold text-center">
+              <NavLink key={m.id} to={m.ruta} className={({ isActive }) => `boton-campo rounded px-3 py-2 text-xs font-semibold text-center transition-colors ${isActive ? 'bg-[#86efac] text-[#141414]' : 'bg-white/15 text-white hover:bg-white/25'}`}>
                 {m.titulo}
               </NavLink>
             ))}
-            <NavLink to="/ingreso" className="boton-campo bg-white text-[#1b5e20] rounded px-3 py-2 text-xs font-semibold text-center">
+            <NavLink to="/ingreso" className={({ isActive }) => `boton-campo rounded px-3 py-2 text-xs font-semibold text-center transition-colors ${isActive ? 'bg-[#86efac] text-[#141414]' : 'bg-white text-[#1b5e20] hover:bg-green-100'}`}>
               Ingreso
             </NavLink>
           </nav>
         )}
       </div>
 
-      {/* Fila 2 negra: herramientas por conectividad */}
+      {/* Fila 2 negra: herramientas por conectividad — visible en PC y móvil con scroll horizontal */}
       <div className="bg-[#141414] text-white">
-        <div className="max-w-6xl mx-auto px-4 flex items-center gap-2">
-          <nav className="hidden lg:flex items-center gap-5 text-[12px] font-medium text-white/85 overflow-x-auto" aria-label="Herramientas por conectividad">
+        <div className="max-w-6xl mx-auto px-3 sm:px-4 flex items-center gap-2 overflow-x-auto scroll-sutil">
+          <nav className="flex items-center gap-4 sm:gap-5 text-[12px] font-medium text-white/85 overflow-x-auto scroll-sutil w-full" aria-label="Herramientas por conectividad">
             {MENU_NEGRO.map((m) => (
               m.proximo ? (
                 <span
@@ -136,18 +130,19 @@ export default function App() {
   useEffect(() => iniciarSincronizacionAutomatica(), []);
   useEffect(() => {
     const mapa: Record<string, Paso> = {
-      '/predios': 'predios', '/lote': 'lote', '/ficha': 'ficha',
+      '/predios': 'predios', '/lote': 'lote', '/ficha': 'ficha', '/sig': 'sig',
       '/diagnostico': 'diagnostico', '/informe': 'informe'
     };
     if (mapa[ubicacion.pathname]) usoFlujo.getState().irPaso(mapa[ubicacion.pathname]);
   }, [ubicacion.pathname]);
 
   const esInicio = ubicacion.pathname === '/';
+  void esInicio;
 
   return (
     <div className="min-h-screen flex flex-col">
       <BarraSuperior />
-      <main className={`flex-1 w-full ${esInicio ? 'max-w-6xl' : 'max-w-4xl'} mx-auto p-4 grid gap-4 content-start`}>
+      <main className="flex-1 w-full max-w-6xl mx-auto px-3 sm:px-4 py-4 grid gap-4 content-start overflow-x-hidden">
         <Suspense fallback={<p className="font-medium text-[#1b5e20]">🌱 Cargando paso…</p>}>
           <Routes>
             <Route path="/" element={<PaginaInicio />} />
@@ -155,6 +150,7 @@ export default function App() {
             <Route path="/diseno" element={<PaginaDiseno />} />
             <Route path="/lote" element={<DashboardLote />} />
             <Route path="/ficha" element={<FichaLote />} />
+            <Route path="/sig" element={<SigRestauracion />} />
             <Route path="/diagnostico" element={<DiagnosticoLote />} />
             <Route path="/informe" element={<InformePredio />} />
             <Route path="/ingreso" element={<PaginaIngreso />} />
@@ -174,6 +170,7 @@ export default function App() {
           <nav className="grid content-start gap-1" aria-label="Otras secciones">
             <p className="text-xs font-semibold tracking-wide text-white/90 mb-1">Otras secciones</p>
             <Link to="/ficha" className="text-xs text-white/60 hover:text-[#86efac] transition-colors">Análisis de suelos VSA</Link>
+            <Link to="/sig" className="text-xs text-white/60 hover:text-[#86efac] transition-colors">SIG restauración ecológica</Link>
             <Link to="/diagnostico" className="text-xs text-white/60 hover:text-[#86efac] transition-colors">Diagnóstico agroecológico</Link>
             <Link to="/informe" className="text-xs text-white/60 hover:text-[#86efac] transition-colors">Informe del predio</Link>
             <Link to="/diseno" className="text-xs text-white/60 hover:text-[#86efac] transition-colors">Diseño de agroecosistemas</Link>

@@ -5,7 +5,7 @@ import { esquemaFichaSuelo, type FichaSueloFormulario } from '../esquemas/suelo'
 import { RANGOS_VALIDADOS, semaforoPara, type Semaforo } from '../datos/rangos';
 import { PropiedadesFisicas } from './PropiedadesFisicas';
 import { PropiedadesQuimicas } from './PropiedadesQuimicas';
-import { CapturaFoto } from './CapturaFoto';
+import { PropiedadesBiologicas } from './PropiedadesBiologicas';
 import { blobAUrl, coberturaVerde, type FotoLista } from '../servicios/fotos';
 import { baseDatos } from '../base_datos/local';
 import { Boton } from './ui/Boton';
@@ -217,72 +217,21 @@ export function FichaSueloWizard({ predioIdentificador }: { predioIdentificador:
         )}
 
         {paso === 'biologicas' && (
-          <>
-            <Grupo titulo="Campo: vida del suelo">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <label className="etiqueta-campo">Lombrices (cubo 20×20×20 cm)
-                  <input className="campo-entrada" type="number" step="1" min="0" {...register('lombricesConteo')} />
-                </label>
-                <Sel etiqueta="Nodulación en leguminosas" registro={register} nombre="nodulacion" opciones={OPCIONES.nodulacion} />
-                <Sel etiqueta="Olor del suelo" registro={register} nombre="olorSuelo" opciones={OPCIONES.olorSuelo} />
-                <Sel etiqueta="Descomposición de MO" registro={register} nombre="descomposicionMo" opciones={OPCIONES.descomposicionMo} />
-              </div>
-            </Grupo>
-            <Grupo titulo="Campo: puntuación visual VSA (0 pobre · 1 moderado · 2 bueno)">
-              <div className="grid gap-3 sm:grid-cols-2">
-                {INDICADORES_VSA.map((ind) => (
-                  <label key={ind} className="etiqueta-campo">{ind.replace('_', ' ')}
-                    <select
-                      className="campo-entrada"
-                      value={puntajes[ind] ?? ''}
-                      onChange={(e) => setPuntajes({ ...puntajes, [ind]: Number(e.target.value) })}
-                    >
-                      <option value="">—</option>
-                      <option value={0}>0 — pobre</option>
-                      <option value={1}>1 — moderado</option>
-                      <option value={2}>2 — bueno</option>
-                    </select>
-                  </label>
-                ))}
-              </div>
-            </Grupo>
-            <Grupo titulo="Laboratorio: biología">
-              <Num etiqueta="Respiración basal" unidad="mg C-CO₂/kg/día" paso="0.1" registro={register} nombre="respiracionSuelo" />
-              <Num etiqueta="Carbono biomasa microbiana" unidad="mg/kg" paso="0.1" registro={register} nombre="carbonoBiomasa" />
-              <label className="etiqueta-campo">Colonización micorrízica
-                <input className="campo-entrada" placeholder="Ej: 60 % raíces colonizadas" {...register('micorrizas')} />
-              </label>
-              <Num etiqueta="Cobertura vegetal" unidad="%" registro={register} nombre="coberturaVegetalPct" />
-            </Grupo>
-            <div className="border border-neutral-200 bg-white p-4 grid gap-3">
-              <h4 className="text-sm font-semibold text-[#141414]">Cobertura por foto cenital (Canopeo)</h4>
-              <p className="text-xs text-neutral-500">Foto vertical a ≥ 60 cm del dosel. Método: Patrignani &amp; Ochsner 2015, 100 % offline.</p>
-              <div className="flex gap-2 flex-wrap items-center">
-                <CapturaFoto
-                  texto="Foto cenital"
-                  tipo="cobertura"
-                  alCapturar={async (f) => {
-                    const pct = await coberturaVerde(f.blob);
-                    setFotoCobertura({ url: blobAUrl(f.miniatura), pct });
-                    setFotosEtapa((v) => [...v.filter((x) => x.tipo !== 'cobertura'), { ...f, coberturaPct: pct }]);
-                  }}
-                />
-                {fotoCobertura && (
-                  <>
-                    <img src={fotoCobertura.url} alt="Miniatura de cobertura" className="w-16 h-16 object-cover rounded-sm border border-neutral-200" />
-                    <span className="text-sm">Cobertura: <strong className="font-semibold text-[#1b5e20]">{fotoCobertura.pct} %</strong></span>
-                    <button
-                      type="button"
-                      onClick={() => setValue('coberturaVegetalPct', fotoCobertura.pct)}
-                      className="boton-campo px-4 py-2 text-sm font-semibold rounded-sm bg-[#1b5e20] text-white hover:bg-[#124116] transition-colors"
-                    >
-                      Usar en la ficha
-                    </button>
-                  </>
-                )}
-              </div>
-            </div>
-          </>
+          <PropiedadesBiologicas
+            registro={register}
+            valores={valores}
+            puntajes={puntajes}
+            setPuntajes={setPuntajes}
+            fotoCobertura={fotoCobertura}
+            alFotoCobertura={async (f) => {
+              const pct = await coberturaVerde(f.blob);
+              setFotoCobertura({ url: blobAUrl(f.miniatura), pct });
+              setFotosEtapa((v) => [...v.filter((x) => x.tipo !== 'cobertura'), { ...f, coberturaPct: pct }]);
+            }}
+            alUsarCobertura={(pct) => setValue('coberturaVegetalPct', pct)}
+            alIrResumen={() => setPaso('resumen')}
+            contexto={predioIdentificador}
+          />
         )}
 
         {paso === 'resumen' && (

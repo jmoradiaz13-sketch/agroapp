@@ -21,7 +21,7 @@ const TARJETAS = [
   {
     titulo: 'SIG para restauración ecológica',
     subtitulo: 'Usa mapas y datos espaciales para planificar la recuperación de suelos y coberturas.',
-    ruta: '/diagnostico',
+    ruta: '/sig',
     imagen: '/imagenes/5.jpg',
     alt: 'Paisaje en restauración ecológica',
   },
@@ -31,6 +31,7 @@ const CATEGORIAS = [
   { titulo: 'Predios', ruta: '/predios' },
   { titulo: 'Lotes', ruta: '/lote' },
   { titulo: 'Análisis de suelos', ruta: '/ficha' },
+  { titulo: 'SIG restauración', ruta: '/sig' },
   { titulo: 'Diseño', ruta: '/diseno' },
   { titulo: 'Diagnóstico', ruta: '/diagnostico' },
   { titulo: 'Informe', ruta: '/informe' },
@@ -60,8 +61,8 @@ const DESTACADOS: { titulo: string; enlaces: { texto: string; ruta: string }[] }
     enlaces: [
       { texto: 'Delimitar lote con GPS', ruta: '/lote' },
       { texto: 'Caracterización del lote', ruta: '/lote' },
-      { texto: 'Capas IGAC por polígono', ruta: '/lote' },
-      { texto: 'Pendiente y zonas homogéneas', ruta: '/diagnostico' },
+      { texto: 'Capas IGAC por polígono', ruta: '/sig' },
+      { texto: 'Pendiente y zonas homogéneas', ruta: '/sig' },
       { texto: 'Monitoreo por lote', ruta: '/lote' },
     ],
   },

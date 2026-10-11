@@ -146,7 +146,7 @@ export function PropiedadesFisicas({
 }) {
   const [indice, setIndice] = useState(0);
   const [menuAbierto, setMenuAbierto] = useState(false);
-  const marcoRef = useRef<HTMLDivElement>(null);
+  const barraRef = useRef<HTMLDivElement>(null);
   const [metodo, setMetodo] = useState('anillo');
   const [pesoSeco, setPesoSeco] = useState('');
   const [volumen, setVolumen] = useState('');
@@ -173,7 +173,7 @@ export function PropiedadesFisicas({
   const irA = (i: number) => setIndice(Math.max(0, Math.min(DIAPOSITIVAS.length - 1, i)));
 
   useEffect(() => {
-    marcoRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    barraRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, [indice]);
 
   return (
@@ -185,7 +185,7 @@ export function PropiedadesFisicas({
         </p>
       )}
 
-      <div className="bg-[#1b5e20] text-white rounded-sm px-4 py-3 flex flex-wrap items-center justify-between gap-2">
+      <div ref={barraRef} className="bg-[#1b5e20] text-white rounded-sm px-4 py-3 flex flex-wrap items-center justify-between gap-2 scroll-mt-28">
         <p className="text-[11px] font-medium tracking-wide text-white/70">Módulo · Propiedades físicas</p>
         <div className="flex items-center gap-2">
           <span className="text-[11px] font-semibold bg-white/15 rounded-full px-3 py-1">Variable · {DIAPOSITIVAS[indice].titulo}</span>
@@ -193,7 +193,7 @@ export function PropiedadesFisicas({
         </div>
       </div>
 
-      <div key={indice} className="animacion-entrada grid gap-3 lg:grid-cols-3">
+      <div key={indice} className="animacion-entrada bg-white border-2 border-[#1b5e20]/30 rounded-sm p-5 grid gap-3 lg:grid-cols-3 max-h-[calc(100vh-240px)] min-h-[320px] overflow-y-auto scroll-sutil content-start">
         {indice === 0 && (
           <>
             <Columna titulo="Fundamentos">

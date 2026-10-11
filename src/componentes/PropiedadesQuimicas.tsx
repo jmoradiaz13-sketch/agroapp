@@ -98,10 +98,10 @@ export function PropiedadesQuimicas({
 }) {
   const [indice, setIndice] = useState(0);
   const [menuAbierto, setMenuAbierto] = useState(false);
-  const marcoRef = useRef<HTMLDivElement>(null);
+  const barraRef = useRef<HTMLDivElement>(null);
   const irA = (i: number) => setIndice(Math.max(0, Math.min(DIAPOSITIVAS.length - 1, i)));
   useEffect(() => {
-    marcoRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    barraRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, [indice]);
   const v = (c: keyof FichaSueloFormulario) => {
     const x = valores[c];
@@ -117,7 +117,15 @@ export function PropiedadesQuimicas({
         </p>
       )}
 
-      <div ref={marcoRef} key={indice} className="animacion-entrada bg-white border border-neutral-200 rounded-sm p-5 grid gap-4 min-h-[420px] content-start scroll-mt-24">
+      <div ref={barraRef} className="bg-[#1b5e20] text-white rounded-sm px-4 py-3 flex flex-wrap items-center justify-between gap-2 scroll-mt-28">
+        <p className="text-[11px] font-medium tracking-wide text-white/70">Módulo · Propiedades químicas</p>
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] font-semibold bg-white/15 rounded-full px-3 py-1">Variable · {DIAPOSITIVAS[indice].titulo}</span>
+          <span className="text-[11px] text-white/60">{indice + 1} de {DIAPOSITIVAS.length}</span>
+        </div>
+      </div>
+
+      <div key={indice} className="animacion-entrada bg-white border-2 border-[#1b5e20]/30 rounded-sm p-5 grid gap-4 max-h-[calc(100vh-240px)] min-h-[320px] overflow-y-auto scroll-sutil content-start">
         {indice === 0 && (
           <>
             <div>

@@ -62,6 +62,7 @@ body {
 }
 .scroll-sutil::-webkit-scrollbar {
   height: 4px;
+  width: 4px;
 }
 .scroll-sutil::-webkit-scrollbar-track {
   background: transparent;
