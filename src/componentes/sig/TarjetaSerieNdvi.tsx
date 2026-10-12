@@ -30,7 +30,7 @@ export function TarjetaSerieNdvi({
                 <Tooltip />
                 <ReferenceLine y={0.3} stroke="#dc2626" strokeDasharray="4 3" />
                 <ReferenceLine y={0.6} stroke="#f59e0b" strokeDasharray="4 3" />
-                <Line type="monotone" dataKey="ndvi" stroke="#059669" strokeWidth={2.5} dot={{ r: 4 }} />
+                <Line type="monotone" dataKey="ndvi" stroke="#14736E" strokeWidth={2.5} dot={{ r: 4 }} />
               </LineChart>
             </ResponsiveContainer>
           </div>

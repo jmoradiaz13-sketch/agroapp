@@ -8,11 +8,11 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       manifest: {
-        name: 'AgroForestapp Campo',
-        short_name: 'AgroForestapp',
+        name: 'Surcos Campo',
+        short_name: 'Surcos',
         description: 'Gestión de fincas y suelos — funciona en campo sin conexión',
-        theme_color: '#134B42',
-        background_color: '#0a2520',
+        theme_color: '#0B2F31',
+        background_color: '#F6F1E4',
         display: 'standalone',
         lang: 'es-CO',
         icons: [

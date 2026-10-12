@@ -53,7 +53,7 @@ export type Semaforo = 'bajo' | 'optimo' | 'alto' | 'sin-dato';
 
 export const COLOR_SEMAFORO: Record<Semaforo, string> = {
   bajo: 'bg-red-600',
-  optimo: 'bg-[#059669]',
+  optimo: 'bg-[#14736E]',
   alto: 'bg-amber-500',
   'sin-dato': 'bg-neutral-300',
 };

@@ -145,7 +145,7 @@ export function Simulador() {
           <label className="etiqueta-campo">Área a simular (ha)
             <input className="campo-entrada" type="number" min={0.1} step={0.1} value={areaHa} onChange={(e) => setAreaHa(Number(e.target.value) || 1)} />
           </label>
-          <div><Boton onClick={() => setPaso('banco')}>Continuar al banco →</Boton></div>
+          <div><Boton onClick={() => setPaso('banco')}>Continuar al banco</Boton></div>
         </Tarjeta>
       )}
 

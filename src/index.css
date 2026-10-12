@@ -8,45 +8,178 @@
   min-height: 44px;
 }
 
-/* === AgroForestapp: tierra cálida + esmeralda (Modern Nature) === */
+/* === Surcos · Citrus Grove (claro por defecto) === */
 :root {
-  --fondo: #0a2520;
-  --fondo-profundo: #071a15;
-  --selva: #134b42;
-  --esmeralda: #10b981;
-  --esmeralda-claro: #6ee7b7;
-  --esmeralda-oscuro: #059669;
-  --calendula: #eea83b;
-  --terracota: #ca763b;
-  --salvia: #80917d;
-  --hoja: #aeba8a;
-  --ambar: #f59e0b;
-  --tierra: #d97706;
-  --arena: #e7d8b7;
-  --arcilla: #b08968;
-  --corteza: #5c3a1e;
-  --crema: #faf6ef;
-  --glass-borde: rgba(174, 186, 138, 0.16);
+  --fondo: #f6f1e4;
+  --panel: #f2e9d8;
+  --sup: #ffffff;
+  --sup-2: #f2e9d8;
+  --borde: #e0d3b8;
+  --borde-suave: #eae0cb;
+  --texto: #0b2f31;
+  --muted: #4e625e;
+  --faint: #8a9a90;
+  --ocre: #9a6f14;
+  --ocre-fuerte: #7a580e;
+  --marca: #0b2f31;
+  --marca-texto: #f2e9d8;
+  --marca-muted: rgba(242, 233, 216, 0.62);
+  --acento: #14736e;
+  --acento-fuerte: #0c4a46;
+  --acento-suave: #dce9e5;
+  --tierra: #5a6b3d;
+  --terracota: #d97a1a;
+  --calendula: #f6b23d;
+  --salvia: #5a6b3d;
+  --glass: rgba(255, 255, 255, 0.86);
+  --glass-borde: #e0d3b8;
+  --sombra-suave: 0 2px 10px rgba(11, 47, 49, 0.1);
+  color-scheme: light;
+}
+
+/* Modo oscuro tierra: cubre todo el sitio (cromo + tarjetas + páginas). */
+html.tema-oscuro {
+  --fondo: #08191b;
+  --panel: #0e2426;
+  --sup: #122b2d;
+  --sup-2: #162f31;
+  --borde: #234144;
+  --borde-suave: #1b3436;
+  --texto: #f2e9d8;
+  --muted: #a8b8ae;
+  --faint: #6e7f7a;
+  --ocre: #f6b23d;
+  --ocre-fuerte: #ffd47e;
+  --marca: #060f10;
+  --marca-texto: #f2e9d8;
+  --marca-muted: rgba(242, 233, 216, 0.6);
+  --acento: #3e9a90;
+  --acento-fuerte: #7fc4bb;
+  --acento-suave: #143435;
+  --tierra: #9aa578;
+  --terracota: #f28c18;
+  --calendula: #f6b23d;
+  --salvia: #7a8a5f;
+  --glass: rgba(18, 43, 45, 0.88);
+  --glass-borde: rgba(242, 233, 216, 0.14);
+  --sombra-suave: 0 2px 12px rgba(0, 0, 0, 0.45);
+  color-scheme: dark;
 }
 
 body {
   font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
   background:
-    linear-gradient(rgba(7, 26, 21, 0.72), rgba(7, 26, 21, 0.82)),
-    url("/imagenes/2.jpg") center / cover fixed no-repeat,
-    #0a2520;
-  color: #faf6ef;
+    radial-gradient(1200px 500px at 50% -10%, rgba(20, 115, 110, 0.1), transparent),
+    var(--fondo);
+  color: var(--texto);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
+html.tema-oscuro body {
+  background:
+    radial-gradient(1000px 480px at 50% -10%, rgba(242, 140, 24, 0.07), transparent),
+    var(--fondo);
+}
 
-/* Display sobrio de la referencia: Inter extra-negrita compacta (no serif) */
+/* Display grotesco sobrio (Monolog): Inter tight, peso alto, sin serif. */
 .font-display {
   font-family: "Inter", "Segoe UI", system-ui, sans-serif;
-  font-weight: 800;
-  letter-spacing: -0.025em;
-  line-height: 1.05;
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1.0;
+}
+
+/* Kicker estilo Monolog: mono, mayúsculas, tracking amplio. */
+.kicker {
+  font-family: ui-monospace, "Cascadia Mono", "SF Mono", Menlo, Consolas, monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* Micro-etiqueta mono (contadores, insignias técnicas). */
+.mono-micro {
+  font-family: ui-monospace, "Cascadia Mono", "SF Mono", Menlo, Consolas, monospace;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* Easing profesional (expo-out Monolog). */
+:root {
+  --expo: cubic-bezier(0.2, 1, 0.36, 1);
+}
+
+/* Botón píldora Monolog: etiqueta + lateral con flecha deslizante. */
+.btn-mono {
+  display: inline-flex;
+  align-items: stretch;
+  border-radius: 0;
+  font-weight: 600;
+  font-size: 0.875rem;
+  line-height: 1;
+  overflow: hidden;
+  transition: transform 0.35s var(--expo), opacity 0.3s ease, background-color 0.25s ease;
+}
+.btn-mono:hover {
+  opacity: 0.92;
+}
+.btn-mono:active {
+  transform: scale(0.95);
+}
+.btn-mono-primario {
+  background: var(--marca);
+  color: var(--marca-texto);
+}
+.btn-mono-secundario {
+  background: transparent;
+  color: var(--texto);
+  border: 1px solid var(--texto);
+}
+.btn-mono-acento {
+  background: transparent;
+  color: var(--texto);
+  border: 1px solid var(--acento);
+}
+.btn-mono-etiqueta {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.8rem 1.4rem;
+  white-space: nowrap;
+}
+.btn-mono-lateral {
+  display: grid;
+  place-items: center;
+  padding: 0 1rem;
+  border-left: 1px solid rgba(128, 128, 128, 0.4);
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+}
+.btn-mono-flecha {
+  display: inline-block;
+  transition: transform 0.5s var(--expo);
+}
+.group:hover .btn-mono-flecha {
+  transform: translate(3px, -3px);
+}
+
+/* Fila-menú Monolog: texto que se desplaza + flecha que entra. */
+.fila-menu {
+  transition: transform 0.5s var(--expo);
+}
+.group:hover .fila-menu {
+  transform: translateX(8px);
+}
+.fila-flecha {
+  opacity: 0.35;
+  transition: transform 0.5s var(--expo), opacity 0.3s ease;
+}
+.group:hover .fila-flecha {
+  transform: translateX(6px);
+  opacity: 1;
 }
 
 /* Números de datos siempre tabulares */
@@ -99,27 +232,27 @@ body {
 }
 .scroll-sutil::-webkit-scrollbar-thumb {
   background: #d4d4d4;
-  border-radius: 9999px;
+  border-radius: 0;
 }
 .scroll-sutil::-webkit-scrollbar-thumb:hover {
-  background: #10b981;
+  background: var(--acento);
 }
 
-/* === Formularios y mensajes (esquema sólido blanco/verde/negro) === */
+/* === Formularios y mensajes (superficies del tema) === */
 .campo-entrada {
-  border: 1px solid #d4d4d4;
-  border-radius: 2px;
+  border: 1px solid var(--borde);
+  border-radius: 0;
   padding: 0.65rem 0.75rem;
   min-height: 44px;
   width: 100%;
   font-size: 1rem;
-  background: #fff;
-  color: #1a1a1a;
+  background: var(--sup);
+  color: var(--texto);
 }
 .campo-entrada:focus {
-  outline: 2px solid #10b981;
+  outline: 2px solid var(--acento);
   outline-offset: 0;
-  border-color: #10b981;
+  border-color: var(--acento);
 }
 .etiqueta-campo {
   display: grid;
@@ -127,47 +260,149 @@ body {
   font-size: 0.8rem;
   font-weight: 600;
   letter-spacing: 0.01em;
-  color: #404040;
+  color: var(--muted);
 }
 .etiqueta-campo .campo-entrada {
   text-transform: none;
   font-weight: 400;
 }
 .mensaje-ok {
-  background: #f0fdf4;
-  border: 1px solid #6ee7b7;
-  color: #14532d;
+  background: var(--acento-suave);
+  border: 1px solid var(--acento);
+  color: var(--texto);
   padding: 0.6rem 0.75rem;
   font-size: 0.85rem;
+  border-radius: 0;
 }
 .mensaje-error {
-  background: #fef2f2;
-  border: 1px solid #fca5a5;
+  background: rgba(220, 38, 38, 0.08);
+  border: 1px solid #e8a0a0;
   color: #991b1b;
   padding: 0.6rem 0.75rem;
   font-size: 0.85rem;
+  border-radius: 0;
+}
+html.tema-oscuro .mensaje-error {
+  color: #f3b8b8;
+  border-color: #6b3434;
 }
 .mensaje-info {
-  background: #f5f5f5;
-  border-left: 4px solid #10b981;
+  background: var(--sup-2);
+  border-left: 4px solid var(--acento);
   padding: 0.6rem 0.75rem;
   font-size: 0.85rem;
-  color: #404040;
+  color: var(--muted);
+  border-radius: 0;
 }
 
-/* === Glass sutil y práctico: superficies frost sobre slate, sin sombras pesadas === */
+/* === Superficies: glass y tarjetas adaptadas al tema === */
 .glass {
-  background: rgba(10, 37, 32, 0.86);
+  background: var(--glass);
   backdrop-filter: blur(18px) saturate(1.1);
   -webkit-backdrop-filter: blur(18px) saturate(1.1);
   border: 1px solid var(--glass-borde);
-  box-shadow: 0 12px 32px -16px rgba(0, 0, 0, 0.55);
+  box-shadow: var(--sombra-suave);
+  color: var(--texto);
 }
 .glass-claro {
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--sup-2);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid var(--borde-suave);
+  color: var(--texto);
+}
+
+/* === Guardia de legibilidad en modo claro: el vidrio es claro, el texto heredado
+   oscuro de antes (text-white) se adapta sin tocar la lógica de cada página === */
+html:not(.tema-oscuro) .glass [class*="text-white"]:not([class*="bg-"]) {
+  color: var(--texto);
+}
+html:not(.tema-oscuro) .glass [class*="border-white"] {
+  border-color: var(--borde);
+}
+html:not(.tema-oscuro) .glass [class*="bg-white/"] {
+  background-color: rgba(46, 33, 24, 0.06);
+}
+html:not(.tema-oscuro) .glass [class*="text-emerald-300"] {
+  color: var(--acento-fuerte);
+}
+
+/* === Cuadrado Monolog: cero redondeos en todo el sitio === */
+html [class*="rounded"] {
+  border-radius: 0 !important;
+}
+
+/* === Chao emerald decorativo: sólidos a marca, textos a texto, bordes a borde === */
+html [class*="bg-emerald-500"],
+html [class*="bg-emerald-600"],
+html [class*="bg-emerald-700"],
+html [class*="bg-[#059669]"],
+html [class*="#047857"] {
+  background-color: var(--marca) !important;
+  color: var(--marca-texto) !important;
+}
+html [class*="bg-green-50"] {
+  background-color: var(--acento-suave) !important;
+}
+html [class*="bg-emerald-50"],
+html [class*="bg-emerald-100"] {
+  background-color: var(--acento-suave) !important;
+}
+html [class*="text-emerald-"] {
+  color: var(--texto) !important;
+}
+html [class*="border-emerald-"],
+html [class*="border-[#059669]"] {
+  border-color: var(--borde) !important;
+}
+html [class*="accent-"] {
+  accent-color: var(--acento);
+}
+
+/* Interruptor de tema sobrio: cuadrado, borde texto, invierte al hover. */
+.interruptor {
+  background: transparent;
+  border: 1px solid var(--faint);
+}
+.interruptor:hover {
+  background: var(--marca);
+  color: var(--marca-texto) !important;
+  border-color: var(--marca);
+}
+.interruptor-invertido {
+  background: transparent;
+  border: 1px solid var(--marca-muted);
+}
+.interruptor-invertido:hover {
+  background: var(--marca-texto);
+  color: var(--marca) !important;
+  border-color: var(--marca-texto);
+}
+
+/* Footer sobre marca: enlaces con hover legible en ambos temas */
+footer a {
+  color: var(--marca-muted);
+}
+footer a:hover {
+  color: var(--marca-texto);
+}
+
+/* Ítems del menú desplegable: hover del tema */
+.item-menu:hover {
+  background: var(--sup-2);
+}
+
+/* Enlaces del footer: flecha que entra al hover (Monolog). */
+footer nav a::after {
+  content: '→';
+  margin-left: 0.45rem;
+  opacity: 0;
+  display: inline-block;
+  transition: transform 0.5s var(--expo), opacity 0.3s ease;
+}
+footer nav a:hover::after {
+  opacity: 1;
+  transform: translateX(4px);
 }
 
 /* Anillo de foco visible (teclado y táctil) */
@@ -175,7 +410,7 @@ body {
 .campo-entrada:focus-visible,
 a:focus-visible,
 button:focus-visible {
-  outline: 2px solid var(--esmeralda-claro);
+  outline: 2px solid var(--acento);
   outline-offset: 2px;
 }
 
@@ -187,41 +422,69 @@ button:focus-visible {
   }
 }
 
-/* === Tema claro (interruptor): misma app, superficies crema === */
-.tema-claro body {
-  background:
-    linear-gradient(rgba(245, 239, 225, 0.82), rgba(245, 239, 225, 0.9)),
-    url("/imagenes/2.jpg") center / cover fixed no-repeat,
-    #f5efe1;
-  color: #1e150e;
+/* === Bloques heredados verde-selva: se tiñen a corteza sobria en ambos temas === */
+.bg-selva,
+.bg-selva-oscuro,
+.bg-selva-profundo {
+  background-color: var(--marca) !important;
 }
-.tema-claro .glass {
-  background: rgba(255, 255, 255, 0.8);
-  border-color: rgba(92, 58, 30, 0.22);
+html.tema-oscuro .bg-selva,
+html.tema-oscuro .bg-selva-oscuro,
+html.tema-oscuro .bg-selva-profundo {
+  background-color: #0f0c09 !important;
 }
-.tema-claro .glass-claro {
-  background: rgba(255, 255, 255, 0.7);
-  border-color: rgba(92, 58, 30, 0.2);
+
+/* === Modo oscuro total: tarjetas y textos claros de Tailwind se adaptan === */
+html.tema-oscuro .bg-white {
+  background-color: var(--sup) !important;
 }
-.tema-claro [class*="bg-selva"] {
-  background-color: #ece1cb;
+html.tema-oscuro .bg-neutral-50,
+html.tema-oscuro .bg-neutral-100,
+html.tema-oscuro .bg-slate-50,
+html.tema-oscuro .bg-emerald-50 {
+  background-color: var(--sup-2) !important;
 }
-.tema-claro [class*="bg-selva"][class*="text-white"]:not([class*="bg-emerald"]),
-.tema-claro [class*="bg-selva"] [class*="text-white"]:not([class*="bg-emerald"]),
-.tema-claro .glass [class*="text-white"]:not([class*="bg-emerald"]) {
-  color: #1e150e;
+html.tema-oscuro .border-neutral-200,
+html.tema-oscuro .border-neutral-300,
+html.tema-oscuro .border-slate-200 {
+  border-color: var(--borde) !important;
 }
-.tema-claro [class*="bg-emerald-500/20"] {
-  color: #0d332c;
+html.tema-oscuro .text-neutral-600,
+html.tema-oscuro .text-neutral-700,
+html.tema-oscuro .text-slate-900,
+html.tema-oscuro .text-humus {
+  color: var(--texto) !important;
 }
-.tema-claro .glass [class*="emerald-300"] {
-  color: #0d7a5f;
+html.tema-oscuro .text-neutral-500,
+html.tema-oscuro .text-neutral-400,
+html.tema-oscuro .text-slate-500 {
+  color: var(--muted) !important;
 }
-/* Píldora activa oscura en claro (referencia: pill negra) */
-.tema-claro aside [class*="bg-emerald-500/20"] {
-  background-color: #0d332c;
-  color: #fff;
+html.tema-oscuro .bg-red-100 {
+  background-color: rgba(220, 38, 38, 0.16) !important;
 }
-.tema-claro nav[aria-label="Navegación de campo"] [class*="emerald-300"] {
-  color: #0d7a5f;
+html.tema-oscuro .text-red-800 {
+  color: #f3b8b8 !important;
+}
+html.tema-oscuro .border-red-300 {
+  border-color: #6b3434 !important;
+}
+html.tema-oscuro .bg-amber-100 {
+  background-color: rgba(245, 158, 11, 0.16) !important;
+}
+html.tema-oscuro .text-amber-900 {
+  color: #f3d9a8 !important;
+}
+html.tema-oscuro .border-amber-300 {
+  border-color: #6b5223 !important;
+}
+html.tema-oscuro .bg-emerald-100 {
+  background-color: rgba(143, 190, 150, 0.16) !important;
+}
+html.tema-oscuro .text-emerald-800,
+html.tema-oscuro .text-emerald-700 {
+  color: #bfe0c4 !important;
+}
+html.tema-oscuro .border-emerald-300 {
+  border-color: #33523a !important;
 }

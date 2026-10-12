@@ -26,7 +26,7 @@ export function Comparador({
               v > 0 ? (
                 <span
                   key={uso}
-                  style={{ width: `${v}%`, background: uso.includes('Conserv') || uso.includes('Corredor') ? '#555555' : uso.includes('SAF') ? '#2d6a4f' : '#059669' }}
+                    style={{ width: `${v}%`, background: uso.includes('Conserv') || uso.includes('Corredor') ? '#555555' : uso.includes('SAF') ? '#2d6a4f' : '#14736E' }}
                   title={`${uso} ${v} %`}
                 />
               ) : null

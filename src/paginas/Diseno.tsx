@@ -13,7 +13,7 @@ const PASOS: { id: Paso; titulo: string }[] = [
 ];
 
 const USOS = [
-  { clave: 'Cultivos', color: '#059669' },
+  { clave: 'Cultivos', color: '#14736E' },
   { clave: 'SAF / agroforestería', color: '#2d6a4f' },
   { clave: 'Pecuario', color: '#b08968' },
   { clave: 'Conservación / parches', color: '#555555' },
@@ -193,7 +193,7 @@ export function PaginaDiseno() {
               <input className="campo-entrada" value={zonaClima} onChange={(e) => setZonaClima(e.target.value)} placeholder="Ej: Orinoquía, cálido húmedo" />
             </label>
           </div>
-          <div><Boton onClick={() => setPaso('espacial')}>Continuar al diseño espacial →</Boton></div>
+          <div><Boton onClick={() => setPaso('espacial')}>Continuar al diseño espacial</Boton></div>
         </section>
       )}
 
@@ -235,7 +235,7 @@ export function PaginaDiseno() {
           )}
           <div className="flex gap-2 flex-wrap">
             <BotonSecundario onClick={() => setPaso('origen')}>← Volver</BotonSecundario>
-            <Boton onClick={() => setPaso('componentes')}>Continuar a componentes →</Boton>
+            <Boton onClick={() => setPaso('componentes')}>Continuar a componentes</Boton>
           </div>
         </section>
       )}
@@ -285,7 +285,7 @@ export function PaginaDiseno() {
           </div>
           <div className="flex gap-2 flex-wrap">
             <BotonSecundario onClick={() => setPaso('espacial')}>← Volver</BotonSecundario>
-            <Boton onClick={() => setPaso('resumen')}>Ver resumen →</Boton>
+            <Boton onClick={() => setPaso('resumen')}>Ver resumen</Boton>
           </div>
         </section>
       )}

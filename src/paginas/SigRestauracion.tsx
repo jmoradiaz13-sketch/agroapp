@@ -229,7 +229,7 @@ export function SigRestauracion() {
       <section className="bg-selva text-white p-4 sm:p-5 grid gap-3 sm:grid-cols-[1fr_auto] sm:items-center rounded-sm" aria-label="Estado offline">
         <div className="grid gap-1">
           <p className="text-sm font-semibold flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#6ee7b7] animate-pulse" aria-hidden />
+            <span className="w-2 h-2 rounded-full bg-[#7FC4BB] animate-pulse" aria-hidden />
             Trabajando en {id} · modo campo offline
           </p>
           <p className="text-xs text-white/60">

@@ -133,8 +133,11 @@ export interface ResultadoRusle {
   perdida_t_ha_ano: number;
   clase: string;
   manejo: string;
-  factores: { r: number; k: number; ls: number; l: number; s: number; m: number; c: number; p: number };
+  nivel_riesgo?: string;
+  semaforo?: string;
+  guardian_erosion?: boolean;
   fuente: string;
+  factores: { r: number; k: number; ls: number; l: number; s: number; m: number; c: number; p: number };
 }
 
 export async function estimarRusle(params: {

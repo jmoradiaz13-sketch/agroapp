@@ -1,53 +1,54 @@
-// Navegación única PC/móvil (ref_1 sidebar + ref_2 bottom tabs).
-// El sidebar usa estos ítems; la barra inferior móvil usa los 4 de TABS_MOVIL.
+// Navegación horizontal por grupos (estilo Genially/Tec): la barra superior
+// agrupa escenas; el Tablero (/) es la puerta de entrada. En móvil mandan
+// el header compacto + TABS_MOVIL. Iconos de línea propios, uso libre.
+import type { IconoId } from '../componentes/Iconos';
+
 export interface ItemNav {
   id: string;
   ruta: string;
   titulo: string;
-  icono: string;
+  icono: IconoId;
+}
+
+export interface GrupoNav {
+  id: string;
+  titulo: string;
+  items: ItemNav[];
 }
 
 export const MENU_VERDE: ItemNav[] = [
-  { id: 'inicio', ruta: '/', titulo: 'Dashboard', icono: '📊' },
-  { id: 'predios', ruta: '/predios', titulo: 'Predios', icono: '🏡' },
-  { id: 'lote', ruta: '/lote', titulo: 'Lotes', icono: '🗺' },
-  { id: 'ficha', ruta: '/ficha', titulo: 'Suelos', icono: '🧪' },
-  { id: 'sig', ruta: '/sig', titulo: 'SIG', icono: '🛰' },
-  { id: 'simulador', ruta: '/simulador', titulo: 'Simulador', icono: '⚗' },
-  { id: 'diseno', ruta: '/diseno', titulo: 'Diseño', icono: '🌳' },
-  { id: 'diagnostico', ruta: '/diagnostico', titulo: 'Diagnóstico', icono: '📈' },
-  { id: 'informe', ruta: '/informe', titulo: 'Informe', icono: '📄' },
-  { id: 'biblioteca', ruta: '/biblioteca', titulo: 'Biblioteca', icono: '📚' },
+  { id: 'inicio', ruta: '/', titulo: 'Tablero', icono: 'dashboard' },
+  { id: 'predios', ruta: '/predios', titulo: 'Predios', icono: 'predios' },
+  { id: 'lote', ruta: '/lote', titulo: 'Lotes', icono: 'lotes' },
+  { id: 'ficha', ruta: '/ficha', titulo: 'Suelos', icono: 'suelos' },
+  { id: 'sig', ruta: '/sig', titulo: 'SIG', icono: 'sig' },
+  { id: 'simulador', ruta: '/simulador', titulo: 'Simulador', icono: 'simulador' },
+  { id: 'diseno', ruta: '/diseno', titulo: 'Diseño SAF', icono: 'diseno' },
+  { id: 'diagnostico', ruta: '/diagnostico', titulo: 'Diagnóstico', icono: 'diagnostico' },
+  { id: 'informe', ruta: '/informe', titulo: 'Informe', icono: 'informe' },
+  { id: 'biblioteca', ruta: '/biblioteca', titulo: 'Biblioteca', icono: 'biblioteca' },
+];
+
+const POR_ID: Record<string, ItemNav> = Object.fromEntries(MENU_VERDE.map((m) => [m.id, m]));
+
+// Grupos del menú horizontal (5, como las secciones del referente).
+export const GRUPOS_NAV: GrupoNav[] = [
+  { id: 'finca', titulo: 'Finca', items: [POR_ID.predios, POR_ID.lote] },
+  { id: 'suelo', titulo: 'Suelo', items: [POR_ID.ficha, POR_ID.diagnostico] },
+  { id: 'territorio', titulo: 'Territorio', items: [POR_ID.sig] },
+  { id: 'plan', titulo: 'Plan', items: [POR_ID.simulador, POR_ID.diseno, POR_ID.informe] },
+  { id: 'aprende', titulo: 'Aprende', items: [POR_ID.biblioteca] },
 ];
 
 export const TABS_MOVIL: ItemNav[] = [
-  { id: 'inicio', ruta: '/', titulo: 'Finca', icono: '🏡' },
-  { id: 'ficha', ruta: '/ficha', titulo: 'Suelo', icono: '🧪' },
-  { id: 'sig', ruta: '/sig', titulo: 'Mapa SIG', icono: '🛰' },
-  { id: 'simulador', ruta: '/simulador', titulo: 'Plan', icono: '🌱' },
-];
-
-export interface Herramienta {
-  titulo: string;
-  ruta?: string;
-  insignia: string;
-  proximo?: boolean;
-}
-
-// Fila de herramientas por conectividad (AGENTS §4).
-export const MENU_NEGRO: Herramienta[] = [
-  { titulo: 'Mapa GPS', ruta: '/lote', insignia: 'OFFLINE' },
-  { titulo: 'Análisis VSA', ruta: '/ficha', insignia: 'OFFLINE' },
-  { titulo: 'Análisis lab', ruta: '/ficha', insignia: 'OFFLINE' },
-  { titulo: 'Monitoreo', ruta: '/lote', insignia: 'OFFLINE' },
-  { titulo: 'Pendiente / RUSLE', ruta: '/sig', insignia: 'MIXTO' },
-  { titulo: 'Capas IGAC', ruta: '/sig', insignia: 'MIXTO' },
-  { titulo: 'NDVI satelital', ruta: '/sig', insignia: 'ONLINE' },
-  { titulo: 'Simulador', ruta: '/simulador', insignia: 'MIXTO' },
+  { id: 'inicio', ruta: '/', titulo: 'Finca', icono: 'predios' },
+  { id: 'ficha', ruta: '/ficha', titulo: 'Suelo', icono: 'suelos' },
+  { id: 'sig', ruta: '/sig', titulo: 'Mapa', icono: 'sig' },
+  { id: 'simulador', ruta: '/simulador', titulo: 'Plan', icono: 'simulador' },
 ];
 
 export const TITULOS_RUTA: Record<string, string> = {
-  '/': 'Dashboard',
+  '/': 'Tablero',
   '/predios': 'Predios',
   '/lote': 'Lotes',
   '/ficha': 'Análisis de suelos',

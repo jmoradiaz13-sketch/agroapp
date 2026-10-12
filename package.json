@@ -1,9 +1,9 @@
 {
-  "name": "agroforestapp",
+  "name": "surcos",
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "AgroForestapp frontend: gestión de fincas y suelos offline-first (WGS84 EPSG:4326)",
+  "description": "Surcos frontend: gestión de fincas y suelos offline-first (WGS84 EPSG:4326)",
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",

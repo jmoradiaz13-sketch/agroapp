@@ -91,7 +91,7 @@ export const FECHAS_NDVI = [
 ];
 
 export const LEYENDA_PENDIENTE = [
-  { rango: '< 7 %', color: '#059669', texto: 'Plano · mecanizable' },
+  { rango: '< 7 %', color: '#14736E', texto: 'Plano · mecanizable' },
   { rango: '7–25 %', color: '#f59e0b', texto: 'Ondulado · curvas a nivel' },
   { rango: '> 25 %', color: '#dc2626', texto: 'Empinado · cobertura permanente' },
 ];
@@ -99,5 +99,5 @@ export const LEYENDA_PENDIENTE = [
 export const LEYENDA_NDVI = [
   { rango: '< 0,3', color: '#dc2626', texto: 'Suelo desnudo / estrés' },
   { rango: '0,3–0,6', color: '#f59e0b', texto: 'Transición · verificar' },
-  { rango: '> 0,6', color: '#059669', texto: 'Vigoroso' },
+  { rango: '> 0,6', color: '#14736E', texto: 'Vigoroso' },
 ];

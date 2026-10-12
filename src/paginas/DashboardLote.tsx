@@ -63,7 +63,7 @@ export function DashboardLote() {
       <PanelMonitoreo />
       <Tarjeta titulo="Siguiente paso">
         <div className="flex gap-2 flex-wrap">
-          <Link to="/ficha" onClick={() => fijarLote('general')}><Boton>Ir a ficha →</Boton></Link>
+          <Link to="/ficha" onClick={() => fijarLote('general')}><Boton>Ir a ficha</Boton></Link>
           <Link to="/diagnostico" className="boton-campo inline-flex items-center px-5 py-2.5 font-semibold text-sm text-emerald-700 underline underline-offset-4">
             Ver diagnóstico →
           </Link>
