@@ -27,7 +27,7 @@ export function AsistenteEtapas() {
         <span className="text-xs font-semibold text-emerald-300">{total} % planificado</span>
       </div>
       <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden" role="progressbar" aria-valuenow={total} aria-valuemin={0} aria-valuemax={100} aria-label="Avance de la ruta">
-        <div className="h-full bg-emerald-500 rounded-full transition-all duration-500" style={{ width: `${total}%` }} />
+            <div className="h-full transition-all duration-500" style={{ width: `${total}%`, background: 'var(--acento)' }} />
       </div>
       <ol className="scroll-sutil flex flex-nowrap gap-2 overflow-x-auto pb-1">
         {etapas.map((e) => (

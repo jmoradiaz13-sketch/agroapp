@@ -67,12 +67,12 @@ export function MapaSig({
         {verIgac && geoGuardado.length === 0 && (!mostrarWms || !enLinea) && (
           <GeoJSON
             data={POLIGONO_DEMO as unknown as GeoJSON.GeoJsonObject}
-            style={{ color: '#059669', weight: 2, dashArray: '6 4', fillOpacity: 0 }}
+            style={{ color: '#14736E', weight: 2, dashArray: '6 4', fillOpacity: 0 }}
           />
         )}
         {verPendiente && (
           <>
-            <Rectangle bounds={[[4.63, -74.06], [4.64, -74.045]]} pathOptions={{ color: '#059669', fillColor: '#059669', fillOpacity: opacidad }}><Popup>Plano &lt; 7 % · mecanizable</Popup></Rectangle>
+            <Rectangle bounds={[[4.63, -74.06], [4.64, -74.045]]} pathOptions={{ color: '#14736E', fillColor: '#14736E', fillOpacity: opacidad }}><Popup>Plano &lt; 7 % · mecanizable</Popup></Rectangle>
             <Rectangle bounds={[[4.64, -74.06], [4.65, -74.045]]} pathOptions={{ color: '#f59e0b', fillColor: '#f59e0b', fillOpacity: opacidad }}><Popup>Ondulado 7–25 % · curvas a nivel</Popup></Rectangle>
             <Rectangle bounds={[[4.65, -74.06], [4.66, -74.045]]} pathOptions={{ color: '#dc2626', fillColor: '#dc2626', fillOpacity: opacidad }}><Popup>Empinado &gt; 25 % · cobertura permanente</Popup></Rectangle>
           </>
@@ -80,7 +80,7 @@ export function MapaSig({
         {verNdvi && (
           <>
             <Rectangle bounds={[[4.63, -74.045], [4.645, -74.03]]} pathOptions={{ color: '#dc2626', fillColor: '#dc2626', fillOpacity: opacidad }}><Popup>NDVI &lt; 0,3 · verificar en campo</Popup></Rectangle>
-            <Rectangle bounds={[[4.645, -74.045], [4.66, -74.03]]} pathOptions={{ color: '#059669', fillColor: '#059669', fillOpacity: opacidad }}><Popup>NDVI &gt; 0,6 · vigoroso</Popup></Rectangle>
+            <Rectangle bounds={[[4.645, -74.045], [4.66, -74.03]]} pathOptions={{ color: '#14736E', fillColor: '#14736E', fillOpacity: opacidad }}><Popup>NDVI &gt; 0,6 · vigoroso</Popup></Rectangle>
           </>
         )}
         {posGps && (

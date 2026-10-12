@@ -5,16 +5,22 @@ import type { Hallazgo, DecisionTecnico } from '../esquemas/diagnostico';
 export function TarjetaDiagnostico({ hallazgo }: { hallazgo: Hallazgo }) {
   const [decision, setDecision] = useState<DecisionTecnico | null>(null);
   const [detalle, setDetalle] = useState(false);
-  const color =
-    hallazgo.estado === 'optimo' ? 'border-l-green-600'
-    : hallazgo.estado === 'deficiente' ? 'border-l-yellow-500'
-    : 'border-l-red-600';
+  const semaforo =
+    hallazgo.estado === 'optimo'
+      ? { borde: 'border-l-green-600', insignia: 'bg-emerald-100 text-emerald-800 border-emerald-300', punto: 'bg-green-600', texto: 'Óptimo' }
+      : hallazgo.estado === 'deficiente'
+        ? { borde: 'border-l-red-600', insignia: 'bg-red-100 text-red-800 border-red-300', punto: 'bg-red-600', texto: 'Deficiente' }
+        : { borde: 'border-l-yellow-500', insignia: 'bg-amber-100 text-amber-900 border-amber-300', punto: 'bg-amber-500', texto: 'Exceso' };
 
   return (
-    <article className={`bg-white border border-neutral-200 border-l-4 p-4 ${color}`}>
+    <article className={`bg-white border border-neutral-200 border-l-4 p-4 rounded-xl shadow-sm tarjeta-naturaleza ${semaforo.borde}`}>
       <header className="flex flex-wrap gap-2 justify-between items-center">
-        <h3 className="font-semibold text-humus">{hallazgo.parametro} — {hallazgo.valor} {hallazgo.unidad} ({hallazgo.estado})</h3>
-        <button className="boton-campo text-sm font-semibold text-emerald-700 underline underline-offset-4" onClick={() => setDetalle((v) => !v)}>
+        <h3 className="font-semibold text-humus flex items-center gap-2">
+          <span className={`inline-block w-2.5 h-2.5 rounded-full ${semaforo.punto}`} aria-hidden />
+          {hallazgo.parametro} — <span className="numeros">{hallazgo.valor} {hallazgo.unidad}</span>
+          <span className={`text-[11px] font-bold rounded-full px-2 py-0.5 border ${semaforo.insignia}`}>{semaforo.texto}</span>
+        </h3>
+        <button className="boton-campo text-sm font-semibold text-emerald-700 underline underline-offset-4" onClick={() => setDetalle((v) => !v)} aria-expanded={detalle}>
           {detalle ? 'Ocultar' : 'Por qué'}
         </button>
       </header>

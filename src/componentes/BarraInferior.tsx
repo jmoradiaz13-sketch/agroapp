@@ -1,27 +1,36 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import { TABS_MOVIL } from '../datos/navegacion';
+import { Icono } from './Iconos';
 
-// Bottom tabs móvil (ref_2): 4 destinos campo. Solo <lg; en PC manda el sidebar.
-// Con padding seguro para gestos del sistema.
+// Bottom tabs móvil a juego con la lateral tierra: panel crema, iconos de línea,
+// activo en corteza con pastilla blanca.
 export function BarraInferior() {
   const ubicacion = useLocation();
   void ubicacion;
   return (
     <nav
-      className="lg:hidden fixed bottom-0 inset-x-0 z-50 bg-selva-profundo/92 backdrop-blur border-t border-emerald-500/20 grid grid-cols-4"
-      style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+      className="lg:hidden fixed bottom-0 inset-x-0 z-50 grid grid-cols-4 rounded-t-3xl"
+      style={{ background: 'var(--panel)', backdropFilter: 'blur(12px)', borderTop: '1px solid var(--borde)', paddingBottom: 'env(safe-area-inset-bottom)' }}
       aria-label="Navegación de campo"
     >
       {TABS_MOVIL.map((t) => (
         <NavLink
           key={t.id}
           to={t.ruta}
-          className={({ isActive }) => `boton-campo flex flex-col items-center justify-center gap-0.5 py-2 text-[11px] font-semibold transition-colors ${
-            isActive ? 'text-emerald-300' : 'text-white/55 hover:text-white'
-          }`}
+          className="boton-campo flex flex-col items-center justify-center gap-1 py-2.5 text-[11px] font-semibold transition-colors"
+          style={({ isActive }) => ({ color: isActive ? 'var(--texto)' : 'var(--faint)' })}
         >
-          <span className="text-xl leading-none" aria-hidden>{t.icono}</span>
-          {t.titulo}
+          {({ isActive }) => (
+            <>
+              <span
+                className="rounded-xl px-4 py-1 grid place-items-center"
+                style={isActive ? { background: 'var(--sup)', boxShadow: 'var(--sombra-suave)', border: '1px solid var(--borde-suave)' } : undefined}
+              >
+                <Icono id={t.icono} />
+              </span>
+              {t.titulo}
+            </>
+          )}
         </NavLink>
       ))}
     </nav>

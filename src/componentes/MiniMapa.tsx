@@ -27,7 +27,7 @@ function Encuadrar({ lotes }: { lotes: LoteLocal[] }) {
 // Solo lectura; el dibujo vive en /lote y el análisis en /sig.
 export function MiniMapa({ lotes }: { lotes: LoteLocal[] }) {
   if (lotes.length === 0) {
-    return <p className="text-sm text-white/60">Sin lotes dibujados. Delimita el primero en el mapa.</p>;
+    return <p className="text-sm" style={{ color: 'var(--muted)' }}>Sin lotes dibujados. Delimita el primero en el mapa.</p>;
   }
   return (
     <MapContainer
@@ -44,7 +44,7 @@ export function MiniMapa({ lotes }: { lotes: LoteLocal[] }) {
         <GeoJSON
           key={l.id ?? l.nombre}
           data={l.geometria as unknown as GeoJSON.GeoJsonObject}
-          style={{ color: '#059669', weight: 2, fillColor: '#10b981', fillOpacity: 0.3 }}
+          style={{ color: '#14736E', weight: 2, fillColor: '#14736E', fillOpacity: 0.3 }}
         />
       ))}
       <Encuadrar lotes={lotes} />

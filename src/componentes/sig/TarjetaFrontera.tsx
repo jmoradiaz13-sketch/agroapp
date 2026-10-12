@@ -40,7 +40,7 @@ export function TarjetaFrontera({ predioId }: { predioId: string }) {
         <div className="grid gap-1 border border-neutral-200 p-3">
           <p className="text-sm font-semibold">{frontera.municipio} · {frontera.total_ha.toLocaleString('es-CO')} ha en frontera</p>
           <div className="h-3 w-full flex overflow-hidden rounded-sm border border-neutral-200" aria-hidden>
-            <span style={{ width: `${(frontera.no_condicionada_ha / frontera.total_ha) * 100}%`, background: '#059669' }} />
+              <span style={{ width: `${(frontera.no_condicionada_ha / frontera.total_ha) * 100}%`, background: '#14736E' }} />
             <span style={{ width: `${(frontera.condicionada_ha / frontera.total_ha) * 100}%`, background: '#f59e0b' }} />
           </div>
           <p className="text-xs text-neutral-600">

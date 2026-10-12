@@ -20,7 +20,7 @@ export function FichaLote() {
       />
       {predioIdentificador && <PildorasLote predioIdentificador={predioIdentificador} />}
       <FichaSueloWizard predioIdentificador={id} />
-      <Link to="/diagnostico"><Boton>Continuar a diagnóstico →</Boton></Link>
+      <Link to="/diagnostico"><Boton>Continuar a diagnóstico</Boton></Link>
     </div>
   );
 }

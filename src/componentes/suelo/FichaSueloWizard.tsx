@@ -82,7 +82,7 @@ function Grupo({ titulo, children }: { titulo: string; children: React.ReactNode
 
 const COLOR_SEMAFORO: Record<Semaforo, string> = {
   bajo: 'bg-red-600',
-  optimo: 'bg-[#059669]',
+  optimo: 'bg-[#14736E]',
   alto: 'bg-amber-500',
   'sin-dato': 'bg-neutral-300',
 };
@@ -183,7 +183,7 @@ export function FichaSueloWizard({ predioIdentificador }: { predioIdentificador:
           <span>{avance} %</span>
         </div>
         <div className="h-1.5 w-full bg-neutral-100 rounded-full overflow-hidden" role="progressbar" aria-valuenow={avance} aria-valuemin={0} aria-valuemax={100} aria-label="Avance de la ficha">
-          <div className="h-full bg-[#059669] rounded-full transition-all duration-500 ease-out" style={{ width: `${avance}%` }} />
+            <div className="h-full transition-all duration-500 ease-out" style={{ width: `${avance}%`, background: 'var(--acento)' }} />
         </div>
       </div>
 
@@ -261,12 +261,12 @@ export function FichaSueloWizard({ predioIdentificador }: { predioIdentificador:
                       return (
                         <span className="relative block h-1.5 rounded-full bg-neutral-100" aria-hidden>
                           <span
-                            className="absolute inset-y-0 rounded-full bg-[#059669]/25 transition-all duration-500"
-                            style={{ left: `${pct(r.optimoMin)}%`, width: `${Math.max(0, pct(r.optimoMax) - pct(r.optimoMin))}%` }}
+                            className="absolute inset-y-0 transition-all duration-500"
+                            style={{ left: `${pct(r.optimoMin)}%`, width: `${Math.max(0, pct(r.optimoMax) - pct(r.optimoMin))}%`, background: 'var(--acento)', opacity: 0.35 }}
                           />
                           <span
                             className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full border-2 border-white shadow transition-all duration-500"
-                            style={{ left: `${pct(num)}%`, background: sem === 'optimo' ? '#059669' : sem === 'bajo' ? '#dc2626' : '#f59e0b' }}
+                            style={{ left: `${pct(num)}%`, background: sem === 'optimo' ? '#14736E' : sem === 'bajo' ? '#dc2626' : '#f59e0b' }}
                           />
                         </span>
                       );

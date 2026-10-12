@@ -81,11 +81,11 @@ export function Triangulo({ arena, limo, arcilla, clase }: { arena: number; limo
   return (
     <figure className="grid gap-1">
       <svg viewBox="0 0 200 180" className="w-full max-w-[260px]" role="img" aria-label={`Triángulo textural USDA: ${clase}`}>
-        <polygon points="100,8 8,165 192,165" fill="#f5f5f4" stroke="#059669" strokeWidth="2" />
+        <polygon points="100,8 8,165 192,165" fill="#f5f5f4" stroke="#14736E" strokeWidth="2" />
         <text x="100" y="14" textAnchor="middle" fontSize="9" fill="#525252">Arcilla</text>
         <text x="14" y="176" fontSize="9" fill="#525252">Arena</text>
         <text x="186" y="176" textAnchor="end" fontSize="9" fill="#525252">Limo</text>
-        <circle cx={x} cy={y} r="5" fill="#059669" stroke="#fff" strokeWidth="2" />
+        <circle cx={x} cy={y} r="5" fill="#14736E" stroke="#fff" strokeWidth="2" />
       </svg>
       <figcaption className="text-xs text-neutral-500">Punto según tu granulometría: {clase}</figcaption>
     </figure>

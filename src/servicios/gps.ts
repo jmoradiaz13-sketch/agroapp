@@ -4,7 +4,7 @@ import { useState } from 'react';
 // El técnico decide si el punto sirve para el lote o la muestra.
 export function colorPrecision(metros: number | null): string {
   if (metros === null) return '#94a3b8';
-  if (metros <= 10) return '#10b981';
+  if (metros <= 10) return '#14736E';
   if (metros <= 30) return '#f59e0b';
   return '#dc2626';
 }

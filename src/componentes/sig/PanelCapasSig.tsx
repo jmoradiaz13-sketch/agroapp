@@ -2,7 +2,7 @@ import { CAPAS_SIG, type CapaSig } from '../../datos/sig';
 
 function colorInsignia(i: CapaSig['insignia']) {
   return i === 'OFFLINE'
-    ? 'text-[#6ee7b7]'
+    ? 'text-[#7FC4BB]'
     : i === 'MIXTO'
       ? 'text-amber-300'
       : 'text-sky-300';
@@ -54,9 +54,10 @@ export function PanelCapasSig({
                 aria-label={`Mostrar capa ${c.titulo}`}
                 disabled={!c.disponible}
                 onClick={() => alCambiar(c.id)}
-                className={`boton-campo shrink-0 w-12 h-8 rounded-full p-1 transition-colors disabled:opacity-40 ${
-                  encendida ? 'bg-[#059669]' : 'bg-neutral-300'
+                className={`boton-campo shrink-0 w-12 h-8 p-1 transition-colors disabled:opacity-40 ${
+                  encendida ? '' : 'bg-neutral-300'
                 }`}
+                style={encendida ? { background: '#14736E' } : undefined}
               >
                 <span
                   className={`block w-6 h-6 rounded-full bg-white shadow transition-transform ${

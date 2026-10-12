@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { EncabezadoPagina } from '../componentes/ui/EncabezadoPagina';
 import { GUIAS, type GuiaPaso } from '../datos/guias';
 
@@ -12,9 +13,20 @@ const FILTROS: { id: GuiaPaso['paso'] | 'todas'; titulo: string }[] = [
   { id: 'riego', titulo: 'Riego' },
 ];
 
-// Biblioteca "Aprende en campo" (Plan §5): guías paso a paso con fuente,
-// 100 % offline (datos locales). Sin invención: cada tarjeta cita.
+// Cada guía abre su escena real: la biblioteca es paisaje, no callejón.
+const ESCENA_POR_PASO: Record<GuiaPaso['paso'], { ruta: string; etiqueta: string }> = {
+  general: { ruta: '/predios', etiqueta: 'Abrir escena Predios →' },
+  fisicas: { ruta: '/ficha', etiqueta: 'Abrir escena Suelos →' },
+  quimicas: { ruta: '/ficha', etiqueta: 'Abrir escena Suelos →' },
+  biologicas: { ruta: '/ficha', etiqueta: 'Abrir escena Suelos →' },
+  sig: { ruta: '/sig', etiqueta: 'Abrir escena SIG →' },
+  riego: { ruta: '/simulador', etiqueta: 'Abrir escena Simulador →' },
+};
+
+// Biblioteca "Aprende en campo": guías paso a paso con fuente, 100 % offline.
+// Cada tarjeta abre su escena real: la biblioteca es paisaje, no callejón.
 export function Biblioteca() {
+  const navegar = useNavigate();
   const [filtro, setFiltro] = useState<(typeof FILTROS)[number]['id']>('todas');
   const [abierta, setAbierta] = useState<string | null>(null);
   const visibles = filtro === 'todas' ? GUIAS : GUIAS.filter((g) => g.paso === filtro);
@@ -67,6 +79,14 @@ export function Biblioteca() {
                   ))}
                 </ol>
                 <p className="text-[11px] italic text-neutral-500">Fuente: {g.fuente}</p>
+                <button
+                  type="button"
+                  onClick={() => navegar(ESCENA_POR_PASO[g.paso].ruta)}
+                  className="boton-campo justify-self-start text-xs font-bold rounded-full px-4 py-2 transition-colors"
+                  style={{ background: 'var(--marca)', color: 'var(--marca-texto)' }}
+                >
+                  {ESCENA_POR_PASO[g.paso].etiqueta}
+                </button>
               </div>
             )}
           </article>

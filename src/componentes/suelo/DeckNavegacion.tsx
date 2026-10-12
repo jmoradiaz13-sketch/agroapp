@@ -49,9 +49,10 @@ export function DeckNavegacion({
             <button
               key={s.id} type="button" role="tab" aria-selected={indice === i}
               onClick={() => { alIr(i); setMenuAbierto(false); }}
-              className={`boton-campo px-2 py-2 text-xs font-semibold rounded-sm transition-colors ${
-                indice === i ? 'bg-[#059669] text-white' : 'bg-white/10 text-white/80 hover:bg-white/20'
+              className={`boton-campo px-2 py-2 text-xs font-semibold transition-colors ${
+                indice === i ? 'text-white' : 'bg-white/10 text-white/80 hover:bg-white/20'
               }`}
+              style={indice === i ? { background: '#14736E' } : undefined}
             >
               {i + 1} · {s.titulo}
             </button>
@@ -62,7 +63,8 @@ export function DeckNavegacion({
         {diapositivas.map((s, i) => (
           <span
             key={s.id}
-            className={`h-1.5 rounded-full transition-all duration-300 ${indice === i ? 'w-5 bg-[#6ee7b7]' : 'w-1.5 bg-white/30'}`}
+            className={`h-1.5 transition-all duration-300 ${indice === i ? 'w-5' : 'w-1.5 bg-white/30'}`}
+            style={indice === i ? { background: '#7FC4BB' } : undefined}
           />
         ))}
       </div>

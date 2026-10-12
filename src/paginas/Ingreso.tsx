@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ingresar, usoSesion } from '../estado/usoSesion';
 import { Boton, BotonSecundario } from '../componentes/ui/Boton';
-import { LogoArbolA } from '../componentes/ui/Logo';
+import { LogoMarca } from '../componentes/ui/Logo';
 
 export function PaginaIngreso() {
   const [usuario, setUsuario] = useState('tecnico');
@@ -13,8 +13,8 @@ export function PaginaIngreso() {
   if (token) {
     return (
       <div className="grid gap-6 justify-items-center py-10 animacion-entrada">
-        <span className="w-16 h-16 rounded-2xl bg-[#059669] grid place-items-center shadow-lg" aria-hidden>
-          <LogoArbolA className="w-10 h-10 text-white" />
+        <span className="w-24 h-16 grid place-items-center overflow-hidden" aria-hidden>
+          <LogoMarca className="w-24 h-16" />
         </span>
         <div className="text-center grid gap-1">
           <h2 className="font-display text-3xl font-medium text-humus">Sesión activa</h2>
@@ -30,8 +30,8 @@ export function PaginaIngreso() {
 
   return (
     <div className="grid gap-6 justify-items-center py-10 animacion-entrada">
-      <span className="w-16 h-16 rounded-2xl bg-[#059669] grid place-items-center shadow-lg" aria-hidden>
-        <LogoArbolA className="w-10 h-10 text-white" />
+      <span className="w-24 h-16 grid place-items-center overflow-hidden" aria-hidden>
+        <LogoMarca className="w-24 h-16" />
       </span>
       <div className="text-center grid gap-1">
         <h2 className="font-display text-3xl font-medium text-humus">Bienvenido de nuevo</h2>

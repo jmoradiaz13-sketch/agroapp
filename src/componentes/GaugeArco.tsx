@@ -8,7 +8,7 @@ export function GaugeArco({
   maximo = 100,
   titulo,
   subtexto,
-  color = '#10b981',
+  color = '#14736E',
   gradiente = false,
 }: {
   valor: number | undefined;
@@ -32,21 +32,21 @@ export function GaugeArco({
           <linearGradient id={`g-${id}`} x1="0" y1="0" x2="1" y2="0">
             <stop offset="0%" stopColor="#dc2626" />
             <stop offset="50%" stopColor="#f59e0b" />
-            <stop offset="100%" stopColor="#10b981" />
+            <stop offset="100%" stopColor="#14736E" />
           </linearGradient>
         </defs>
-        <path d="M 12 68 A 52 52 0 0 1 116 68" fill="none" stroke="rgba(255,255,255,0.14)" strokeWidth="12" strokeLinecap="round" />
+        <path d="M 12 68 A 52 52 0 0 1 116 68" fill="none" style={{ stroke: 'var(--borde)' }} strokeWidth="12" strokeLinecap="round" />
         <path
           d="M 12 68 A 52 52 0 0 1 116 68" fill="none"
           stroke={gradiente ? `url(#g-${id})` : color} strokeWidth="12" strokeLinecap="round"
           strokeDasharray={`${avance} ${perimetro}`} className="transition-all duration-700"
         />
-        <text x="64" y="58" textAnchor="middle" fontSize="22" fontWeight="700" fill="#fff">
+        <text x="64" y="58" textAnchor="middle" fontSize="22" fontWeight="700" style={{ fill: 'var(--texto)' }}>
           {valor ?? '—'}
         </text>
       </svg>
-      <p className="text-xs font-bold tracking-wide text-white">{titulo}</p>
-      <p className="text-[11px] text-white/60">{subtexto}</p>
+      <p className="text-xs font-bold tracking-wide" style={{ color: 'var(--texto)' }}>{titulo}</p>
+      <p className="text-[11px]" style={{ color: 'var(--muted)' }}>{subtexto}</p>
     </div>
   );
 }

@@ -23,11 +23,14 @@ export function PildorasLote({ predioIdentificador }: { predioIdentificador: str
           role="tab"
           aria-selected={loteNombre === l.nombre}
           onClick={() => fijarLote(l.nombre)}
-          className={`boton-campo shrink-0 whitespace-nowrap px-4 py-2 rounded-sm text-xs font-semibold transition-colors ${
+          className={`boton-campo shrink-0 whitespace-nowrap px-4 py-2 rounded-full text-xs font-semibold transition-colors ${
             loteNombre === l.nombre
-              ? 'bg-emerald-500 text-slate-950'
-              : 'bg-white/10 text-white/70 border border-white/15 hover:bg-white/15'
+              ? ''
+              : ''
           }`}
+          style={loteNombre === l.nombre
+            ? { background: 'var(--marca)', color: 'var(--marca-texto)' }
+            : { background: 'var(--sup)', color: 'var(--muted)', border: '1px solid var(--borde)' }}
         >
           {l.nombre}
         </button>

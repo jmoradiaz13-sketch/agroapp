@@ -121,16 +121,16 @@ export function PropiedadesQuimicas({
     <div className="grid gap-3">
       {contexto && (
         <p className="text-xs font-medium text-neutral-500 flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#059669]" aria-hidden />
+          <span className="w-1.5 h-1.5 rounded-full bg-[#14736E]" aria-hidden />
           Trabajando en: {contexto}
         </p>
       )}
 
       <div ref={barraRef} className="glass rounded-2xl px-4 py-3 flex flex-wrap items-center justify-between gap-2 scroll-mt-28 border-b-2 border-b-emerald-500/60">
-        <p className="text-[11px] font-medium tracking-wide text-white/70">Módulo · Propiedades químicas</p>
+        <p className="text-[11px] font-medium tracking-wide">Módulo · Propiedades químicas</p>
         <div className="flex items-center gap-2">
-          <span className="text-[11px] font-semibold bg-white/15 rounded-full px-3 py-1">Variable · {DIAPOSITIVAS[indice].titulo}</span>
-          <span className="text-[11px] text-white/60">{indice + 1} de {DIAPOSITIVAS.length}</span>
+          <span className="text-[11px] font-semibold rounded-full px-3 py-1">Variable · {DIAPOSITIVAS[indice].titulo}</span>
+          <span className="text-[11px]">{indice + 1} de {DIAPOSITIVAS.length}</span>
         </div>
       </div>
 
