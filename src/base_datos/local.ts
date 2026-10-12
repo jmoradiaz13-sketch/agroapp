@@ -12,6 +12,9 @@ export interface PredioLocal {
   departamento?: string;
   areaTotalHa?: number;
   notas?: string;
+  tenencia?: string; // propiedad|arrendamiento|sucesion|otro (Etapa 1)
+  vocacion?: string; // cafe|ganaderia|cacao|policultivo|otro
+  manoObraFamiliar?: number;
   geometria: GeoJSON.Polygon; // siempre EPSG:4326 en cliente
   fechaActualizacion: string; // ISO
   tamanoCacheBytes: number; // control límite 200 MB por predio
@@ -75,6 +78,7 @@ export interface FichaSueloLocal {
   estructuraDesc?: string;
   estructuraVess?: number;
   densidadAparente?: number;
+  densidadReal?: number; // g/cm³ picnómetro (Etapa 3)
   porosidadPct?: number;
   capacidadCampoPct?: number;
   pmpPct?: number;
@@ -100,6 +104,7 @@ export interface FichaSueloLocal {
   saturacionAlPct?: number;
   cicCmolKg?: number;
   fosforoMgKg?: number;
+  metodoFosforo?: string; // Bray II|Olsen|otro
   azufreMgKg?: number;
   materiaOrganicaPct?: number;
   nitrogenoPct?: number;
@@ -152,6 +157,42 @@ export interface DisenoLocal {
   componentes: ComponenteDiseno[];
   rotacionAsociacion?: string;
   referenciaBibliografica?: string; // opcional en el simulador
+  sincronizada: boolean;
+}
+
+export interface EspecieLocal {
+  id?: number;
+  nombreComun: string;
+  nombreCientifico?: string;
+  rol: string; // rol funcional: sombrío, fijadora de N, cobertura…
+  estrato?: string; // alto, medio, bajo, suelo
+  ciclo?: string; // perenne, anual, bianual
+  phMin?: number;
+  phMax?: number;
+  moMinPct?: number;
+  texturas?: string[]; // arenoso, franco, arcilloso, limoso
+  pendienteMaxPct?: number;
+  zonaVida?: string; // o 'todas'
+  aporte?: string;
+  referenciaBibliografica: string; // obligatoria: cero invención
+  origen?: 'base' | 'tecnico';
+  sincronizada: boolean;
+}
+
+export interface EscenarioLocal {
+  id?: number;
+  predioIdentificador: string;
+  loteNombre?: string;
+  nombre: string; // A productivo, B restauración, C integrado
+  tipo: 'A' | 'B' | 'C';
+  usosSuelo: UsoSueloDiseno[];
+  componentes: ComponenteDiseno[];
+  rotacion?: string;
+  coberturaAno5?: number;
+  rusleAntes?: number;
+  rusleDespues?: number;
+  referenciaBibliografica: string;
+  fecha: string;
   sincronizada: boolean;
 }
 
@@ -211,6 +252,8 @@ class BaseDatosAgroApp extends Dexie {
   disenos!: Table<DisenoLocal, number>;
   fotos!: Table<FotoLocal, number>;
   puntosMuestreo!: Table<PuntoMuestreoLocal, number>;
+  especies!: Table<EspecieLocal, number>;
+  escenarios!: Table<EscenarioLocal, number>;
 
   constructor() {
     super('agroapp_campo');
@@ -237,6 +280,11 @@ class BaseDatosAgroApp extends Dexie {
     this.version(5).stores({
       fotos: '++id, fichaId, predioIdentificador, tipo',
       puntosMuestreo: '++id, predioIdentificador, codigo'
+    });
+    // Simulador: banco abierto de especies + escenarios A/B/C versionados
+    this.version(6).stores({
+      especies: '++id, nombreCientifico',
+      escenarios: '++id, predioIdentificador, fecha'
     });
   }
 }

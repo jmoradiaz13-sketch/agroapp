@@ -13,7 +13,7 @@ const PASOS: { id: Paso; titulo: string }[] = [
 ];
 
 const USOS = [
-  { clave: 'Cultivos', color: '#1b5e20' },
+  { clave: 'Cultivos', color: '#059669' },
   { clave: 'SAF / agroforestería', color: '#2d6a4f' },
   { clave: 'Pecuario', color: '#b08968' },
   { clave: 'Conservación / parches', color: '#555555' },
@@ -143,7 +143,7 @@ export function PaginaDiseno() {
             key={p.id} type="button" role="tab" aria-selected={paso === p.id}
             onClick={() => setPaso(p.id)}
             className={`boton-campo shrink-0 whitespace-nowrap px-4 py-2 text-sm font-semibold rounded-sm transition-colors ${
-              paso === p.id ? 'bg-[#1b5e20] text-white' : 'bg-white text-neutral-600 border border-neutral-300 hover:border-[#1b5e20]'
+              paso === p.id ? 'bg-[#059669] text-white' : 'bg-white text-neutral-600 border border-neutral-300 hover:border-[#059669]'
             }`}
           >
             {p.titulo}
@@ -154,10 +154,10 @@ export function PaginaDiseno() {
       {paso === 'origen' && (
         <section className="bg-white border border-neutral-200 p-5 grid gap-4">
           <div className="flex gap-2 flex-wrap" role="tablist" aria-label="Origen de datos">
-            <button type="button" onClick={() => setModo('existente')} className={`boton-campo px-4 py-2 text-sm font-semibold rounded-sm transition-colors ${modo === 'existente' ? 'bg-[#141414] text-white' : 'bg-white text-neutral-600 border border-neutral-300 hover:border-[#141414]'}`}>
+            <button type="button" onClick={() => setModo('existente')} className={`boton-campo px-4 py-2 text-sm font-semibold rounded-sm transition-colors ${modo === 'existente' ? 'bg-selva text-white' : 'bg-white text-neutral-600 border border-neutral-300 hover:border-selva'}`}>
               Terreno caracterizado
             </button>
-            <button type="button" onClick={() => { setModo('cero'); setPredioId(''); setLoteNombre(''); }} className={`boton-campo px-4 py-2 text-sm font-semibold rounded-sm transition-colors ${modo === 'cero' ? 'bg-[#141414] text-white' : 'bg-white text-neutral-600 border border-neutral-300 hover:border-[#141414]'}`}>
+            <button type="button" onClick={() => { setModo('cero'); setPredioId(''); setLoteNombre(''); }} className={`boton-campo px-4 py-2 text-sm font-semibold rounded-sm transition-colors ${modo === 'cero' ? 'bg-selva text-white' : 'bg-white text-neutral-600 border border-neutral-300 hover:border-selva'}`}>
               Empezar de cero
             </button>
           </div>
@@ -200,7 +200,7 @@ export function PaginaDiseno() {
       {paso === 'espacial' && (
         <section className="bg-white border border-neutral-200 p-5 grid gap-4">
           <div>
-            <h3 className="text-lg font-semibold text-[#141414]">Reparte el área: {areaNum ? `${areaNum} ha` : 'indica el área en el paso anterior'}</h3>
+            <h3 className="text-lg font-semibold text-humus">Reparte el área: {areaNum ? `${areaNum} ha` : 'indica el área en el paso anterior'}</h3>
             <p className="text-xs text-neutral-500">Mueve los deslizadores. La suma debe dar 100 %.</p>
           </div>
           <div className="h-6 w-full flex overflow-hidden rounded-sm border border-neutral-200" aria-hidden>
@@ -221,9 +221,9 @@ export function PaginaDiseno() {
                 <input
                   type="range" min="0" max="100" step="1" value={v} aria-label={`${u.clave} porcentaje`}
                   onChange={(e) => setUsos({ ...usos, [u.clave]: Number(e.target.value) })}
-                  className="w-full accent-[#1b5e20]"
+                  className="w-full accent-[#059669]"
                 />
-                <span className="text-sm font-semibold text-[#141414] text-right">{v} %{ha}</span>
+                <span className="text-sm font-semibold text-humus text-right">{v} %{ha}</span>
               </label>
             );
           })}
@@ -264,7 +264,7 @@ export function PaginaDiseno() {
             <textarea className="campo-entrada min-h-[88px]" value={rotacion} onChange={(e) => setRotacion(e.target.value)} placeholder="Ej: año 1 maíz + fríjol, año 2 cacao joven con plátano…" />
           </label>
           <div className="grid gap-2">
-            <h4 className="text-sm font-semibold text-[#141414]">Componentes por rol funcional</h4>
+            <h4 className="text-sm font-semibold text-humus">Componentes por rol funcional</h4>
             {componentes.map((c, i) => (
               <div key={i} className="grid gap-2 sm:grid-cols-[11rem_1fr_auto] border border-neutral-200 p-3">
                 <label className="etiqueta-campo">Rol
@@ -292,7 +292,7 @@ export function PaginaDiseno() {
 
       {paso === 'resumen' && (
         <section className="bg-white border border-neutral-200 p-5 grid gap-4">
-          <h3 className="text-lg font-semibold text-[#141414]">Resumen del diseño</h3>
+          <h3 className="text-lg font-semibold text-humus">Resumen del diseño</h3>
           <dl className="grid gap-1.5 text-sm">
             <div className="flex gap-2"><dt className="text-neutral-500 w-32 shrink-0">Unidad</dt><dd className="font-medium">{nombreUnidad || '—'}</dd></div>
             <div className="flex gap-2"><dt className="text-neutral-500 w-32 shrink-0">Área</dt><dd>{areaNum ? `${areaNum} ha` : '—'}</dd></div>
@@ -332,11 +332,11 @@ export function PaginaDiseno() {
           </div>
           {historial.length > 0 && (
             <div>
-              <h4 className="text-sm font-semibold text-[#141414] mb-1">Versiones guardadas ({historial.length})</h4>
+              <h4 className="text-sm font-semibold text-humus mb-1">Versiones guardadas ({historial.length})</h4>
               <ol className="border border-neutral-200 divide-y divide-neutral-100">
                 {historial.map((h) => (
                   <li key={h.version} className="px-3 py-1.5 text-sm">
-                    <span className="font-semibold text-[#1b5e20]">v{h.version}</span> <span className="text-neutral-500">· {h.fecha}</span>
+                    <span className="font-semibold text-emerald-700">v{h.version}</span> <span className="text-neutral-500">· {h.fecha}</span>
                   </li>
                 ))}
               </ol>

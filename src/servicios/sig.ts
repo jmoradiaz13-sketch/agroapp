@@ -166,8 +166,79 @@ export async function estimarRusle(params: {
   }
 }
 
-export interface EstimacionDem {
-  pendiente_pct: number;
+// Extrae la geometría (Polygon) de un GeoJSON FeatureCollection/Feature
+// para guardar la copia offline en Dexie capasIgac.
+export function extraerGeometria(geojson: unknown): GeoJSON.Geometry | null {
+  if (!geojson || typeof geojson !== 'object') return null;
+  const g = geojson as { type?: string; geometry?: GeoJSON.Geometry; features?: { geometry?: GeoJSON.Geometry }[] };
+  if (g.type === 'FeatureCollection' && g.features?.[0]?.geometry) return g.features[0].geometry;
+  if (g.type === 'Feature' && g.geometry) return g.geometry;
+  if (g.type && 'coordinates' in g) return g as unknown as GeoJSON.Geometry;
+  return null;
+}
+
+export interface LluviaIdeam {
+  estacion: string;
+  municipio: string;
+  departamento: string;
+  periodo: string;
+  anual_mm: number;
+  imf: number;
+  fuente: string;
+  nota: string;
+}
+
+export async function pedirLluvia(
+  municipio: string,
+  modo: 'real' | 'demo' = 'real',
+): Promise<{ ok: boolean; lluvia?: LluviaIdeam; error?: string }> {
+  try {
+    const url = new URL(`${URL_API}/analisis/lluvia-ideam`);
+    url.searchParams.set('municipio', municipio);
+    url.searchParams.set('modo', modo);
+    const r = await fetch(url.toString());
+    if (!r.ok) {
+      const detalle = await r.json().catch(() => ({}));
+      return { ok: false, error: (detalle as { detail?: string }).detail ?? `Error ${r.status}` };
+    }
+    return { ok: true, lluvia: (await r.json()) as LluviaIdeam };
+  } catch {
+    return { ok: false, error: 'Sin conexión: R manual con tu dato local.' };
+  }
+}
+
+export interface FronteraUpra {
+  municipio: string;
+  no_condicionada_ha: number;
+  condicionada_ha: number;
+  total_ha: number;
+  pct_en_frontera: number;
+  lectura: string;
+  aptitud_sipra: string;
+  fuente: string;
+  nota: string;
+}
+
+export async function pedirFrontera(
+  municipio: string,
+  modo: 'real' | 'demo' = 'real',
+): Promise<{ ok: boolean; frontera?: FronteraUpra; error?: string }> {
+  try {
+    const url = new URL(`${URL_API}/sig/upra-frontera`);
+    url.searchParams.set('municipio', municipio);
+    url.searchParams.set('modo', modo);
+    const r = await fetch(url.toString());
+    if (!r.ok) {
+      const detalle = await r.json().catch(() => ({}));
+      return { ok: false, error: (detalle as { detail?: string }).detail ?? `Error ${r.status}` };
+    }
+    return { ok: true, frontera: (await r.json()) as FronteraUpra };
+  } catch {
+    return { ok: false, error: 'Sin conexión: consulta la frontera en oficina.' };
+  }
+}
+
+export interface EstimacionDem {  pendiente_pct: number;
   pendiente_max_pct: number;
   desnivel_m: number;
   clase: string;

@@ -1,8 +1,8 @@
-import { CAPAS_SIG, type CapaSig } from '../datos/sig';
+import { CAPAS_SIG, type CapaSig } from '../../datos/sig';
 
 function colorInsignia(i: CapaSig['insignia']) {
   return i === 'OFFLINE'
-    ? 'text-[#86efac]'
+    ? 'text-[#6ee7b7]'
     : i === 'MIXTO'
       ? 'text-amber-300'
       : 'text-sky-300';
@@ -29,14 +29,14 @@ export function PanelCapasSig({
           <article
             key={c.id}
             className={`border rounded-sm p-3 grid gap-1.5 transition-colors ${
-              encendida ? 'border-[#1b5e20] bg-green-50/60' : 'border-neutral-200 bg-white'
+              encendida ? 'border-[#059669] bg-green-50/60' : 'border-neutral-200 bg-white'
             }`}
           >
             <div className="flex items-start justify-between gap-2">
               <div className="grid gap-0.5 min-w-0">
-                <h3 className="text-sm font-semibold text-[#141414] flex items-center gap-2 flex-wrap">
+                <h3 className="text-sm font-semibold text-humus flex items-center gap-2 flex-wrap">
                   {c.titulo}
-                  <span className={`text-[10px] font-bold tracking-widest ${colorInsignia(c.insignia)} bg-[#141414] rounded-sm px-1.5 py-0.5`}>
+                  <span className={`text-[10px] font-bold tracking-widest ${colorInsignia(c.insignia)} bg-selva rounded-sm px-1.5 py-0.5`}>
                     {c.insignia}
                   </span>
                   {!c.disponible && (
@@ -55,7 +55,7 @@ export function PanelCapasSig({
                 disabled={!c.disponible}
                 onClick={() => alCambiar(c.id)}
                 className={`boton-campo shrink-0 w-12 h-8 rounded-full p-1 transition-colors disabled:opacity-40 ${
-                  encendida ? 'bg-[#1b5e20]' : 'bg-neutral-300'
+                  encendida ? 'bg-[#059669]' : 'bg-neutral-300'
                 }`}
               >
                 <span
@@ -68,7 +68,7 @@ export function PanelCapasSig({
             <p className="text-[11px] text-neutral-500">
               Fuente: {c.fuente} · {c.pesoEstimado}
               {fecha ? (
-                <span className="ml-1 font-semibold text-[#1b5e20]">· Guardada ✓ {fecha}</span>
+                <span className="ml-1 font-semibold text-emerald-700">· Guardada ✓ {fecha}</span>
               ) : (
                 c.disponible && <span className="ml-1">· Sin copia offline</span>
               )}

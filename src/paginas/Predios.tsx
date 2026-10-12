@@ -22,12 +22,26 @@ export function PaginaPredios() {
   const [municipio, setMunicipio] = useState('');
   const [departamento, setDepartamento] = useState('');
   const [area, setArea] = useState('');
+  const [tenencia, setTenencia] = useState('');
+  const [vocacion, setVocacion] = useState('');
+  const [manoObra, setManoObra] = useState('');
   const { fijarPredio } = usoFlujo();
   const navegar = useNavigate();
   const [params] = useSearchParams();
   const filtro = (params.get('buscar') ?? '').toLowerCase();
 
   const cargar = async () => setPredios(await baseDatos.predios.toArray());
+
+  const guardarCampoPredio = async (id: number | undefined, campo: keyof PredioLocal, valor: string | number | undefined) => {
+    if (!id) return;
+    await baseDatos.predios.update(id, {
+      [campo]: valor,
+      fechaActualizacion: new Date().toISOString(),
+      estadoSincronizacion: 'pendiente',
+    } as Partial<PredioLocal>);
+    setMensaje('Propietario actualizado offline. Se sincroniza en oficina.');
+    await cargar();
+  };
 
   useEffect(() => { void cargar(); }, []);
   useEffect(() => {
@@ -46,6 +60,9 @@ export function PaginaPredios() {
       municipio: municipio.trim() || undefined,
       departamento: departamento.trim() || undefined,
       areaTotalHa: area ? Number(area) : undefined,
+      tenencia: tenencia || undefined,
+      vocacion: vocacion || undefined,
+      manoObraFamiliar: manoObra ? Number(manoObra) : undefined,
       geometria: POLIGONO_INICIAL,
       fechaActualizacion: new Date().toISOString(),
       tamanoCacheBytes: 0,
@@ -53,6 +70,7 @@ export function PaginaPredios() {
     });
     setMensaje(`Predio "${nombre.trim()}" creado offline. Dibuja sus lotes en el mapa.`);
     setNombre(''); setPropietario(''); setMunicipio(''); setDepartamento(''); setArea('');
+    setTenencia(''); setVocacion(''); setManoObra('');
     setMostrarFormulario(false);
     await cargar();
   };
@@ -72,7 +90,7 @@ export function PaginaPredios() {
         descripcion="Crea predios offline, filtra por nombre o municipio y abre sus lotes. Los datos se sincronizan en oficina."
         acciones={
           <>
-            <button onClick={() => setMostrarFormulario((v) => !v)} className="boton-campo bg-[#1b5e20] text-white text-sm font-semibold px-5 py-2.5 rounded-sm hover:bg-[#124116] transition-colors">
+            <button onClick={() => setMostrarFormulario((v) => !v)} className="boton-campo bg-[#059669] text-white text-sm font-semibold px-5 py-2.5 rounded-sm hover:bg-[#047857] transition-colors">
               {mostrarFormulario ? 'Cerrar' : '＋ Agregar predio'}
             </button>
             <BotonSecundario onClick={async () => { setMensaje(await sembrarDemo()); await cargar(); }} className="!bg-transparent !text-white !border-white/40 hover:!bg-white/10">
@@ -102,6 +120,28 @@ export function PaginaPredios() {
             <label className="etiqueta-campo">Área total (ha)
               <input className="campo-entrada" type="number" step="0.01" min="0" value={area} onChange={(e) => setArea(e.target.value)} />
             </label>
+            <label className="etiqueta-campo">Tenencia
+              <select className="campo-entrada" value={tenencia} onChange={(e) => setTenencia(e.target.value)}>
+                <option value="">— Sin registrar —</option>
+                <option value="propiedad">Propiedad</option>
+                <option value="arrendamiento">Arrendamiento</option>
+                <option value="sucesion">Sucesión</option>
+                <option value="otro">Otro</option>
+              </select>
+            </label>
+            <label className="etiqueta-campo">Vocación
+              <select className="campo-entrada" value={vocacion} onChange={(e) => setVocacion(e.target.value)}>
+                <option value="">— Sin registrar —</option>
+                <option value="cafe">Café</option>
+                <option value="ganaderia">Ganadería</option>
+                <option value="cacao">Cacao</option>
+                <option value="policultivo">Policultivo</option>
+                <option value="otro">Otro</option>
+              </select>
+            </label>
+            <label className="etiqueta-campo">Mano de obra familiar
+              <input className="campo-entrada" type="number" step="1" min="0" value={manoObra} onChange={(e) => setManoObra(e.target.value)} placeholder="Personas" />
+            </label>
             <div className="sm:col-span-2">
               <Boton type="submit">Guardar predio offline</Boton>
             </div>
@@ -117,15 +157,55 @@ export function PaginaPredios() {
         )}
         <div className="grid gap-3">
           {visibles.map((p) => (
-            <article key={p.identificador} className="border border-neutral-200 p-4 grid gap-2 sm:grid-cols-[1fr_auto] sm:items-center">
+            <article key={p.identificador} className="border border-neutral-200 rounded-2xl p-4 grid gap-2 sm:grid-cols-[auto_1fr_auto] sm:items-center">
+              <span className="w-11 h-11 rounded-full bg-emerald-50 border border-emerald-200 grid place-items-center text-xl shrink-0" aria-hidden>🏡</span>
               <div>
-                <h3 className="font-semibold text-[#141414]">{p.nombre}</h3>
+                <h3 className="font-semibold text-humus">{p.nombre}</h3>
                 <p className="text-sm text-neutral-500">
                   {p.propietario ?? '—'} • {p.municipio ?? '?'} {p.departamento ?? ''} • {p.areaTotalHa ?? '?'} ha
+                  {(p.vocacion || p.tenencia) ? ` · ${p.vocacion ?? ''} ${p.tenencia ? `(${p.tenencia})` : ''}` : ''}
                 </p>
                 <p className="text-[11px] font-medium text-neutral-400 tracking-wide">
                   Sync: {p.estadoSincronizacion ?? 'pendiente'}
                 </p>
+                <details className="mt-1 border border-neutral-200 rounded-sm">
+                  <summary className="cursor-pointer text-xs font-semibold text-emerald-700 px-3 py-2">
+                    Propietario · {p.propietario ?? 'sin registrar'}
+                  </summary>
+                  <div className="grid gap-2 p-3 sm:grid-cols-2">
+                    <label className="etiqueta-campo">Nombre
+                      <input className="campo-entrada" defaultValue={p.propietario ?? ''} onBlur={(e) => void guardarCampoPredio(p.id, 'propietario', e.target.value.trim() || undefined)} />
+                    </label>
+                    <label className="etiqueta-campo">Documento
+                      <input className="campo-entrada" defaultValue={p.documento ?? ''} onBlur={(e) => void guardarCampoPredio(p.id, 'documento', e.target.value.trim() || undefined)} />
+                    </label>
+                    <label className="etiqueta-campo">Tenencia
+                      <select className="campo-entrada" defaultValue={p.tenencia ?? ''} onChange={(e) => void guardarCampoPredio(p.id, 'tenencia', e.target.value || undefined)}>
+                        <option value="">— Sin registrar —</option>
+                        <option value="propiedad">Propiedad</option>
+                        <option value="arrendamiento">Arrendamiento</option>
+                        <option value="sucesion">Sucesión</option>
+                        <option value="otro">Otro</option>
+                      </select>
+                    </label>
+                    <label className="etiqueta-campo">Vocación
+                      <select className="campo-entrada" defaultValue={p.vocacion ?? ''} onChange={(e) => void guardarCampoPredio(p.id, 'vocacion', e.target.value || undefined)}>
+                        <option value="">— Sin registrar —</option>
+                        <option value="cafe">Café</option>
+                        <option value="ganaderia">Ganadería</option>
+                        <option value="cacao">Cacao</option>
+                        <option value="policultivo">Policultivo</option>
+                        <option value="otro">Otro</option>
+                      </select>
+                    </label>
+                    <label className="etiqueta-campo">Mano de obra familiar
+                      <input className="campo-entrada" type="number" min={0} defaultValue={p.manoObraFamiliar ?? ''} onBlur={(e) => void guardarCampoPredio(p.id, 'manoObraFamiliar', e.target.value ? Number(e.target.value) : undefined)} />
+                    </label>
+                    <label className="etiqueta-campo">Contacto
+                      <input className="campo-entrada" defaultValue={p.contacto ?? ''} onBlur={(e) => void guardarCampoPredio(p.id, 'contacto', e.target.value.trim() || undefined)} />
+                    </label>
+                  </div>
+                </details>
               </div>
               <Boton onClick={() => { fijarPredio(p.identificador); navegar('/lote'); }}>
                 Abrir → Lote

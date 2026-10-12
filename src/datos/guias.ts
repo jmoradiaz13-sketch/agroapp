@@ -2,7 +2,7 @@
 // confiables y verificables en el ámbito académico (libros, artículos,
 // manuales FAO/USDA/NRCS, material publicado). Cada tarjeta cita su fuente.
 export interface GuiaPaso {
-  paso: 'general' | 'fisicas' | 'quimicas' | 'biologicas';
+  paso: 'general' | 'fisicas' | 'quimicas' | 'biologicas' | 'sig' | 'riego';
   imagen: string;
   imagenAlt: string;
   titulo: string;
@@ -65,5 +65,29 @@ export const GUIAS: GuiaPaso[] = [
     ],
     fuente:
       'Shepherd, VSA Field Guides (FAO, 2008); AgResearch, Soil Health for pastoral systems (2025); Väderstad, Guide to Visual Soil Assessments',
+  },
+  {
+    paso: 'sig',
+    imagen: '/imagenes/5.jpg',
+    imagenAlt: 'Paisaje para lectura de mapas',
+    titulo: 'Del mapa al lote: pendiente y NDVI',
+    pasos: [
+      'Precarga en oficina con wifi: IGAC + DEM + NDVI quedan offline en tu predio.',
+      'Pendiente < 7 % mecanizable, 7–25 % con curvas a nivel, > 25 % solo cobertura.',
+      'NDVI < 0,3 verifica en campo con VSA y foto; > 0,6 el dosel va bien.',
+    ],
+    fuente: 'IGAC · Colombia en Mapas; Copernicus Sentinel-2 L2A y GLO-30',
+  },
+  {
+    paso: 'riego',
+    imagen: '/imagenes/4.jpg',
+    imagenAlt: 'Cultivo con riego por goteo',
+    titulo: 'Lámina de riego del día',
+    pasos: [
+      'Anota lluvia de 24 h y Tmax/Tmin: la app estima ETo por Hargreaves.',
+      'Lámina = Kc × ETo − lluvia efectiva (80 % de la lluvia).',
+      'Riega temprano; sobre 8 mm fracciona para evitar escorrentía.',
+    ],
+    fuente: 'FAO-56 + AquaCrop (FAO)',
   },
 ];

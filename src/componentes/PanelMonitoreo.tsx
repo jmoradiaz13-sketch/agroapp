@@ -21,7 +21,7 @@ export function PanelMonitoreo({ loteNombre = 'general' }: { loteNombre?: string
 
   return (
     <section className="grid gap-3">
-      <h2 className="text-lg font-semibold text-[#141414] border-b-2 border-[#1b5e20] pb-2">
+      <h2 className="text-lg font-semibold text-humus border-b-2 border-[#059669] pb-2">
         Monitoreo ({items.length})
       </h2>
       <div className="bg-white border border-neutral-200 p-4 grid gap-3">
@@ -33,7 +33,7 @@ export function PanelMonitoreo({ loteNombre = 'general' }: { loteNombre?: string
       <div className="grid gap-2">
         {items.map((m) => (
           <article key={m.id} className="bg-white border border-neutral-200 px-4 py-2.5 text-sm grid gap-0.5">
-            <p className="font-semibold text-[#141414]">{m.fecha} — {m.loteNombre}</p>
+            <p className="font-semibold text-humus">{m.fecha} — {m.loteNombre}</p>
             <p className="text-neutral-600">{JSON.stringify(m.indicadores)} {m.observaciones ? `— ${m.observaciones}` : ''}</p>
           </article>
         ))}

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { usoFlujo } from '../estado/usoFlujo';
-import { FichaSueloWizard } from '../componentes/FichaSueloWizard';
+import { FichaSueloWizard } from '../componentes/suelo/FichaSueloWizard';
+import { PildorasLote } from '../componentes/PildorasLote';
 import { Boton } from '../componentes/ui/Boton';
 import { EncabezadoPagina } from '../componentes/ui/EncabezadoPagina';
 
@@ -17,6 +18,7 @@ export function FichaLote() {
         descripcion="Físicas, químicas y biológicas, en campo y laboratorio. Cada guardado crea una nueva versión con fecha: nunca se sobrescribe."
         imagen="/imagenes/2.jpg"
       />
+      {predioIdentificador && <PildorasLote predioIdentificador={predioIdentificador} />}
       <FichaSueloWizard predioIdentificador={id} />
       <Link to="/diagnostico"><Boton>Continuar a diagnóstico →</Boton></Link>
     </div>

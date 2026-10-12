@@ -13,11 +13,11 @@ export function PaginaIngreso() {
   if (token) {
     return (
       <div className="grid gap-6 justify-items-center py-10 animacion-entrada">
-        <span className="w-16 h-16 rounded-2xl bg-[#1b5e20] grid place-items-center shadow-lg" aria-hidden>
+        <span className="w-16 h-16 rounded-2xl bg-[#059669] grid place-items-center shadow-lg" aria-hidden>
           <LogoArbolA className="w-10 h-10 text-white" />
         </span>
         <div className="text-center grid gap-1">
-          <h2 className="font-display text-3xl font-medium text-[#141414]">Sesión activa</h2>
+          <h2 className="font-display text-3xl font-medium text-humus">Sesión activa</h2>
           <p className="text-sm text-neutral-500">Sesión técnica activa (JWT usuario único).</p>
         </div>
         <div className="bg-white border border-neutral-200 rounded-sm p-6 grid gap-3 w-full max-w-sm shadow-sm">
@@ -30,11 +30,11 @@ export function PaginaIngreso() {
 
   return (
     <div className="grid gap-6 justify-items-center py-10 animacion-entrada">
-      <span className="w-16 h-16 rounded-2xl bg-[#1b5e20] grid place-items-center shadow-lg" aria-hidden>
+      <span className="w-16 h-16 rounded-2xl bg-[#059669] grid place-items-center shadow-lg" aria-hidden>
         <LogoArbolA className="w-10 h-10 text-white" />
       </span>
       <div className="text-center grid gap-1">
-        <h2 className="font-display text-3xl font-medium text-[#141414]">Bienvenido de nuevo</h2>
+        <h2 className="font-display text-3xl font-medium text-humus">Bienvenido de nuevo</h2>
         <p className="text-sm text-neutral-500">Ingresa para sincronizar tus datos con el servidor.</p>
       </div>
 
@@ -51,7 +51,7 @@ export function PaginaIngreso() {
           }
         }}
       >
-        <div className="h-1 bg-[#1b5e20]" aria-hidden />
+        <div className="h-1 bg-[#059669]" aria-hidden />
         <div className="p-6 sm:p-8 grid gap-5">
           <label className="etiqueta-campo">Usuario
             <span className="relative block">

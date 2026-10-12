@@ -1,23 +1,27 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { EncabezadoPagina } from '../componentes/ui/EncabezadoPagina';
 import { Tarjeta } from '../componentes/ui/Tarjeta';
 import { Boton, BotonSecundario } from '../componentes/ui/Boton';
-import { MapaSig } from '../componentes/MapaSig';
-import { PanelCapasSig } from '../componentes/PanelCapasSig';
+import { MapaSig } from '../componentes/sig/MapaSig';
+import { PanelCapasSig } from '../componentes/sig/PanelCapasSig';
+import { TarjetaPendienteDem } from '../componentes/sig/TarjetaPendienteDem';
+import { TarjetaRusle } from '../componentes/sig/TarjetaRusle';
+import { TarjetaSerieNdvi } from '../componentes/sig/TarjetaSerieNdvi';
+import { TarjetaFrontera } from '../componentes/sig/TarjetaFrontera';
 import { FECHAS_NDVI } from '../datos/sig';
 import { baseDatos, etiquetaCache, type LoteLocal } from '../base_datos/local';
-import { BBOX_PREDETERMINADO, estimarPendienteDem, estimarRusle, obtenerGeojsonIgac, obtenerSerieNdvi, solicitarPrecarga, type EstimacionDem, type InterpretacionNdvi, type PuntoNdvi, type ResultadoRusle } from '../servicios/sig';
+import { BBOX_PREDETERMINADO, estimarPendienteDem, estimarRusle, extraerGeometria, obtenerGeojsonIgac, obtenerSerieNdvi, solicitarPrecarga, type EstimacionDem, type InterpretacionNdvi, type PuntoNdvi, type ResultadoRusle } from '../servicios/sig';
 import { usoFlujo } from '../estado/usoFlujo';
 import { usoPredio } from '../estado/usoPredio';
 
-type Pestana = 'igac' | 'pendiente' | 'ndvi';
+type Pestana = 'igac' | 'pendiente' | 'ndvi' | 'upra';
 
 const PESTANAS: { id: Pestana; titulo: string; insignia: string }[] = [
   { id: 'igac', titulo: 'Capas IGAC', insignia: 'MIXTO' },
   { id: 'pendiente', titulo: 'Pendiente / RUSLE', insignia: 'MIXTO' },
   { id: 'ndvi', titulo: 'NDVI satelital', insignia: 'ONLINE' },
+  { id: 'upra', titulo: 'UPRA', insignia: 'MIXTO' },
 ];
 
 // Sección SIG para restauración ecológica (estilo OneSoil/QField):
@@ -90,15 +94,6 @@ export function SigRestauracion() {
 
   const alternar = (capa: string) =>
     setCapas((v) => (v.includes(capa) ? v.filter((c) => c !== capa) : [...v, capa]));
-
-  function extraerGeometria(geojson: unknown): GeoJSON.Geometry | null {
-    if (!geojson || typeof geojson !== 'object') return null;
-    const g = geojson as { type?: string; geometry?: GeoJSON.Geometry; features?: { geometry?: GeoJSON.Geometry }[] };
-    if (g.type === 'FeatureCollection' && g.features?.[0]?.geometry) return g.features[0].geometry;
-    if (g.type === 'Feature' && g.geometry) return g.geometry;
-    if (g.type && 'coordinates' in g) return g as unknown as GeoJSON.Geometry;
-    return null;
-  }
 
   const precargar = async () => {
     setCargando(true);
@@ -231,17 +226,17 @@ export function SigRestauracion() {
       />
 
       {/* Estado offline + precarga (patrón Scout Mode / QField) */}
-      <section className="bg-[#141414] text-white p-4 sm:p-5 grid gap-3 sm:grid-cols-[1fr_auto] sm:items-center rounded-sm" aria-label="Estado offline">
+      <section className="bg-selva text-white p-4 sm:p-5 grid gap-3 sm:grid-cols-[1fr_auto] sm:items-center rounded-sm" aria-label="Estado offline">
         <div className="grid gap-1">
           <p className="text-sm font-semibold flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#86efac] animate-pulse" aria-hidden />
+            <span className="w-2 h-2 rounded-full bg-[#6ee7b7] animate-pulse" aria-hidden />
             Trabajando en {id} · modo campo offline
           </p>
           <p className="text-xs text-white/60">
             {fechaCache ? etiquetaCache(fechaCache) : 'Caché local - actualizado el (sin sincronizar)'} · Máx 200 MB por predio · Fuentes: IGAC · Copernicus
           </p>
         </div>
-        <Boton onClick={() => void precargar()} disabled={cargando} className="!bg-[#1b5e20] hover:!bg-[#124116]">
+        <Boton onClick={() => void precargar()} disabled={cargando} className="!bg-[#059669] hover:!bg-[#047857]">
           {cargando ? 'Precargando…' : '📦 Precargar para campo'}
         </Boton>
       </section>
@@ -257,11 +252,11 @@ export function SigRestauracion() {
             aria-selected={pestana === p.id}
             onClick={() => setPestana(p.id)}
             className={`boton-campo shrink-0 whitespace-nowrap px-4 py-2 text-sm font-semibold rounded-sm transition-colors flex items-center gap-2 ${
-              pestana === p.id ? 'bg-[#1b5e20] text-white' : 'bg-white text-neutral-600 border border-neutral-300 hover:border-[#1b5e20]'
+              pestana === p.id ? 'bg-[#059669] text-white' : 'bg-white text-neutral-600 border border-neutral-300 hover:border-[#059669]'
             }`}
           >
             {p.titulo}
-            <span className={`text-[9px] font-bold tracking-widest rounded-sm px-1.5 py-0.5 ${pestana === p.id ? 'bg-white/20 text-white' : 'bg-[#141414] text-amber-300'}`}>
+            <span className={`text-[9px] font-bold tracking-widest rounded-sm px-1.5 py-0.5 ${pestana === p.id ? 'bg-white/20 text-white' : 'bg-selva text-amber-300'}`}>
               {p.insignia}
             </span>
           </button>
@@ -271,9 +266,13 @@ export function SigRestauracion() {
       <div className="grid gap-4 lg:grid-cols-[340px_1fr] items-start">
         {/* Panel lateral: capas + controles */}
         <div className="grid gap-4 content-start">
-          <Tarjeta titulo={pestana === 'igac' ? 'Capas oficiales' : pestana === 'pendiente' ? 'Relieve y erosión' : 'Vegetación'}>
-            <PanelCapasSig activas={capas} alCambiar={alternar} guardadas={guardadas} />
-          </Tarjeta>
+          {pestana === 'upra' ? (
+            <TarjetaFrontera predioId={id} />
+          ) : (
+            <Tarjeta titulo={pestana === 'igac' ? 'Capas oficiales' : pestana === 'pendiente' ? 'Relieve y erosión' : 'Vegetación'}>
+              <PanelCapasSig activas={capas} alCambiar={alternar} guardadas={guardadas} />
+            </Tarjeta>
+          )}
 
           <Tarjeta titulo="Visualización">
             <label className="etiqueta-campo">
@@ -285,7 +284,7 @@ export function SigRestauracion() {
                 step={0.05}
                 value={opacidad}
                 onChange={(e) => setOpacidad(Number(e.target.value))}
-                className="w-full accent-[#1b5e20] min-h-[44px]"
+                className="w-full accent-[#059669] min-h-[44px]"
                 aria-label="Opacidad de la capa activa"
               />
             </label>
@@ -303,144 +302,47 @@ export function SigRestauracion() {
               {pestana === 'igac' && 'En oficina se ve el WMS oficial; en campo se usa la copia GeoJSON precargada.'}
               {pestana === 'pendiente' && 'Verde < 7 % · ámbar 7–25 % · rojo > 25 %. Toca cada zona para su manejo.'}
               {pestana === 'ndvi' && 'Rojo < 0,3 suelo/estrés · verde > 0,6 vigor. La nubosidad andina obliga a usar el último despejado.'}
+              {pestana === 'upra' && 'Frontera municipal oficial; la aptitud por cultivo se confirma en SIPRA.'}
             </p>
           </Tarjeta>
 
           {pestana === 'pendiente' && (
             <>
-            <Tarjeta titulo="Pendiente DEM del lote">
-              {lotes.length === 0 ? (
-                <p className="mensaje-info">Sin lotes en {id}. Dibuja el primero en Lotes o siembra la demo en Predios.</p>
-              ) : (
-                <>
-                  <label className="etiqueta-campo">
-                    Lote
-                    <select
-                      value={loteSel ?? ''}
-                      onChange={(e) => setLoteSel(Number(e.target.value))}
-                      className="campo-entrada"
-                    >
-                      {lotes.map((l) => (
-                        <option key={l.id} value={l.id}>
-                          {l.nombre} · pendiente actual: {l.pendientePct ?? '?'} %
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <Boton onClick={() => void calcularPendiente()} disabled={calculando}>
-                    {calculando ? 'Muestreando DEM…' : '⛰ Calcular pendiente DEM'}
-                  </Boton>
-                  {estimacion && (
-                    <div className="grid gap-1 border border-neutral-200 p-3">
-                      <p className="text-sm">
-                        Media <strong className="font-semibold">{estimacion.pendiente_pct} %</strong>
-                        {' '}· máx {estimacion.pendiente_max_pct} % · desnivel {estimacion.desnivel_m} m
-                      </p>
-                      <p className="text-sm font-semibold text-[#1b5e20] capitalize">{estimacion.clase}</p>
-                      <p className="text-xs text-neutral-600">{estimacion.manejo}</p>
-                      <p className="text-[11px] text-neutral-500">Fuente: {estimacion.fuente}</p>
-                      <div>
-                        <Boton onClick={() => void guardarPendiente()}>Guardar en el lote</Boton>
-                      </div>
-                    </div>
-                  )}
-                </>
-              )}
-            </Tarjeta>
-
-            <Tarjeta titulo="Riesgo erosión (RUSLE)">
-              {lotes.length === 0 ? (
-                <p className="mensaje-info">Sin lotes en {id}. El cálculo usa la pendiente del lote seleccionado.</p>
-              ) : (
-                <>
-                  <p className="text-xs text-neutral-600 leading-relaxed">
-                    A = R·K·LS·C·P. LS viene de la pendiente DEM
-                    ({estimacion?.pendiente_pct ?? lotes.find((l) => l.id === loteSel)?.pendientePct ?? '?'} %);
-                    C de tu cobertura, R/K/P con valores andinos editables.
-                  </p>
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <label className="etiqueta-campo">Cobertura vegetal (%)
-                      <input className="campo-entrada" type="number" min={0} max={100} value={coberturaPct} onChange={(e) => setCoberturaPct(Number(e.target.value))} />
-                    </label>
-                    <label className="etiqueta-campo">Longitud ladera (m)
-                      <input className="campo-entrada" type="number" min={1} max={1000} value={longitudM} onChange={(e) => setLongitudM(Number(e.target.value))} />
-                    </label>
-                    <label className="etiqueta-campo">R lluvia (Andina ~3000)
-                      <input className="campo-entrada" type="number" min={1} value={rVal} onChange={(e) => setRVal(Number(e.target.value))} />
-                    </label>
-                    <label className="etiqueta-campo">K suelo (franco ~0.03)
-                      <input className="campo-entrada" type="number" min={0.001} step={0.005} value={kVal} onChange={(e) => setKVal(Number(e.target.value))} />
-                    </label>
-                  </div>
-                  <label className="etiqueta-campo">Práctica de conservación
-                    <select value={practica} onChange={(e) => setPractica(e.target.value)} className="campo-entrada">
-                      <option value="sin_practicas">Sin prácticas (P = 1)</option>
-                      <option value="curvas_nivel">Curvas a nivel (P = 0.6)</option>
-                      <option value="terrazas">Terrazas (P = 0.4)</option>
-                      <option value="cobertura_permanente">Cobertura permanente (P = 0.3)</option>
-                    </select>
-                  </label>
-                  <Boton onClick={() => void calcularRusle()} disabled={calculandoRusle}>
-                    {calculandoRusle ? 'Calculando…' : '🧮 Calcular RUSLE'}
-                  </Boton>
-                  {rusle && (
-                    <div className="grid gap-1 border border-neutral-200 p-3">
-                      <p className="text-sm">
-                        Pérdida <strong className="font-semibold">{rusle.perdida_t_ha_ano} t/ha/año</strong>
-                        {' '}· <span className="font-semibold capitalize">{rusle.clase}</span>
-                      </p>
-                      <p className="text-[11px] text-neutral-500">
-                        R {rusle.factores.r} · K {rusle.factores.k} · LS {rusle.factores.ls} · C {rusle.factores.c} · P {rusle.factores.p}
-                      </p>
-                      <p className="text-xs text-neutral-600">{rusle.manejo}</p>
-                      <div>
-                        <Boton onClick={() => void guardarErosion()}>Guardar erosión en el lote</Boton>
-                      </div>
-                    </div>
-                  )}
-                </>
-              )}
-            </Tarjeta>
+              <TarjetaPendienteDem
+                predioId={id}
+                lotes={lotes}
+                loteSel={loteSel}
+                alElegirLote={setLoteSel}
+                estimacion={estimacion}
+                calculando={calculando}
+                alCalcular={() => void calcularPendiente()}
+                alGuardar={() => void guardarPendiente()}
+              />
+              <TarjetaRusle
+                predioId={id}
+                lotes={lotes}
+                loteSel={loteSel}
+                pendienteDem={estimacion?.pendiente_pct}
+                coberturaPct={coberturaPct} alCobertura={setCoberturaPct}
+                longitudM={longitudM} alLongitud={setLongitudM}
+                rVal={rVal} alR={setRVal}
+                kVal={kVal} alK={setKVal}
+                practica={practica} alPractica={setPractica}
+                rusle={rusle}
+                calculando={calculandoRusle}
+                alCalcular={() => void calcularRusle()}
+                alGuardar={() => void guardarErosion()}
+              />
             </>
           )}
 
           {pestana === 'ndvi' && (
-            <Tarjeta titulo="Serie temporal NDVI">
-              <Boton onClick={() => void cargarSerie()} disabled={cargandoSerie}>
-                {cargandoSerie ? 'Leyendo serie…' : '🛰 Actualizar serie'}
-              </Boton>
-              {!serie ? (
-                <p className="mensaje-info">Sin serie en este dispositivo. Actualiza con red o usa la precarga de oficina.</p>
-              ) : (
-                <>
-                  <div style={{ height: 220 }}>
-                    <ResponsiveContainer>
-                      <LineChart data={serie.map((p) => ({ ...p, dia: p.fecha.slice(5) }))}>
-                        <XAxis dataKey="dia" fontSize={11} />
-                        <YAxis domain={[0, 1]} fontSize={11} />
-                        <Tooltip />
-                        <ReferenceLine y={0.3} stroke="#dc2626" strokeDasharray="4 3" />
-                        <ReferenceLine y={0.6} stroke="#f59e0b" strokeDasharray="4 3" />
-                        <Line type="monotone" dataKey="ndvi" stroke="#1b5e20" strokeWidth={2.5} dot={{ r: 4 }} />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </div>
-                  <dl className="grid gap-1 text-sm">
-                    {serie.map((p) => (
-                      <div key={p.fecha} className="flex items-center justify-between gap-2 border-b border-neutral-100 py-1">
-                        <dt className="text-neutral-500">{p.fecha}</dt>
-                        <dd className="font-semibold">{p.ndvi} · <span className="font-medium capitalize">{p.clase}</span></dd>
-                      </div>
-                    ))}
-                  </dl>
-                  {interp && (
-                    <p className={interp.alerta ? 'mensaje-error' : 'mensaje-ok'}>
-                      Tendencia {interp.tendencia} (Δ {interp.delta}). {interp.alerta ?? 'Sin zonas críticas.'}
-                    </p>
-                  )}
-                </>
-              )}
-            </Tarjeta>
+            <TarjetaSerieNdvi
+              serie={serie}
+              interp={interp}
+              cargando={cargandoSerie}
+              alActualizar={() => void cargarSerie()}
+            />
           )}
         </div>
 
@@ -459,10 +361,10 @@ export function SigRestauracion() {
             <div className="flex gap-2 flex-wrap">
               {pestana === 'ndvi' && <Boton onClick={() => void crearPunto()}>＋ Crear punto en zona débil</Boton>}
               <Link to="/lote"><BotonSecundario>Ir a lotes →</BotonSecundario></Link>
-              <Link to="/ficha" className="boton-campo inline-flex items-center px-5 py-2.5 font-semibold text-sm text-[#1b5e20] underline underline-offset-4">
+              <Link to="/ficha" className="boton-campo inline-flex items-center px-5 py-2.5 font-semibold text-sm text-emerald-700 underline underline-offset-4">
                 Registrar ficha VSA →
               </Link>
-              <Link to="/diagnostico" className="boton-campo inline-flex items-center px-5 py-2.5 font-semibold text-sm text-[#1b5e20] underline underline-offset-4">
+              <Link to="/diagnostico" className="boton-campo inline-flex items-center px-5 py-2.5 font-semibold text-sm text-emerald-700 underline underline-offset-4">
                 Ver diagnóstico →
               </Link>
             </div>

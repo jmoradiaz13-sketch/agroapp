@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { esquemaFichaSuelo, type FichaSueloFormulario } from '../esquemas/suelo';
-import { baseDatos } from '../base_datos/local';
-import { Boton } from './ui/Boton';
+import { esquemaFichaSuelo, type FichaSueloFormulario } from '../../esquemas/suelo';
+import { baseDatos } from '../../base_datos/local';
+import { Boton } from '../ui/Boton';
 
 // Tabla-formulario profesional de análisis de suelos (reporte estándar Colombia).
 // Solo los 7 parámetros del catálogo validado tienen interpretación en el
@@ -98,7 +98,7 @@ export function FormularioSuelo({ predioIdentificador }: { predioIdentificador: 
     <form onSubmit={handleSubmit(alGuardar)} className="bg-white border border-neutral-200 p-5 grid gap-5">
       <div className="border-b border-neutral-200 pb-3 grid gap-1 sm:grid-cols-[1fr_auto] sm:items-end">
         <div>
-          <h2 className="text-lg font-medium text-[#141414]">Análisis de suelos — tabla profesional</h2>
+          <h2 className="text-lg font-medium text-humus">Análisis de suelos — tabla profesional</h2>
           <p className="text-xs text-neutral-500">Serie temporal • Complete solo los valores del reporte de laboratorio</p>
         </div>
         <label className="etiqueta-campo">Fecha muestra
@@ -112,7 +112,7 @@ export function FormularioSuelo({ predioIdentificador }: { predioIdentificador: 
 
       {GRUPOS.map((g) => (
         <fieldset key={g.titulo} className="grid gap-2">
-          <legend className="text-xs font-medium text-[#141414] bg-neutral-100 px-2 py-1 w-full">
+          <legend className="text-xs font-medium text-humus bg-neutral-100 px-2 py-1 w-full">
             {g.titulo}
           </legend>
           <div className="overflow-x-auto">
@@ -140,7 +140,7 @@ export function FormularioSuelo({ predioIdentificador }: { predioIdentificador: 
                     <td className="py-1.5 pr-2 text-neutral-500 text-xs">{c.unidad}</td>
                     <td className="py-1.5">
                       {CON_RANGO.has(c.clave as string) ? (
-                        <span className="text-[11px] font-medium text-[#1b5e20]">✓ Con rango validado</span>
+                        <span className="text-[11px] font-medium text-emerald-700">✓ Con rango validado</span>
                       ) : (
                         <span className="text-[11px] font-medium text-neutral-400">Solo registro</span>
                       )}

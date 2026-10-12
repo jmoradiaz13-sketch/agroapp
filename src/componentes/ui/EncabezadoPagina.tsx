@@ -17,7 +17,7 @@ export function EncabezadoPagina({
   imagen?: string;
 }) {
   return (
-    <div className="relative overflow-hidden bg-[#141414] text-white p-5 sm:p-6 grid gap-2 sm:grid-cols-[1fr_auto] sm:items-center">
+    <div className="relative overflow-hidden bg-selva text-white p-5 sm:p-6 grid gap-2 sm:grid-cols-[1fr_auto] sm:items-center border-b-2 border-emerald-500/40">
       {imagen && (
         <>
           <img src={imagen} alt="" aria-hidden="true" loading="lazy" className="absolute inset-0 w-full h-full object-cover opacity-65" />
@@ -25,7 +25,7 @@ export function EncabezadoPagina({
         </>
       )}
       <div className="relative grid gap-1.5">
-        <p className="text-xs font-medium tracking-wide text-[#86efac]">{kicker}</p>
+        <p className="text-xs font-medium tracking-wide text-emerald-300">{kicker}</p>
         <h2 className="font-display text-2xl sm:text-3xl font-medium leading-tight">{titulo}</h2>
         {descripcion && <p className="text-sm text-white/65 max-w-2xl">{descripcion}</p>}
       </div>
