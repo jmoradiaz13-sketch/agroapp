@@ -41,7 +41,7 @@ export function HistorialFichas({ predioIdentificador }: { predioIdentificador: 
 
   return (
     <section className="grid gap-3">
-      <h2 className="text-lg font-semibold text-[#141414] border-b-2 border-[#1b5e20] pb-2">
+      <h2 className="text-lg font-semibold text-humus border-b-2 border-[#059669] pb-2">
         Diagnóstico y serie temporal (inmutable)
       </h2>
       {historial.isError && <p className="mensaje-info">Offline o sin historial remoto — las fichas locales siguen en Dexie.</p>}
@@ -49,7 +49,7 @@ export function HistorialFichas({ predioIdentificador }: { predioIdentificador: 
         <ol className="bg-white border border-neutral-200 divide-y divide-neutral-100">
           {historial.data.map((f) => (
             <li key={f.version} className="px-4 py-2.5 text-sm grid sm:grid-cols-[auto_1fr] gap-1 sm:gap-3">
-              <span className="font-semibold text-[#1b5e20]">v{f.version}</span>
+              <span className="font-semibold text-emerald-700">v{f.version}</span>
               <span className="text-neutral-600">{f.fecha} — {f.referencia}</span>
             </li>
           ))}

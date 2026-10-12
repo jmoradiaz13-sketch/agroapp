@@ -11,8 +11,8 @@ export default defineConfig({
         name: 'AgroForestapp Campo',
         short_name: 'AgroForestapp',
         description: 'Gestión de fincas y suelos — funciona en campo sin conexión',
-        theme_color: '#1b5e20',
-        background_color: '#ffffff',
+        theme_color: '#134B42',
+        background_color: '#0a2520',
         display: 'standalone',
         lang: 'es-CO',
         icons: [
@@ -24,6 +24,10 @@ export default defineConfig({
         // Cachea tiles y GeoTIFF/GeoJSON de predios (límite lógico 200 MB por predio, ver base_datos/local.ts)
         runtimeCaching: [
           {
+            urlPattern: ({ url }) => url.pathname.startsWith('/imagenes/'),
+            handler: 'CacheFirst',
+            options: { cacheName: 'imagenes-fondo', expiration: { maxEntries: 30 } }
+          },          {
             urlPattern: /^https:\/\/(tile|server)\..*/i,
             handler: 'CacheFirst',
             options: { cacheName: 'tiles-fondo', expiration: { maxEntries: 500 } }

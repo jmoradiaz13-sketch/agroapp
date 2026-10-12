@@ -18,12 +18,12 @@ export function CaracterizacionLote({ predioIdentificador }: { predioIdentificad
   if (lotes.length === 0) return <p className="mensaje-info">Sin lotes. Siembra la demo en Predios o dibuja el primero en el mapa.</p>;
   return (
     <section className="grid gap-3">
-      <h2 className="text-lg font-semibold text-[#141414] border-b-2 border-[#1b5e20] pb-2">
+      <h2 className="text-lg font-semibold text-humus border-b-2 border-[#059669] pb-2">
         Lotes y caracterización biofísica ({lotes.length})
       </h2>
       {lotes.map((l) => (
-        <article key={l.id} className="bg-white border border-neutral-200 border-l-4 border-l-[#1b5e20] p-4 grid gap-3">
-          <h3 className="font-semibold text-[#141414]">{l.nombre} — {l.areaHa ?? '?'} ha</h3>
+        <article key={l.id} className="bg-white border border-neutral-200 border-l-4 border-l-[#059669] p-4 grid gap-3">
+          <h3 className="font-semibold text-humus">{l.nombre} — {l.areaHa ?? '?'} ha</h3>
           <div className="grid gap-3 sm:grid-cols-2">
             <label className="etiqueta-campo">Uso actual
               <input className="campo-entrada" defaultValue={l.usoActual ?? ''} onBlur={(e) => void guardarCampo(l.id, 'usoActual', e.target.value)} />

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-export type Paso = 'predios' | 'lote' | 'ficha' | 'sig' | 'diagnostico' | 'informe';
+export type Paso = 'predios' | 'lote' | 'ficha' | 'sig' | 'simulador' | 'diseno' | 'diagnostico' | 'informe';
 
 interface EstadoFlujo {
   predioIdentificador: string | null;

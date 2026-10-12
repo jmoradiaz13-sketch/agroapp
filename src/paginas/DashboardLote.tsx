@@ -6,6 +6,7 @@ import { Tarjeta } from '../componentes/ui/Tarjeta';
 import { Boton } from '../componentes/ui/Boton';
 import { EncabezadoPagina } from '../componentes/ui/EncabezadoPagina';
 import { MapaEditor } from '../componentes/MapaEditor';
+import { PildorasLote } from '../componentes/PildorasLote';
 import { CaracterizacionLote } from '../componentes/CaracterizacionLote';
 import { PanelMonitoreo } from '../componentes/PanelMonitoreo';
 import { PuntosMuestreo } from '../componentes/PuntosMuestreo';
@@ -47,9 +48,10 @@ export function DashboardLote() {
         titulo="Lotes del predio"
         descripcion={`Trabajando en ${predioIdentificador}. Dibuja con GPS, mide áreas y caracteriza cada lote offline.`}
       />
+      <PildorasLote predioIdentificador={predioIdentificador} />
       <div className="grid grid-cols-3 gap-3">
         {resumen.map((r) => (
-          <div key={r.etiqueta} className="bg-[#141414] text-white p-4 text-center grid gap-1">
+          <div key={r.etiqueta} className="bg-selva text-white p-4 text-center grid gap-1">
             <span className="text-2xl font-semibold">{r.valor}</span>
             <span className="text-[10px] font-medium tracking-wide text-white/60">{r.etiqueta}</span>
           </div>
@@ -62,7 +64,7 @@ export function DashboardLote() {
       <Tarjeta titulo="Siguiente paso">
         <div className="flex gap-2 flex-wrap">
           <Link to="/ficha" onClick={() => fijarLote('general')}><Boton>Ir a ficha →</Boton></Link>
-          <Link to="/diagnostico" className="boton-campo inline-flex items-center px-5 py-2.5 font-semibold text-sm text-[#1b5e20] underline underline-offset-4">
+          <Link to="/diagnostico" className="boton-campo inline-flex items-center px-5 py-2.5 font-semibold text-sm text-emerald-700 underline underline-offset-4">
             Ver diagnóstico →
           </Link>
         </div>

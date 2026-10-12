@@ -13,8 +13,8 @@ export function TarjetaDiagnostico({ hallazgo }: { hallazgo: Hallazgo }) {
   return (
     <article className={`bg-white border border-neutral-200 border-l-4 p-4 ${color}`}>
       <header className="flex flex-wrap gap-2 justify-between items-center">
-        <h3 className="font-semibold text-[#141414]">{hallazgo.parametro} — {hallazgo.valor} {hallazgo.unidad} ({hallazgo.estado})</h3>
-        <button className="boton-campo text-sm font-semibold text-[#1b5e20] underline underline-offset-4" onClick={() => setDetalle((v) => !v)}>
+        <h3 className="font-semibold text-humus">{hallazgo.parametro} — {hallazgo.valor} {hallazgo.unidad} ({hallazgo.estado})</h3>
+        <button className="boton-campo text-sm font-semibold text-emerald-700 underline underline-offset-4" onClick={() => setDetalle((v) => !v)}>
           {detalle ? 'Ocultar' : 'Por qué'}
         </button>
       </header>
@@ -26,7 +26,7 @@ export function TarjetaDiagnostico({ hallazgo }: { hallazgo: Hallazgo }) {
             {(['aceptada', 'rechazada', 'editada'] as DecisionTecnico[]).map((d) => (
               <button
                 key={d}
-                className={`boton-campo px-4 py-2 text-sm font-semibold rounded-sm border transition-colors ${decision === d ? 'bg-[#1b5e20] text-white border-[#1b5e20]' : 'bg-white text-neutral-600 border-neutral-300 hover:border-[#1b5e20]'}`}
+                className={`boton-campo px-4 py-2 text-sm font-semibold rounded-sm border transition-colors ${decision === d ? 'bg-[#059669] text-white border-[#059669]' : 'bg-white text-neutral-600 border-neutral-300 hover:border-[#059669]'}`}
                 onClick={() => setDecision(d)}
               >
                 {d}

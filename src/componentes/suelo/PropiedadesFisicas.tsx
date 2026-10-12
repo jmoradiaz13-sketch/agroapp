@@ -1,22 +1,22 @@
 import { useEffect, useRef, useState } from 'react';
 import type { UseFormRegister, UseFormSetValue } from 'react-hook-form';
-import type { FichaSueloFormulario } from '../esquemas/suelo';
-import type { FotoLista } from '../servicios/fotos';
-import { CapturaFoto } from './CapturaFoto';
+import type { FichaSueloFormulario } from '../../esquemas/suelo';
+import type { FotoLista } from '../../servicios/fotos';
 import {
-  CLASES_ES, clasificarTextura, NIVELES_VESS, FUENTE_VESS,
+  CLASES_ES, clasificarTextura,
   MUNSELL_TONOS, munsellChip, ADVERTENCIA_MUNSELL, FUENTE_MUNSELL,
   MINERALES_MUNSELL, FUENTE_MINERALES,
-  DENSIDAD_NRCS, FUENTE_DENSIDAD, calcularDA, calcularPorosidad,
-  interpretarDensidad, interpretarPorosidad, FUENTE_POROSIDAD,
-  type ClaseTextural,
-} from '../datos/fisicas';
+  FUENTE_DENSIDAD, calcularDA, calcularPorosidad,
+  interpretarPorosidad, FUENTE_POROSIDAD,
+} from '../../datos/fisicas';
+import {
+  Fuente, Columna, ArbolTextura, Triangulo, tactoAClase, SemaforoDensidad,
+} from './fisicas_apoyo';
+import { DeckNavegacion } from './DeckNavegacion';
+import { FisicasEstructura } from './FisicasEstructura';
 
 type R = UseFormRegister<FichaSueloFormulario>;
 type V = Partial<FichaSueloFormulario>;
-
-const COMPACTACION = ['suelto', 'friable', 'firme', 'compactado / hardpan'];
-const INFILTRACION = ['rápida', 'moderada', 'lenta', 'encharca'];
 
 const DIAPOSITIVAS = [
   { id: 'textura', titulo: 'Textura' },
@@ -27,115 +27,6 @@ const DIAPOSITIVAS = [
   { id: 'conclusiones', titulo: 'Conclusiones' },
 ];
 
-function Fuente({ texto }: { texto: string }) {
-  return <p className="text-xs text-neutral-500">Fuente: {texto}</p>;
-}
-
-function Columna({ titulo, children }: { titulo: string; children: React.ReactNode }) {
-  return (
-    <div className="border border-neutral-200 bg-white p-4 grid gap-3 content-start">
-      <h4 className="text-xs font-semibold tracking-wide text-[#1b5e20] uppercase">{titulo}</h4>
-      {children}
-    </div>
-  );
-}
-
-// Árbol FAO 3 pasos: bola → cinta → tacto (aproximación de campo).
-function ArbolTextura({ alElegir }: { alElegir: (clase: string) => void }) {
-  const [paso, setPaso] = useState(1);
-  const [cinta, setCinta] = useState('');
-  if (paso === 1) {
-    return (
-      <div className="grid gap-2">
-        <p className="text-sm font-medium">1 · Humedece y aprieta: ¿forma bola que no se deshace?</p>
-        <div className="flex gap-2 flex-wrap">
-          <button type="button" className="boton-campo px-4 py-2 text-sm font-semibold rounded-sm bg-white border border-neutral-300 hover:border-[#1b5e20]" onClick={() => setPaso(2)}>Sí forma bola</button>
-          <button type="button" className="boton-campo px-4 py-2 text-sm font-semibold rounded-sm bg-white border border-neutral-300 hover:border-[#1b5e20]" onClick={() => alElegir('Arenoso (arena / arena franca)')}>No, se desmorona</button>
-        </div>
-      </div>
-    );
-  }
-  if (paso === 2) {
-    return (
-      <div className="grid gap-2">
-        <p className="text-sm font-medium">2 · Presiona entre pulgar e índice: ¿forma cinta?</p>
-        <div className="flex gap-2 flex-wrap">
-          {[['no', 'No forma cinta'], ['corta', 'Cinta corta (< 2,5 cm)'], ['larga', 'Cinta larga (> 2,5 cm)']].map(([v, t]) => (
-            <button
-              key={v} type="button"
-              className="boton-campo px-4 py-2 text-sm font-semibold rounded-sm bg-white border border-neutral-300 hover:border-[#1b5e20]"
-              onClick={() => { if (v === 'no') { alElegir('Franco (franco arenoso / limoso: define al tacto)'); } else { setCinta(v); setPaso(3); } }}
-            >
-              {t}
-            </button>
-          ))}
-        </div>
-      </div>
-    );
-  }
-  return (
-    <div className="grid gap-2">
-      <p className="text-sm font-medium">3 · Frota la cinta: ¿cómo se siente?</p>
-      <div className="flex gap-2 flex-wrap">
-        {[
-          ['áspera', cinta === 'larga' ? 'Arcillo arenoso' : 'Franco arcillo arenoso'],
-          ['suave', cinta === 'larga' ? 'Franco arcilloso / limoso' : 'Franco arcilloso'],
-          ['jabonosa', 'Arcilloso (posible esmectita 2:1)'],
-        ].map(([t, r]) => (
-          <button
-            key={t} type="button"
-            className="boton-campo px-4 py-2 text-sm font-semibold rounded-sm bg-white border border-neutral-300 hover:border-[#1b5e20]"
-            onClick={() => alElegir(r)}
-          >
-            {t}
-          </button>
-        ))}
-      </div>
-      <button type="button" className="text-xs text-[#1b5e20] underline underline-offset-2 w-fit" onClick={() => setPaso(1)}>Reiniciar árbol</button>
-    </div>
-  );
-}
-
-function Triangulo({ arena, limo, arcilla, clase }: { arena: number; limo: number; arcilla: number; clase: string }) {
-  const x = 8 + ((arena + limo / 2) / 100) * 184;
-  const y = 165 - (arcilla / 100) * 157;
-  return (
-    <figure className="grid gap-1">
-      <svg viewBox="0 0 200 180" className="w-full max-w-[260px]" role="img" aria-label={`Triángulo textural USDA: ${clase}`}>
-        <polygon points="100,8 8,165 192,165" fill="#f5f5f4" stroke="#1b5e20" strokeWidth="2" />
-        <text x="100" y="14" textAnchor="middle" fontSize="9" fill="#525252">Arcilla</text>
-        <text x="14" y="176" fontSize="9" fill="#525252">Arena</text>
-        <text x="186" y="176" textAnchor="end" fontSize="9" fill="#525252">Limo</text>
-        <circle cx={x} cy={y} r="5" fill="#1b5e20" stroke="#fff" strokeWidth="2" />
-      </svg>
-      <figcaption className="text-xs text-neutral-500">Punto según tu granulometría: {clase}</figcaption>
-    </figure>
-  );
-}
-
-function tactoAClase(tacto: string): ClaseTextural | null {
-  const t = tacto.toLowerCase();
-  if (t.includes('arcillo arenoso')) return 'arcillo-arenoso';
-  if (t.includes('franco arcillo arenoso')) return 'franco-arcillo-arenoso';
-  if (t.includes('franco arcilloso')) return 'franco-arcilloso';
-  if (t.includes('arcilloso') || t.includes('arcilla')) return 'arcilla';
-  if (t.includes('limoso')) return 'franco-limoso';
-  if (t.includes('franco arenoso')) return 'franco-arenoso';
-  if (t.includes('arenoso') || t.includes('arena')) return 'arena';
-  if (t.includes('franco')) return 'franco';
-  return null;
-}
-
-function SemaforoDensidad({ da, clase }: { da: number; clase: ClaseTextural }) {
-  const estado = interpretarDensidad(da, clase);
-  const u = DENSIDAD_NRCS[clase];
-  return (
-    <p className={`text-sm font-medium ${estado === 'optimo' ? 'text-[#1b5e20]' : estado === 'vigilar' ? 'text-amber-600' : 'text-red-700'}`}>
-      {estado === 'optimo' ? '✓ Óptima' : estado === 'vigilar' ? '● Vigilar' : '✕ Restringe raíces'} para {CLASES_ES[clase]} (ideal &lt; {u.idealMax} · restringe &gt; {u.restringeMin} g/cm³)
-    </p>
-  );
-}
-
 // Deck estilo curso/MOOC: una variable por diapositiva con fundamentos,
 // medición y captura DUO (campo + laboratorio), hasta conclusiones.
 export function PropiedadesFisicas({
@@ -145,7 +36,6 @@ export function PropiedadesFisicas({
   alFoto?: (f: FotoLista) => void; alIrResumen?: () => void; contexto?: string;
 }) {
   const [indice, setIndice] = useState(0);
-  const [menuAbierto, setMenuAbierto] = useState(false);
   const barraRef = useRef<HTMLDivElement>(null);
   const [metodo, setMetodo] = useState('anillo');
   const [pesoSeco, setPesoSeco] = useState('');
@@ -180,12 +70,12 @@ export function PropiedadesFisicas({
     <div className="grid gap-3">
       {contexto && (
         <p className="text-xs font-medium text-neutral-500 flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#1b5e20]" aria-hidden />
+          <span className="w-1.5 h-1.5 rounded-full bg-[#059669]" aria-hidden />
           Trabajando en: {contexto}
         </p>
       )}
 
-      <div ref={barraRef} className="bg-[#1b5e20] text-white rounded-sm px-4 py-3 flex flex-wrap items-center justify-between gap-2 scroll-mt-28">
+      <div ref={barraRef} className="glass rounded-2xl px-4 py-3 flex flex-wrap items-center justify-between gap-2 scroll-mt-28 border-b-2 border-b-emerald-500/60">
         <p className="text-[11px] font-medium tracking-wide text-white/70">Módulo · Propiedades físicas</p>
         <div className="flex items-center gap-2">
           <span className="text-[11px] font-semibold bg-white/15 rounded-full px-3 py-1">Variable · {DIAPOSITIVAS[indice].titulo}</span>
@@ -193,7 +83,7 @@ export function PropiedadesFisicas({
         </div>
       </div>
 
-      <div key={indice} className="animacion-entrada bg-white border-2 border-[#1b5e20]/30 rounded-sm p-5 grid gap-3 lg:grid-cols-3 max-h-[calc(100vh-240px)] min-h-[320px] overflow-y-auto scroll-sutil content-start">
+      <div key={indice} className="animacion-entrada bg-white border border-emerald-500/40 shadow-sm rounded-sm p-5 grid gap-3 lg:grid-cols-3 max-h-[calc(100vh-240px)] min-h-[320px] overflow-y-auto scroll-sutil content-start">
         {indice === 0 && (
           <>
             <Columna titulo="Fundamentos">
@@ -244,7 +134,7 @@ export function PropiedadesFisicas({
             <Columna titulo="Medición">
               <p className="text-sm font-medium">Compara el terrón con la carta bajo luz natural, en seco y en húmedo. Anota tono, valor y croma (p. ej. 10YR 3/2 húmedo).</p>
               <details className="border border-neutral-200">
-                <summary className="cursor-pointer text-xs font-medium text-[#1b5e20] p-2.5">Tabla mineral → Munsell → color</summary>
+                <summary className="cursor-pointer text-xs font-medium text-emerald-700 p-2.5">Tabla mineral → Munsell → color</summary>
                 <div className="overflow-x-auto px-2.5 pb-2.5">
                   <table className="w-full text-xs">
                     <thead>
@@ -355,6 +245,9 @@ export function PropiedadesFisicas({
                 <label className="etiqueta-campo">DA (g/cm³)
                   <input className="campo-entrada" type="number" step="0.01" min="0" {...registro('densidadAparente')} />
                 </label>
+                <label className="etiqueta-campo">DR real (g/cm³)
+                  <input className="campo-entrada" type="number" step="0.01" min="0" {...registro('densidadReal')} />
+                </label>
                 <div className="grid grid-cols-3 gap-2">
                   <label className="etiqueta-campo">Porosidad
                     <input className="campo-entrada" type="number" step="0.1" min="0" {...registro('porosidadPct')} />
@@ -380,7 +273,7 @@ export function PropiedadesFisicas({
                     <button type="button" onClick={() => {
                       fijar('densidadAparente', daCalc);
                       if (poroCalc !== null) fijar('porosidadPct', poroCalc);
-                    }} className="boton-campo px-4 py-2 text-sm font-semibold rounded-sm bg-[#1b5e20] text-white hover:bg-[#124116] transition-colors">
+                    }} className="boton-campo px-4 py-2 text-sm font-semibold rounded-sm bg-[#059669] text-white hover:bg-[#047857] transition-colors">
                       Usar en la ficha
                     </button>
                   </div>
@@ -394,7 +287,7 @@ export function PropiedadesFisicas({
               {poroLab !== null && !Number.isNaN(poroLab) && (
                 <p className="text-xs text-neutral-500">
                   Porosidad derivada: {poroLab} % ({interpretarPorosidad(poroLab)}).
-                  <button type="button" onClick={() => fijar('porosidadPct', poroLab)} className="ml-2 text-[#1b5e20] underline underline-offset-2">Usar</button>
+                  <button type="button" onClick={() => fijar('porosidadPct', poroLab)} className="ml-2 text-emerald-700 underline underline-offset-2">Usar</button>
                 </p>
               )}
             </Columna>
@@ -402,67 +295,7 @@ export function PropiedadesFisicas({
         )}
 
         {indice === 3 && (
-          <>
-            <Columna titulo="Fundamentos">
-              <p className="text-sm text-neutral-600">El arreglo de agregados y poros regula agua, aire y raíces. VESS puntúa de Sq1 (friable) a Sq5 (macizo).</p>
-              <img src="/imagenes/3.jpg" alt="Agregados, raíces y poros del suelo en primer plano" loading="lazy" className="w-full max-w-[220px] rounded-sm" />
-              <Fuente texto={FUENTE_VESS} />
-            </Columna>
-            <Columna titulo="Medición">
-              <p className="text-sm font-medium">Extrae un bloque de 20 cm sin pisar el borde, ábrelo como un libro y observa terrones, poros y raíces por capa. Puntúa cada capa y promedia por espesor.</p>
-              {alFoto && (
-                <div>
-                  <CapturaFoto texto="Foto del bloque VESS" tipo="vess" alCapturar={alFoto} />
-                  <p className="text-[11px] text-neutral-400 mt-1">Se guarda con la ficha al presionar Guardar.</p>
-                </div>
-              )}
-            </Columna>
-            <Columna titulo="Captura DUO">
-              <div className="grid gap-2 sm:grid-cols-5 lg:grid-cols-2 xl:grid-cols-3">
-                {NIVELES_VESS.map((n) => (
-                  <button
-                    key={n.sq} type="button"
-                    onClick={() => { fijar('estructuraVess', n.sq); fijar('estructuraDesc', `VESS Sq${n.sq}`); }}
-                    aria-pressed={valores.estructuraVess === n.sq}
-                    className={`boton-campo p-3 rounded-sm border text-left transition-colors ${
-                      valores.estructuraVess === n.sq
-                        ? 'bg-[#1b5e20] text-white border-[#1b5e20]'
-                        : 'bg-white border-neutral-300 hover:border-[#1b5e20]'
-                    }`}
-                  >
-                    <span className="block text-2xl font-semibold">Sq{n.sq}</span>
-                    <span className="block text-xs font-medium">{n.titulo.split('·')[1]}</span>
-                  </button>
-                ))}
-              </div>
-              {valores.estructuraVess !== undefined && (
-                <p className="mensaje-ok">
-                  {NIVELES_VESS.find((n) => n.sq === valores.estructuraVess)?.titulo}:{' '}
-                  {NIVELES_VESS.find((n) => n.sq === valores.estructuraVess)?.descripcion}
-                </p>
-              )}
-              <div className="grid gap-3 sm:grid-cols-2">
-                <label className="etiqueta-campo">Compactación
-                  <select className="campo-entrada" defaultValue="" {...registro('compactacion')}>
-                    <option value="">— Sin registrar —</option>
-                    {COMPACTACION.map((c) => <option key={c} value={c}>{c}</option>)}
-                  </select>
-                </label>
-                <label className="etiqueta-campo">Infiltración
-                  <select className="campo-entrada" defaultValue="" {...registro('infiltracion')}>
-                    <option value="">— Sin registrar —</option>
-                    {INFILTRACION.map((c) => <option key={c} value={c}>{c}</option>)}
-                  </select>
-                </label>
-                <label className="etiqueta-campo">Prof. efectiva (cm)
-                  <input className="campo-entrada" type="number" step="1" min="0" {...registro('profundidadEfectivaCm')} />
-                </label>
-                <label className="etiqueta-campo">Notas libres
-                  <input className="campo-entrada" placeholder="Ej: granular friable" {...registro('estructuraDesc')} />
-                </label>
-              </div>
-            </Columna>
-          </>
+          <FisicasEstructura registro={registro} fijar={fijar} valores={valores} alFoto={alFoto} />
         )}
 
         {indice === 4 && (
@@ -490,7 +323,7 @@ export function PropiedadesFisicas({
               <p className="text-sm text-neutral-600">Las conclusiones físicas alimentan la interpretación general de la ficha.</p>
               {alIrResumen && (
                 <div>
-                  <button type="button" onClick={alIrResumen} className="boton-campo px-4 py-2 text-sm font-semibold rounded-sm bg-[#1b5e20] text-white hover:bg-[#124116] transition-colors">
+                  <button type="button" onClick={alIrResumen} className="boton-campo px-4 py-2 text-sm font-semibold rounded-sm bg-[#059669] text-white hover:bg-[#047857] transition-colors">
                     Ir a Interpretación →
                   </button>
                 </div>
@@ -500,58 +333,7 @@ export function PropiedadesFisicas({
         )}
       </div>
 
-      <nav className="sticky bottom-2 z-10 mx-auto w-full max-w-[240px] bg-[#141414]/95 backdrop-blur text-white rounded-full px-2 py-1 grid gap-1 shadow-lg" aria-label="Navegación de diapositivas">
-        <div className="flex items-center justify-between gap-1">
-          <button
-            type="button"
-            onClick={() => irA(indice - 1)}
-            className="w-8 h-8 grid place-items-center text-sm hover:bg-white/10 rounded-full transition-colors"
-            aria-label="Diapositiva anterior"
-          >
-            ←
-          </button>
-          <button
-            type="button"
-            onClick={() => setMenuAbierto((v) => !v)}
-            className="px-2 text-xs font-medium text-white/80 hover:text-white hover:bg-white/10 rounded-full transition-colors h-8"
-            aria-expanded={menuAbierto}
-            aria-label="Menú de variables"
-          >
-            ▦
-          </button>
-          <button
-            type="button"
-            onClick={() => irA(indice + 1)}
-            className="w-8 h-8 grid place-items-center text-sm hover:bg-white/10 rounded-full transition-colors"
-            aria-label="Diapositiva siguiente"
-          >
-            →
-          </button>
-        </div>
-        {menuAbierto && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 animacion-entrada" role="tablist" aria-label="Menú de variables">
-            {DIAPOSITIVAS.map((s, i) => (
-              <button
-                key={s.id} type="button" role="tab" aria-selected={indice === i}
-                onClick={() => { irA(i); setMenuAbierto(false); }}
-                className={`boton-campo px-2 py-2 text-xs font-semibold rounded-sm transition-colors ${
-                  indice === i ? 'bg-[#1b5e20] text-white' : 'bg-white/10 text-white/80 hover:bg-white/20'
-                }`}
-              >
-                {i + 1} · {s.titulo}
-              </button>
-            ))}
-          </div>
-        )}
-        <div className="flex items-center justify-center gap-1" aria-hidden={!menuAbierto}>
-          {DIAPOSITIVAS.map((s, i) => (
-            <span
-              key={s.id}
-              className={`h-1.5 rounded-full transition-all duration-300 ${indice === i ? 'w-5 bg-[#86efac]' : 'w-1.5 bg-white/30'}`}
-            />
-          ))}
-        </div>
-      </nav>
+      <DeckNavegacion diapositivas={DIAPOSITIVAS} indice={indice} alIr={irA} />
     </div>
   );
 }

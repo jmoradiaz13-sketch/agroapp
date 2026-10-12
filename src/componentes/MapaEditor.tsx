@@ -5,6 +5,7 @@ import 'leaflet/dist/leaflet.css';
 import { baseDatos, tamanoCachePredio, LIMITE_CACHE_PREDIO_BYTES } from '../base_datos/local';
 import { Boton, BotonSecundario } from './ui/Boton';
 import { Tarjeta } from './ui/Tarjeta';
+import { colorPrecision, usarGps } from '../servicios/gps';
 
 // Mapa único: modo ver (predio+lotes) / dibujar (toques+GPS). Reemplaza MapaPredio+EditorPredio.
 function Toques({ alAgregar }: { alAgregar: (p: [number, number]) => void }) {
@@ -17,6 +18,11 @@ export function MapaEditor({ identificador }: { identificador: string }) {
   const [puntos, setPuntos] = useState<[number, number][]>([]);
   const [mensaje, setMensaje] = useState('');
   const [muestreo, setMuestreo] = useState<{ codigo: string; lat: number; lng: number }[]>([]);
+  const { precision, ubicar } = usarGps();
+
+  const agregarGps = () => {
+    ubicar((lat, lng) => setPuntos((v) => [...v, [lng, lat]]));
+  };
 
   useEffect(() => {
     void baseDatos.puntosMuestreo.where('predioIdentificador').equals(identificador).toArray()
@@ -48,8 +54,8 @@ export function MapaEditor({ identificador }: { identificador: string }) {
         </BotonSecundario>
         {modo === 'dibujar' && (
           <>
-            <BotonSecundario onClick={() => navigator.geolocation?.getCurrentPosition((p) => setPuntos((v) => [...v, [p.coords.longitude, p.coords.latitude]]))}>
-              GPS + punto
+            <BotonSecundario onClick={agregarGps}>
+              GPS + punto{precision !== null ? ` ±${Math.round(precision)}m` : ''}
             </BotonSecundario>
             <BotonSecundario onClick={() => setPuntos([])}>Limpiar</BotonSecundario>
             <Boton onClick={() => void guardar()}>Guardar lote</Boton>
@@ -66,7 +72,18 @@ export function MapaEditor({ identificador }: { identificador: string }) {
           </Marker>
         ))}
       </MapContainer>
-      <p className="text-sm">Puntos: {puntos.length} · Muestreo: {muestreo.length} {modo === 'dibujar' ? '— toca el mapa' : '— tiles cacheados funcionan offline'}</p>
+      <p className="text-sm flex flex-wrap items-center gap-2">
+        <span>Puntos: {puntos.length} · Muestreo: {muestreo.length} {modo === 'dibujar' ? '— toca el mapa' : '— tiles cacheados funcionan offline'}</span>
+        {precision !== null && (
+          <span
+            className="text-[11px] font-bold rounded-full px-2.5 py-1 text-white"
+            style={{ background: colorPrecision(precision) }}
+            role="status"
+          >
+            GPS ±{Math.round(precision)} m{precision > 30 ? ' · poca precisión' : ''}
+          </span>
+        )}
+      </p>
       {mensaje && <p className="mensaje-ok text-sm">{mensaje}</p>}
     </Tarjeta>
   );

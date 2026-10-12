@@ -1,14 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useForm, type UseFormRegister } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { esquemaFichaSuelo, type FichaSueloFormulario } from '../esquemas/suelo';
-import { RANGOS_VALIDADOS, semaforoPara, type Semaforo } from '../datos/rangos';
+import { esquemaFichaSuelo, type FichaSueloFormulario } from '../../esquemas/suelo';
+import { RANGOS_VALIDADOS, semaforoPara, type Semaforo } from '../../datos/rangos';
 import { PropiedadesFisicas } from './PropiedadesFisicas';
 import { PropiedadesQuimicas } from './PropiedadesQuimicas';
 import { PropiedadesBiologicas } from './PropiedadesBiologicas';
-import { blobAUrl, coberturaVerde, type FotoLista } from '../servicios/fotos';
-import { baseDatos } from '../base_datos/local';
-import { Boton } from './ui/Boton';
+import { blobAUrl, coberturaVerde, type FotoLista } from '../../servicios/fotos';
+import { baseDatos } from '../../base_datos/local';
+import { Boton } from '../ui/Boton';
 
 type Paso = 'general' | 'fisicas' | 'quimicas' | 'biologicas' | 'resumen';
 
@@ -74,7 +74,7 @@ function Sel({
 function Grupo({ titulo, children }: { titulo: string; children: React.ReactNode }) {
   return (
     <fieldset className="grid gap-1">
-      <legend className="text-xs font-semibold text-[#141414] bg-neutral-100 px-2 py-1 w-full">{titulo}</legend>
+      <legend className="text-xs font-semibold text-humus bg-neutral-100 px-2 py-1 w-full">{titulo}</legend>
       {children}
     </fieldset>
   );
@@ -82,7 +82,7 @@ function Grupo({ titulo, children }: { titulo: string; children: React.ReactNode
 
 const COLOR_SEMAFORO: Record<Semaforo, string> = {
   bajo: 'bg-red-600',
-  optimo: 'bg-[#1b5e20]',
+  optimo: 'bg-[#059669]',
   alto: 'bg-amber-500',
   'sin-dato': 'bg-neutral-300',
 };
@@ -162,14 +162,14 @@ export function FichaSueloWizard({ predioIdentificador }: { predioIdentificador:
 
   return (
     <form onSubmit={handleSubmit(alGuardar)} className="bg-white border border-neutral-200">
-      <div className="border-2 border-[#1b5e20] rounded-sm overflow-hidden">
+      <div className="border-2 border-[#059669] rounded-sm overflow-hidden">
       <div className="scroll-sutil flex flex-nowrap gap-1.5 overflow-x-auto p-3 border-b border-neutral-200 bg-green-50/50" role="tablist" aria-label="Pasos de caracterización">
         {PASOS.map((p) => (
           <button
             key={p.id} type="button" role="tab" aria-selected={paso === p.id}
             onClick={() => setPaso(p.id)}
             className={`boton-campo shrink-0 whitespace-nowrap px-4 py-2 text-sm font-semibold rounded-sm transition-colors ${
-              paso === p.id ? 'bg-[#1b5e20] text-white' : 'bg-white text-neutral-600 border border-neutral-300 hover:border-[#1b5e20]'
+              paso === p.id ? 'bg-[#059669] text-white' : 'bg-white text-neutral-600 border border-neutral-300 hover:border-[#059669]'
             }`}
           >
             {p.titulo}
@@ -183,7 +183,7 @@ export function FichaSueloWizard({ predioIdentificador }: { predioIdentificador:
           <span>{avance} %</span>
         </div>
         <div className="h-1.5 w-full bg-neutral-100 rounded-full overflow-hidden" role="progressbar" aria-valuenow={avance} aria-valuemin={0} aria-valuemax={100} aria-label="Avance de la ficha">
-          <div className="h-full bg-[#1b5e20] rounded-full transition-all duration-500 ease-out" style={{ width: `${avance}%` }} />
+          <div className="h-full bg-[#059669] rounded-full transition-all duration-500 ease-out" style={{ width: `${avance}%` }} />
         </div>
       </div>
 
@@ -237,7 +237,7 @@ export function FichaSueloWizard({ predioIdentificador }: { predioIdentificador:
         {paso === 'resumen' && (
           <div className="grid gap-4">
             <div className="border-b border-neutral-200 pb-3">
-              <h2 className="text-lg font-semibold text-[#141414]">Resumen e interpretación</h2>
+              <h2 className="text-lg font-semibold text-humus">Resumen e interpretación</h2>
               <p className="text-xs text-neutral-500">
                 {conValor} de {RANGOS_VALIDADOS.length} parámetros con rango validado tienen dato.
                 Solo esos se interpretan; el resto queda registrado sin interpretar.
@@ -261,18 +261,18 @@ export function FichaSueloWizard({ predioIdentificador }: { predioIdentificador:
                       return (
                         <span className="relative block h-1.5 rounded-full bg-neutral-100" aria-hidden>
                           <span
-                            className="absolute inset-y-0 rounded-full bg-[#1b5e20]/25 transition-all duration-500"
+                            className="absolute inset-y-0 rounded-full bg-[#059669]/25 transition-all duration-500"
                             style={{ left: `${pct(r.optimoMin)}%`, width: `${Math.max(0, pct(r.optimoMax) - pct(r.optimoMin))}%` }}
                           />
                           <span
                             className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 rounded-full border-2 border-white shadow transition-all duration-500"
-                            style={{ left: `${pct(num)}%`, background: sem === 'optimo' ? '#1b5e20' : sem === 'bajo' ? '#dc2626' : '#f59e0b' }}
+                            style={{ left: `${pct(num)}%`, background: sem === 'optimo' ? '#059669' : sem === 'bajo' ? '#dc2626' : '#f59e0b' }}
                           />
                         </span>
                       );
                     })()}
                     <details className="text-xs text-neutral-500">
-                      <summary className="cursor-pointer text-[#1b5e20] font-medium">ⓘ Fuente del rango</summary>
+                      <summary className="cursor-pointer text-emerald-700 font-medium">ⓘ Fuente del rango</summary>
                       <p className="mt-1">src/{r.fuente} · Óptimo {r.optimoMin}–{r.optimoMax} {r.unidad}</p>
                     </details>
                   </li>
@@ -281,7 +281,7 @@ export function FichaSueloWizard({ predioIdentificador }: { predioIdentificador:
             </ol>
             {fotosEtapa.length > 0 && (
               <div className="grid gap-2">
-                <h4 className="text-sm font-semibold text-[#141414]">Fotos por guardar ({fotosEtapa.length})</h4>
+                <h4 className="text-sm font-semibold text-humus">Fotos por guardar ({fotosEtapa.length})</h4>
                 <div className="flex gap-2 flex-wrap">
                   {fotosEtapa.map((f, i) => (
                     <span key={i} className="relative inline-block">
@@ -289,7 +289,7 @@ export function FichaSueloWizard({ predioIdentificador }: { predioIdentificador:
                       <button
                         type="button" aria-label="Quitar foto"
                         onClick={() => setFotosEtapa((v) => v.filter((_, j) => j !== i))}
-                        className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-[#141414] text-white text-xs grid place-items-center"
+                        className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-selva text-white text-xs grid place-items-center"
                       >
                         ✕
                       </button>

@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import type { UseFormRegister } from 'react-hook-form';
-import type { FichaSueloFormulario } from '../esquemas/suelo';
-import type { FotoLista } from '../servicios/fotos';
-import { CapturaFoto } from './CapturaFoto';
+import type { FichaSueloFormulario } from '../../esquemas/suelo';
+import type { FotoLista } from '../../servicios/fotos';
+import { CapturaFoto } from '../CapturaFoto';
+import { DeckNavegacion } from './DeckNavegacion';
+import { GaugeArco } from '../GaugeArco';
 
 type R = UseFormRegister<FichaSueloFormulario>;
 type V = Partial<FichaSueloFormulario>;
@@ -39,7 +41,6 @@ export function PropiedadesBiologicas({
   alIrResumen?: () => void; contexto?: string;
 }) {
   const [indice, setIndice] = useState(0);
-  const [menuAbierto, setMenuAbierto] = useState(false);
   const barraRef = useRef<HTMLDivElement>(null);
   const irA = (i: number) => setIndice(Math.max(0, Math.min(DIAPOSITIVAS.length - 1, i)));
   useEffect(() => {
@@ -52,12 +53,12 @@ export function PropiedadesBiologicas({
     <div className="grid gap-3">
       {contexto && (
         <p className="text-xs font-medium text-neutral-500 flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#1b5e20]" aria-hidden />
+          <span className="w-1.5 h-1.5 rounded-full bg-[#059669]" aria-hidden />
           Trabajando en: {contexto}
         </p>
       )}
 
-      <div ref={barraRef} className="bg-[#1b5e20] text-white rounded-sm px-4 py-3 flex flex-wrap items-center justify-between gap-2 scroll-mt-28">
+      <div ref={barraRef} className="glass rounded-2xl px-4 py-3 flex flex-wrap items-center justify-between gap-2 scroll-mt-28 border-b-2 border-b-emerald-500/60">
         <p className="text-[11px] font-medium tracking-wide text-white/70">Módulo · Propiedades biológicas</p>
         <div className="flex items-center gap-2">
           <span className="text-[11px] font-semibold bg-white/15 rounded-full px-3 py-1">Variable · {DIAPOSITIVAS[indice].titulo}</span>
@@ -65,15 +66,15 @@ export function PropiedadesBiologicas({
         </div>
       </div>
 
-      <div key={indice} className="animacion-entrada bg-white border-2 border-[#1b5e20]/30 rounded-sm p-5 grid gap-4 max-h-[calc(100vh-240px)] min-h-[320px] overflow-y-auto scroll-sutil content-start">
+      <div key={indice} className="animacion-entrada bg-white border border-emerald-500/40 shadow-sm rounded-sm p-5 grid gap-4 max-h-[calc(100vh-240px)] min-h-[320px] overflow-y-auto scroll-sutil content-start">
         {indice === 0 && (
           <>
             <div>
-              <h3 className="text-lg font-semibold text-[#141414]">Vida del suelo</h3>
+              <h3 className="text-lg font-semibold text-humus">Vida del suelo</h3>
               <p className="text-xs text-neutral-500">Macrofauna y signos vitales: el núcleo agroecológico.</p>
             </div>
             <div className="border border-neutral-200 bg-neutral-50 p-2.5 grid gap-1.5 text-sm text-neutral-600">
-              <p className="text-xs font-semibold text-[#1b5e20]">Método · Cubo de 20×20×20 cm</p>
+              <p className="text-xs font-semibold text-emerald-700">Método · Cubo de 20×20×20 cm</p>
               <p>Excava el cubo y cuenta lombrices e insectos a simple vista. Nódulos rosados en leguminosas = fijación activa. Olor a tierra fresca = actividad aeróbica sana.</p>
               <p className="text-xs text-neutral-500">Fuente: Shepherd, VSA Field Guides (FAO, 2008).</p>
             </div>
@@ -106,11 +107,11 @@ export function PropiedadesBiologicas({
         {indice === 1 && (
           <>
             <div>
-              <h3 className="text-lg font-semibold text-[#141414]">Puntuación visual VSA</h3>
+              <h3 className="text-lg font-semibold text-humus">Puntuación visual VSA</h3>
               <p className="text-xs text-neutral-500">0 pobre · 1 moderado · 2 bueno. Alimenta el índice de calidad.</p>
             </div>
             <div className="border border-neutral-200 bg-neutral-50 p-2.5 grid gap-1.5 text-sm text-neutral-600">
-              <p className="text-xs font-semibold text-[#1b5e20]">Método · Tarjeta VSA</p>
+              <p className="text-xs font-semibold text-emerald-700">Método · Tarjeta VSA</p>
               <p>Compara cada indicador con la guía fotográfica y puntúa. Ponderadores: estructura ×3, porosidad ×3, color ×2, lombrices ×2.</p>
               <p className="text-xs text-neutral-500">Fuente: Shepherd, VSA Field Guides (FAO, 2008).</p>
             </div>
@@ -131,17 +132,31 @@ export function PropiedadesBiologicas({
               ))}
             </div>
             <p className="text-xs text-neutral-500">{tocados} de {INDICADORES_VSA.length} indicadores puntuados.</p>
+            <div className="bg-selva rounded-sm p-4">
+              <GaugeArco
+                valor={Object.values(puntajes).reduce((a, b) => a + b, 0)}
+                minimo={0}
+                maximo={INDICADORES_VSA.length * 2}
+                titulo={`VSA · ${tocados}/${INDICADORES_VSA.length}`}
+                subtexto={
+                  tocados === 0 ? 'Puntúa para ver el índice'
+                  : Object.values(puntajes).reduce((a, b) => a + b, 0) <= 4 ? 'Condición pobre'
+                  : Object.values(puntajes).reduce((a, b) => a + b, 0) <= 8 ? 'Condición moderada'
+                  : 'Buena estructura'
+                }
+              />
+            </div>
           </>
         )}
 
         {indice === 2 && (
           <>
             <div>
-              <h3 className="text-lg font-semibold text-[#141414]">Cobertura por foto</h3>
+              <h3 className="text-lg font-semibold text-humus">Cobertura por foto</h3>
               <p className="text-xs text-neutral-500">Foto cenital a ≥ 60 cm: % verde calculado offline.</p>
             </div>
             <div className="border border-neutral-200 bg-neutral-50 p-2.5 grid gap-1.5 text-sm text-neutral-600">
-              <p className="text-xs font-semibold text-[#1b5e20]">Método · Canopeo</p>
+              <p className="text-xs font-semibold text-emerald-700">Método · Canopeo</p>
               <p>Foto vertical del dosel; el sistema cuenta píxeles verdes en el dispositivo, sin red.</p>
               <p className="text-xs text-neutral-500">Fuente: Patrignani &amp; Ochsner 2015, Agronomy Journal.</p>
             </div>
@@ -150,11 +165,11 @@ export function PropiedadesBiologicas({
               {fotoCobertura && (
                 <>
                   <img src={fotoCobertura.url} alt="Miniatura de cobertura" className="w-16 h-16 object-cover rounded-sm border border-neutral-200" />
-                  <span className="text-sm">Cobertura: <strong className="font-semibold text-[#1b5e20]">{fotoCobertura.pct} %</strong></span>
+                  <span className="text-sm">Cobertura: <strong className="font-semibold text-emerald-700">{fotoCobertura.pct} %</strong></span>
                   <button
                     type="button"
                     onClick={() => alUsarCobertura(fotoCobertura.pct)}
-                    className="boton-campo px-4 py-2 text-sm font-semibold rounded-sm bg-[#1b5e20] text-white hover:bg-[#124116] transition-colors"
+                    className="boton-campo px-4 py-2 text-sm font-semibold rounded-sm bg-[#059669] text-white hover:bg-[#047857] transition-colors"
                   >
                     Usar en la ficha
                   </button>
@@ -167,11 +182,11 @@ export function PropiedadesBiologicas({
         {indice === 3 && (
           <>
             <div>
-              <h3 className="text-lg font-semibold text-[#141414]">Biología de laboratorio</h3>
+              <h3 className="text-lg font-semibold text-humus">Biología de laboratorio</h3>
               <p className="text-xs text-neutral-500">Respiración, biomasa microbiana y micorrizas del reporte.</p>
             </div>
             <div className="border border-neutral-200 bg-neutral-50 p-2.5 grid gap-1.5 text-sm text-neutral-600">
-              <p className="text-xs font-semibold text-[#1b5e20]">Método · Reporte</p>
+              <p className="text-xs font-semibold text-emerald-700">Método · Reporte</p>
               <p>Transcribe respiración basal (CO₂), carbono de biomasa microbiana y % de colonización micorrízica.</p>
               <p className="text-xs text-neutral-500">Fuente: manual de agroecología y agroforestería.</p>
             </div>
@@ -199,7 +214,7 @@ export function PropiedadesBiologicas({
         {indice === 4 && (
           <>
             <div>
-              <h3 className="text-lg font-semibold text-[#141414]">Conclusiones biológicas</h3>
+              <h3 className="text-lg font-semibold text-humus">Conclusiones biológicas</h3>
               <p className="text-xs text-neutral-500">Lo registrado en este recorrido, listo para la interpretación.</p>
             </div>
             <dl className="grid gap-1.5 text-sm border border-neutral-200 p-4">
@@ -210,7 +225,7 @@ export function PropiedadesBiologicas({
             </dl>
             {alIrResumen && (
               <div>
-                <button type="button" onClick={alIrResumen} className="boton-campo px-4 py-2 text-sm font-semibold rounded-sm bg-[#1b5e20] text-white hover:bg-[#124116] transition-colors">
+                <button type="button" onClick={alIrResumen} className="boton-campo px-4 py-2 text-sm font-semibold rounded-sm bg-[#059669] text-white hover:bg-[#047857] transition-colors">
                   Ir a Interpretación →
                 </button>
               </div>
@@ -219,58 +234,7 @@ export function PropiedadesBiologicas({
         )}
       </div>
 
-      <nav className="sticky bottom-2 z-10 mx-auto w-full max-w-[240px] bg-[#141414]/95 backdrop-blur text-white rounded-full px-2 py-1 grid gap-1 shadow-lg" aria-label="Navegación de diapositivas">
-        <div className="flex items-center justify-between gap-1">
-          <button
-            type="button"
-            onClick={() => irA(indice - 1)}
-            className="w-8 h-8 grid place-items-center text-sm hover:bg-white/10 rounded-full transition-colors"
-            aria-label="Diapositiva anterior"
-          >
-            ←
-          </button>
-          <button
-            type="button"
-            onClick={() => setMenuAbierto((v) => !v)}
-            className="px-2 text-xs font-medium text-white/80 hover:text-white hover:bg-white/10 rounded-full transition-colors h-8"
-            aria-expanded={menuAbierto}
-            aria-label="Menú de variables"
-          >
-            ▦
-          </button>
-          <button
-            type="button"
-            onClick={() => irA(indice + 1)}
-            className="w-8 h-8 grid place-items-center text-sm hover:bg-white/10 rounded-full transition-colors"
-            aria-label="Diapositiva siguiente"
-          >
-            →
-          </button>
-        </div>
-        {menuAbierto && (
-          <div className="grid grid-cols-2 gap-1 animacion-entrada" role="tablist" aria-label="Menú de variables">
-            {DIAPOSITIVAS.map((s, i) => (
-              <button
-                key={s.id} type="button" role="tab" aria-selected={indice === i}
-                onClick={() => { irA(i); setMenuAbierto(false); }}
-                className={`px-2 py-2 text-xs font-semibold rounded-sm transition-colors ${
-                  indice === i ? 'bg-[#1b5e20] text-white' : 'bg-white/10 text-white/80 hover:bg-white/20'
-                }`}
-              >
-                {i + 1} · {s.titulo}
-              </button>
-            ))}
-          </div>
-        )}
-        <div className="flex items-center justify-center gap-1">
-          {DIAPOSITIVAS.map((s, i) => (
-            <span
-              key={s.id}
-              className={`h-1.5 rounded-full transition-all duration-300 ${indice === i ? 'w-5 bg-[#86efac]' : 'w-1.5 bg-white/30'}`}
-            />
-          ))}
-        </div>
-      </nav>
+      <DeckNavegacion diapositivas={DIAPOSITIVAS} indice={indice} alIr={irA} />
     </div>
   );
 }

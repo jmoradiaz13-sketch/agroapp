@@ -44,11 +44,11 @@ export function EditorPredio({ identificador }: { identificador: string }) {
 
   return (
     <section className="grid gap-2">
-      <h2 className="text-lg font-semibold text-[#141414]">Editor predial offline</h2>
+      <h2 className="text-lg font-semibold text-humus">Editor predial offline</h2>
       <div className="flex gap-2 flex-wrap">
-        <button className="boton-campo bg-[#1b5e20] text-white px-4 py-2 text-sm font-semibold rounded-sm" onClick={usarGps}>GPS + punto</button>
+        <button className="boton-campo bg-[#059669] text-white px-4 py-2 text-sm font-semibold rounded-sm" onClick={usarGps}>GPS + punto</button>
         <button className="boton-campo bg-white border border-neutral-300 px-4 py-2 text-sm font-semibold rounded-sm" onClick={() => setPuntos([])}>Limpiar</button>
-        <button className="boton-campo bg-[#1b5e20] text-white px-4 py-2 text-sm font-semibold rounded-sm" onClick={() => void guardar()}>Guardar offline</button>
+        <button className="boton-campo bg-[#059669] text-white px-4 py-2 text-sm font-semibold rounded-sm" onClick={() => void guardar()}>Guardar offline</button>
       </div>
       <MapContainer center={[4.65, -74.05]} zoom={14} style={{ height: 300, width: '100%' }}>
         <TileLayer url="https://tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap" />

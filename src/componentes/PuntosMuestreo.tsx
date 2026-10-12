@@ -36,7 +36,7 @@ export function PuntosMuestreo({ predioIdentificador }: { predioIdentificador: s
   return (
     <section className="bg-white border border-neutral-200 p-4 grid gap-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 className="text-sm font-semibold text-[#141414]">Puntos de muestreo ({puntos.length})</h3>
+        <h3 className="text-sm font-semibold text-humus">Puntos de muestreo ({puntos.length})</h3>
         <BotonSecundario onClick={marcar}>◎ Marcar punto GPS</BotonSecundario>
       </div>
       {mensaje && <p className="mensaje-ok">{mensaje}</p>}
@@ -46,7 +46,7 @@ export function PuntosMuestreo({ predioIdentificador }: { predioIdentificador: s
         <ol className="grid gap-1.5">
           {puntos.map((p) => (
             <li key={p.codigo} className="flex flex-wrap gap-x-3 gap-y-0.5 text-sm border-b border-neutral-100 py-1.5">
-              <strong className="font-semibold text-[#1b5e20]">{p.codigo}</strong>
+              <strong className="font-semibold text-emerald-700">{p.codigo}</strong>
               <span className="text-neutral-500">{p.lat}, {p.lng}</span>
               <span className="text-neutral-400 text-xs self-center">{p.fecha}</span>
             </li>

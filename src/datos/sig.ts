@@ -8,7 +8,7 @@ export interface CapaSig {
   fuente: string;
   pesoEstimado: string;
   disponible: boolean;
-  grupo: 'igac' | 'relieve' | 'vegetacion';
+  grupo: 'igac' | 'relieve' | 'vegetacion' | 'upra';
 }
 
 export const CAPAS_SIG: CapaSig[] = [
@@ -62,6 +62,26 @@ export const CAPAS_SIG: CapaSig[] = [
     disponible: true,
     grupo: 'vegetacion',
   },
+  {
+    id: 'upra-frontera',
+    titulo: 'Frontera agrícola UPRA',
+    descripcion: 'Hectáreas del municipio dentro y condicionadas (1:100.000).',
+    insignia: 'MIXTO',
+    fuente: 'UPRA · datos.gov.co fyc7-sbtz',
+    pesoEstimado: 'Dato tabular, sin peso',
+    disponible: true,
+    grupo: 'upra',
+  },
+  {
+    id: 'upra-aptitud',
+    titulo: 'Aptitud A1/A2/A3 (SIPRA)',
+    descripcion: 'Consulta por cultivo en SIPRA; dato indicativo, no predial.',
+    insignia: 'ONLINE',
+    fuente: 'UPRA · SIPRA',
+    pesoEstimado: 'Enlace externo',
+    disponible: false,
+    grupo: 'upra',
+  },
 ];
 
 export const FECHAS_NDVI = [
@@ -71,7 +91,7 @@ export const FECHAS_NDVI = [
 ];
 
 export const LEYENDA_PENDIENTE = [
-  { rango: '< 7 %', color: '#1b5e20', texto: 'Plano · mecanizable' },
+  { rango: '< 7 %', color: '#059669', texto: 'Plano · mecanizable' },
   { rango: '7–25 %', color: '#f59e0b', texto: 'Ondulado · curvas a nivel' },
   { rango: '> 25 %', color: '#dc2626', texto: 'Empinado · cobertura permanente' },
 ];
@@ -79,5 +99,5 @@ export const LEYENDA_PENDIENTE = [
 export const LEYENDA_NDVI = [
   { rango: '< 0,3', color: '#dc2626', texto: 'Suelo desnudo / estrés' },
   { rango: '0,3–0,6', color: '#f59e0b', texto: 'Transición · verificar' },
-  { rango: '> 0,6', color: '#1b5e20', texto: 'Vigoroso' },
+  { rango: '> 0,6', color: '#059669', texto: 'Vigoroso' },
 ];

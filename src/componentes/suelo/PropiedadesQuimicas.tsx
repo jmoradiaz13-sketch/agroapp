@@ -1,9 +1,19 @@
 import { useEffect, useRef, useState } from 'react';
 import type { UseFormRegister, UseFormSetValue } from 'react-hook-form';
-import type { FichaSueloFormulario } from '../esquemas/suelo';
+import type { FichaSueloFormulario } from '../../esquemas/suelo';
 import {
   RANGOS_VALIDADOS, semaforoPara, COLOR_SEMAFORO, TEXTO_SEMAFORO,
-} from '../datos/rangos';
+} from '../../datos/rangos';
+import { DeckNavegacion } from './DeckNavegacion';
+import { GaugeArco } from '../GaugeArco';
+
+function textoPh(ph: number | undefined): string {
+  if (ph === undefined) return 'Registra el pH para ver el gauge';
+  if (ph < 5.5) return 'Ácido · evalúa enmienda cal';
+  if (ph < 6) return 'Moderadamente ácido';
+  if (ph <= 7) return 'Óptimo general 6–7';
+  return 'Alcalino · vigila micronutrientes';
+}
 
 type R = UseFormRegister<FichaSueloFormulario>;
 type V = Partial<FichaSueloFormulario>;
@@ -29,7 +39,7 @@ function Metodo({ titulo, children }: { titulo: string; children: React.ReactNod
         type="button" onClick={() => setAbierto((v) => !v)} aria-expanded={abierto}
         className="w-full flex items-center justify-between gap-2 p-2.5 text-left"
       >
-        <span className="text-xs font-semibold text-[#1b5e20]">Método · {titulo}</span>
+        <span className="text-xs font-semibold text-emerald-700">Método · {titulo}</span>
         <span className={`text-neutral-400 transition-transform duration-300 ${abierto ? 'rotate-180' : ''}`} aria-hidden>▾</span>
       </button>
       <div className={`grid transition-all duration-300 ease-out ${abierto ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
@@ -65,7 +75,7 @@ function Semaforo({ parametro, valor }: { parametro: string; valor: number | und
       <span className={`w-2 h-2 rounded-full ${COLOR_SEMAFORO[sem]}`} aria-hidden />
       {TEXTO_SEMAFORO[sem]}
       <details className="inline">
-        <summary className="cursor-pointer text-[#1b5e20]">ⓘ</summary>
+        <summary className="cursor-pointer text-emerald-700">ⓘ</summary>
       </details>
       <span className="sr-only">Fuente: {rango.fuente}</span>
     </span>
@@ -97,7 +107,6 @@ export function PropiedadesQuimicas({
   registro: R; valores: V; alIrResumen?: () => void; contexto?: string;
 }) {
   const [indice, setIndice] = useState(0);
-  const [menuAbierto, setMenuAbierto] = useState(false);
   const barraRef = useRef<HTMLDivElement>(null);
   const irA = (i: number) => setIndice(Math.max(0, Math.min(DIAPOSITIVAS.length - 1, i)));
   useEffect(() => {
@@ -112,12 +121,12 @@ export function PropiedadesQuimicas({
     <div className="grid gap-3">
       {contexto && (
         <p className="text-xs font-medium text-neutral-500 flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#1b5e20]" aria-hidden />
+          <span className="w-1.5 h-1.5 rounded-full bg-[#059669]" aria-hidden />
           Trabajando en: {contexto}
         </p>
       )}
 
-      <div ref={barraRef} className="bg-[#1b5e20] text-white rounded-sm px-4 py-3 flex flex-wrap items-center justify-between gap-2 scroll-mt-28">
+      <div ref={barraRef} className="glass rounded-2xl px-4 py-3 flex flex-wrap items-center justify-between gap-2 scroll-mt-28 border-b-2 border-b-emerald-500/60">
         <p className="text-[11px] font-medium tracking-wide text-white/70">Módulo · Propiedades químicas</p>
         <div className="flex items-center gap-2">
           <span className="text-[11px] font-semibold bg-white/15 rounded-full px-3 py-1">Variable · {DIAPOSITIVAS[indice].titulo}</span>
@@ -125,11 +134,11 @@ export function PropiedadesQuimicas({
         </div>
       </div>
 
-      <div key={indice} className="animacion-entrada bg-white border-2 border-[#1b5e20]/30 rounded-sm p-5 grid gap-4 max-h-[calc(100vh-240px)] min-h-[320px] overflow-y-auto scroll-sutil content-start">
+      <div key={indice} className="animacion-entrada bg-white border border-emerald-500/40 shadow-sm rounded-sm p-5 grid gap-4 max-h-[calc(100vh-240px)] min-h-[320px] overflow-y-auto scroll-sutil content-start">
         {indice === 0 && (
           <>
             <div>
-              <h3 className="text-lg font-semibold text-[#141414]">Acidez</h3>
+              <h3 className="text-lg font-semibold text-humus">Acidez</h3>
               <p className="text-xs text-neutral-500">El pH gobierna la disponibilidad de nutrientes (óptimo general 6–7).</p>
             </div>
             <Metodo titulo="Potenciómetro (SENA La Granja, práctica 4)">
@@ -139,6 +148,16 @@ export function PropiedadesQuimicas({
             <Fila etiqueta="pH en agua" unidad="—" registro={registro} nombre="phAgua" parametro="phAgua" valor={v('phAgua')} />
             <Fila etiqueta="pH en KCl" unidad="—" registro={registro} nombre="phKcl" parametro="phKcl" valor={v('phKcl')} />
             <Fila etiqueta="pH portátil / tiras" unidad="—" registro={registro} nombre="phCampo" parametro="phCampo" valor={v('phCampo')} />
+            <div className="bg-selva rounded-sm p-4">
+              <GaugeArco
+                valor={v('phAgua') ?? v('phCampo')}
+                minimo={0}
+                maximo={14}
+                titulo="pH ACTUAL"
+                subtexto={textoPh(v('phAgua') ?? v('phCampo'))}
+                gradiente
+              />
+            </div>
             <p className="mensaje-info">El pH se registra sin semáforo: su interpretación depende del cultivo (tabla de pH óptimo por cultivo en el manual de referencia).</p>
             <Fuente texto="SENA La Granja (2013); USDA-NRCS, Soil Survey Manual" />
           </>
@@ -147,7 +166,7 @@ export function PropiedadesQuimicas({
         {indice === 1 && (
           <>
             <div>
-              <h3 className="text-lg font-semibold text-[#141414]">Salinidad</h3>
+              <h3 className="text-lg font-semibold text-humus">Salinidad</h3>
               <p className="text-xs text-neutral-500">Sales solubles: frenan agua y nutrientes si se acumulan.</p>
             </div>
             <Metodo titulo="Conductímetro">
@@ -163,7 +182,7 @@ export function PropiedadesQuimicas({
         {indice === 2 && (
           <>
             <div>
-              <h3 className="text-lg font-semibold text-[#141414]">Materia orgánica y nitrógeno</h3>
+              <h3 className="text-lg font-semibold text-humus">Materia orgánica y nitrógeno</h3>
               <p className="text-xs text-neutral-500">La reserva de fertilidad y vida del suelo.</p>
             </div>
             <Metodo titulo="Walkley-Black y N total (SENA La Granja, práctica 15)">
@@ -172,6 +191,20 @@ export function PropiedadesQuimicas({
             </Metodo>
             <Fila etiqueta="Materia orgánica" unidad="%" registro={registro} nombre="materiaOrganicaPct" parametro="materiaOrganicaPct" valor={v('materiaOrganicaPct')} />
             <Fila etiqueta="Nitrógeno total" unidad="%" registro={registro} nombre="nitrogenoPct" parametro="nitrogenoPct" valor={v('nitrogenoPct')} />
+            <div className="bg-selva rounded-sm p-4">
+              <GaugeArco
+                valor={v('materiaOrganicaPct')}
+                minimo={0}
+                maximo={10}
+                titulo="MATERIA ORGÁNICA"
+                subtexto={
+                  v('materiaOrganicaPct') === undefined ? 'Registra la MO para ver el gauge'
+                  : v('materiaOrganicaPct')! < 3 ? 'Baja · aporta compost y cobertura'
+                  : v('materiaOrganicaPct')! <= 6 ? 'Adecuada 3–6 %'
+                  : 'Alta · excelente reserva'
+                }
+              />
+            </div>
             <Fuente texto="Guía de calidad y salud del suelo (MO); manual de agroecología (N)" />
           </>
         )}
@@ -179,7 +212,7 @@ export function PropiedadesQuimicas({
         {indice === 3 && (
           <>
             <div>
-              <h3 className="text-lg font-semibold text-[#141414]">Bases, CIC y acidez</h3>
+              <h3 className="text-lg font-semibold text-humus">Bases, CIC y acidez</h3>
               <p className="text-xs text-neutral-500">Cationes retenidos y capacidad de intercambio del suelo.</p>
             </div>
             <Metodo titulo="Acetato de amonio + absorción atómica (SENA La Granja, prácticas 12 y 14)">
@@ -200,7 +233,7 @@ export function PropiedadesQuimicas({
         {indice === 4 && (
           <>
             <div>
-              <h3 className="text-lg font-semibold text-[#141414]">Fósforo, azufre y micros</h3>
+              <h3 className="text-lg font-semibold text-humus">Fósforo, azufre y micros</h3>
               <p className="text-xs text-neutral-500">Disponibilidad y elementos traza del reporte.</p>
             </div>
             <Metodo titulo="Doble ácido + absorción atómica (SENA La Granja, práctica 13)">
@@ -208,6 +241,14 @@ export function PropiedadesQuimicas({
               <p>Fuente: SENA La Granja (2013).</p>
             </Metodo>
             <Fila etiqueta="Fósforo disponible" unidad="mg/kg" paso="0.1" registro={registro} nombre="fosforoMgKg" parametro="fosforoMgKg" valor={v('fosforoMgKg')} />
+            <label className="etiqueta-campo">Método extractante P
+              <select className="campo-entrada" defaultValue="" {...registro('metodoFosforo')}>
+                <option value="">— Sin registrar —</option>
+                <option value="Bray II">Bray II</option>
+                <option value="Olsen">Olsen</option>
+                <option value="otro">Otro</option>
+              </select>
+            </label>
             <Fila etiqueta="Azufre" unidad="mg/kg" paso="0.1" registro={registro} nombre="azufreMgKg" parametro="azufreMgKg" valor={v('azufreMgKg')} />
             <Fila etiqueta="Hierro" unidad="mg/kg" paso="0.1" registro={registro} nombre="hierroMgKg" parametro="hierroMgKg" valor={v('hierroMgKg')} />
             <Fila etiqueta="Manganeso" unidad="mg/kg" paso="0.1" registro={registro} nombre="manganesoMgKg" parametro="manganesoMgKg" valor={v('manganesoMgKg')} />
@@ -232,7 +273,7 @@ export function PropiedadesQuimicas({
         {indice === 5 && (
           <>
             <div>
-              <h3 className="text-lg font-semibold text-[#141414]">Conclusiones químicas</h3>
+              <h3 className="text-lg font-semibold text-humus">Conclusiones químicas</h3>
               <p className="text-xs text-neutral-500">Lo registrado en este recorrido, listo para la interpretación.</p>
             </div>
             <dl className="grid gap-1.5 text-sm border border-neutral-200 p-4">
@@ -244,7 +285,7 @@ export function PropiedadesQuimicas({
             </dl>
             {alIrResumen && (
               <div>
-                <button type="button" onClick={alIrResumen} className="boton-campo px-4 py-2 text-sm font-semibold rounded-sm bg-[#1b5e20] text-white hover:bg-[#124116] transition-colors">
+                <button type="button" onClick={alIrResumen} className="boton-campo px-4 py-2 text-sm font-semibold rounded-sm bg-[#059669] text-white hover:bg-[#047857] transition-colors">
                   Ir a Interpretación →
                 </button>
               </div>
@@ -253,58 +294,7 @@ export function PropiedadesQuimicas({
         )}
       </div>
 
-      <nav className="sticky bottom-2 z-10 mx-auto w-full max-w-[240px] bg-[#141414]/95 backdrop-blur text-white rounded-full px-2 py-1 grid gap-1 shadow-lg" aria-label="Navegación de diapositivas">
-        <div className="flex items-center justify-between gap-1">
-          <button
-            type="button"
-            onClick={() => irA(indice - 1)}
-            className="w-8 h-8 grid place-items-center text-sm hover:bg-white/10 rounded-full transition-colors"
-            aria-label="Diapositiva anterior"
-          >
-            ←
-          </button>
-          <button
-            type="button"
-            onClick={() => setMenuAbierto((v) => !v)}
-            className="px-2 text-xs font-medium text-white/80 hover:text-white hover:bg-white/10 rounded-full transition-colors h-8"
-            aria-expanded={menuAbierto}
-            aria-label="Menú de variables"
-          >
-            ▦
-          </button>
-          <button
-            type="button"
-            onClick={() => irA(indice + 1)}
-            className="w-8 h-8 grid place-items-center text-sm hover:bg-white/10 rounded-full transition-colors"
-            aria-label="Diapositiva siguiente"
-          >
-            →
-          </button>
-        </div>
-        {menuAbierto && (
-          <div className="grid grid-cols-2 gap-1 animacion-entrada" role="tablist" aria-label="Menú de variables">
-            {DIAPOSITIVAS.map((s, i) => (
-              <button
-                key={s.id} type="button" role="tab" aria-selected={indice === i}
-                onClick={() => { irA(i); setMenuAbierto(false); }}
-                className={`px-2 py-2 text-xs font-semibold rounded-sm transition-colors ${
-                  indice === i ? 'bg-[#1b5e20] text-white' : 'bg-white/10 text-white/80 hover:bg-white/20'
-                }`}
-              >
-                {i + 1} · {s.titulo}
-              </button>
-            ))}
-          </div>
-        )}
-        <div className="flex items-center justify-center gap-1">
-          {DIAPOSITIVAS.map((s, i) => (
-            <span
-              key={s.id}
-              className={`h-1.5 rounded-full transition-all duration-300 ${indice === i ? 'w-5 bg-[#86efac]' : 'w-1.5 bg-white/30'}`}
-            />
-          ))}
-        </div>
-      </nav>
+      <DeckNavegacion diapositivas={DIAPOSITIVAS} indice={indice} alIr={irA} />
     </div>
   );
 }

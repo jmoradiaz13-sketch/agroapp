@@ -24,7 +24,7 @@ export function BotonInforme({ predioIdentificador }: { predioIdentificador: str
   };
 
   return (
-    <section className="bg-[#141414] text-white p-5 grid gap-3">
+    <section className="bg-selva text-white p-5 grid gap-3">
       <h2 className="text-lg font-semibold">Informe para el propietario</h2>
       <p className="text-xs text-white/60">PDF en lenguaje claro, listo para entregar en campo u oficina.</p>
       <div><Boton onClick={() => void descargar()}>Descargar PDF (lenguaje claro)</Boton></div>

@@ -8,20 +8,50 @@
   min-height: 44px;
 }
 
-/* === AgroForestapp: esquema sólido estilo OVACEN (fondo blanco + verde oscuro) === */
+/* === AgroForestapp: tierra cálida + esmeralda (Modern Nature) === */
 :root {
-  --verde-solido: #1b5e20;
-  --verde-solido-oscuro: #124116;
-  --verde-acento: #43a047;
-  --negro: #141414;
+  --fondo: #0a2520;
+  --fondo-profundo: #071a15;
+  --selva: #134b42;
+  --esmeralda: #10b981;
+  --esmeralda-claro: #6ee7b7;
+  --esmeralda-oscuro: #059669;
+  --calendula: #eea83b;
+  --terracota: #ca763b;
+  --salvia: #80917d;
+  --hoja: #aeba8a;
+  --ambar: #f59e0b;
+  --tierra: #d97706;
+  --arena: #e7d8b7;
+  --arcilla: #b08968;
+  --corteza: #5c3a1e;
+  --crema: #faf6ef;
+  --glass-borde: rgba(174, 186, 138, 0.16);
 }
 
 body {
   font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
-  background: #ffffff;
-  color: #1a1a1a;
+  background:
+    linear-gradient(rgba(7, 26, 21, 0.72), rgba(7, 26, 21, 0.82)),
+    url("/imagenes/2.jpg") center / cover fixed no-repeat,
+    #0a2520;
+  color: #faf6ef;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Display sobrio de la referencia: Inter extra-negrita compacta (no serif) */
+.font-display {
+  font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.05;
+}
+
+/* Números de datos siempre tabulares */
+.numeros {
+  font-variant-numeric: tabular-nums;
 }
 
 .fondo-campo {
@@ -72,7 +102,7 @@ body {
   border-radius: 9999px;
 }
 .scroll-sutil::-webkit-scrollbar-thumb:hover {
-  background: #1b5e20;
+  background: #10b981;
 }
 
 /* === Formularios y mensajes (esquema sólido blanco/verde/negro) === */
@@ -87,9 +117,9 @@ body {
   color: #1a1a1a;
 }
 .campo-entrada:focus {
-  outline: 2px solid #1b5e20;
+  outline: 2px solid #10b981;
   outline-offset: 0;
-  border-color: #1b5e20;
+  border-color: #10b981;
 }
 .etiqueta-campo {
   display: grid;
@@ -105,7 +135,7 @@ body {
 }
 .mensaje-ok {
   background: #f0fdf4;
-  border: 1px solid #86efac;
+  border: 1px solid #6ee7b7;
   color: #14532d;
   padding: 0.6rem 0.75rem;
   font-size: 0.85rem;
@@ -119,8 +149,79 @@ body {
 }
 .mensaje-info {
   background: #f5f5f5;
-  border-left: 4px solid #1b5e20;
+  border-left: 4px solid #10b981;
   padding: 0.6rem 0.75rem;
   font-size: 0.85rem;
   color: #404040;
+}
+
+/* === Glass sutil y práctico: superficies frost sobre slate, sin sombras pesadas === */
+.glass {
+  background: rgba(10, 37, 32, 0.86);
+  backdrop-filter: blur(18px) saturate(1.1);
+  -webkit-backdrop-filter: blur(18px) saturate(1.1);
+  border: 1px solid var(--glass-borde);
+  box-shadow: 0 12px 32px -16px rgba(0, 0, 0, 0.55);
+}
+.glass-claro {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* Anillo de foco visible (teclado y táctil) */
+.boton-campo:focus-visible,
+.campo-entrada:focus-visible,
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--esmeralda-claro);
+  outline-offset: 2px;
+}
+
+/* Respeto a movimiento reducido */
+@media (prefers-reduced-motion: reduce) {
+  .animacion-entrada,
+  .animacion-flotar {
+    animation: none;
+  }
+}
+
+/* === Tema claro (interruptor): misma app, superficies crema === */
+.tema-claro body {
+  background:
+    linear-gradient(rgba(245, 239, 225, 0.82), rgba(245, 239, 225, 0.9)),
+    url("/imagenes/2.jpg") center / cover fixed no-repeat,
+    #f5efe1;
+  color: #1e150e;
+}
+.tema-claro .glass {
+  background: rgba(255, 255, 255, 0.8);
+  border-color: rgba(92, 58, 30, 0.22);
+}
+.tema-claro .glass-claro {
+  background: rgba(255, 255, 255, 0.7);
+  border-color: rgba(92, 58, 30, 0.2);
+}
+.tema-claro [class*="bg-selva"] {
+  background-color: #ece1cb;
+}
+.tema-claro [class*="bg-selva"][class*="text-white"]:not([class*="bg-emerald"]),
+.tema-claro [class*="bg-selva"] [class*="text-white"]:not([class*="bg-emerald"]),
+.tema-claro .glass [class*="text-white"]:not([class*="bg-emerald"]) {
+  color: #1e150e;
+}
+.tema-claro [class*="bg-emerald-500/20"] {
+  color: #0d332c;
+}
+.tema-claro .glass [class*="emerald-300"] {
+  color: #0d7a5f;
+}
+/* Píldora activa oscura en claro (referencia: pill negra) */
+.tema-claro aside [class*="bg-emerald-500/20"] {
+  background-color: #0d332c;
+  color: #fff;
+}
+.tema-claro nav[aria-label="Navegación de campo"] [class*="emerald-300"] {
+  color: #0d7a5f;
 }

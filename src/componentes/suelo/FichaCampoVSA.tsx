@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { baseDatos } from '../base_datos/local';
-import { Boton } from './ui/Boton';
+import { baseDatos } from '../../base_datos/local';
+import { Boton } from '../ui/Boton';
 
 // MVP 5 campo: VSA simplificado 6 indicadores 0-2, índice 0-100 offline.
 const INDICADORES = ['estructura', 'porosidad', 'color', 'lombrices', 'cobertura', 'erosion_visible'];
@@ -29,7 +29,7 @@ export function FichaCampoVSA({ predioIdentificador }: { predioIdentificador: st
   return (
     <section className="bg-white border border-neutral-200 p-5 grid gap-4">
       <div className="border-b border-neutral-200 pb-3">
-        <h2 className="text-lg font-semibold text-[#141414]">Ficha campo — VSA visual (offline)</h2>
+        <h2 className="text-lg font-semibold text-humus">Ficha campo — VSA visual (offline)</h2>
         <p className="text-xs text-neutral-500">6 indicadores de 0 (pobre) a 2 (bueno) • Índice 0–100</p>
       </div>
       <div className="grid gap-3 sm:grid-cols-2">

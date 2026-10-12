@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { usoFlujo } from '../estado/usoFlujo';
 import { HistorialFichas } from '../componentes/HistorialFichas';
 import { PanelEstrategias } from '../componentes/PanelEstrategias';
+import { TarjetaEnmienda } from '../componentes/TarjetaEnmienda';
 import { Boton } from '../componentes/ui/Boton';
 import { EncabezadoPagina } from '../componentes/ui/EncabezadoPagina';
 
@@ -24,6 +25,7 @@ export function DiagnosticoLote() {
         <GraficoPesado predioIdentificador={id} />
       </Suspense>
       <HistorialFichas predioIdentificador={id} />
+      <TarjetaEnmienda predioIdentificador={id} />
       <PanelEstrategias />
       <Link to="/informe"><Boton>Generar informe →</Boton></Link>
     </div>
