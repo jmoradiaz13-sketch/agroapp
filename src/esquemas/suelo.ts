@@ -16,6 +16,29 @@ export const esquemaFichaSuelo = z.object({
   climaReciente: z.string().max(500).optional(),
   profundidadCm: numero(200),
   laboratorio: z.string().max(200).optional(),
+  // Sitio de muestreo (Datos del terreno)
+  latitud: z.preprocess(
+    (v) => (v === '' || v === null || Number.isNaN(v) ? undefined : Number(v)),
+    z.number().min(-90).max(90).optional()
+  ),
+  longitud: z.preprocess(
+    (v) => (v === '' || v === null || Number.isNaN(v) ? undefined : Number(v)),
+    z.number().min(-180).max(180).optional()
+  ),
+  precisionM: numero(10000),
+  msnm: z.preprocess(
+    (v) => (v === '' || v === null || Number.isNaN(v) ? undefined : Number(v)),
+    z.number().min(-500).max(6000).optional()
+  ),
+  pendienteSitioPct: numero(200),
+  posicionRelieve: z.enum(['cima', 'hombro', 'ladera', 'pie', 'valle']).optional(),
+  usoActual: z.string().max(200).optional(),
+  solicitante: z.string().max(200).optional(),
+  tenenciaSitio: z.enum(['propietario', 'arrendatario', 'poseedor', 'otro']).optional(),
+  manejoReciente: z.string().max(1000).optional(),
+  vereda: z.string().max(100).optional(),
+  municipio: z.string().max(100).optional(),
+  departamento: z.string().max(100).optional(),
   // Físicas campo
   texturaTacto: z.string().max(100).optional(),
   compactacion: z.string().max(100).optional(),

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { UseFormRegister } from 'react-hook-form';
 import type { FichaSueloFormulario } from '../../esquemas/suelo';
 import type { FotoLista } from '../../servicios/fotos';
@@ -9,13 +9,15 @@ import { GaugeArco } from '../GaugeArco';
 type R = UseFormRegister<FichaSueloFormulario>;
 type V = Partial<FichaSueloFormulario>;
 
-const DIAPOSITIVAS = [
+export const DIAPOSITIVAS_BIOLOGICAS: { id: string; titulo: string }[] = [
   { id: 'vida', titulo: 'Vida' },
   { id: 'vsa', titulo: 'VSA' },
   { id: 'cobertura', titulo: 'Cobertura' },
   { id: 'laboratorio', titulo: 'Laboratorio' },
   { id: 'conclusiones', titulo: 'Conclusiones' },
 ];
+
+const DIAPOSITIVAS = DIAPOSITIVAS_BIOLOGICAS;
 
 const INDICADORES_VSA = ['estructura', 'porosidad', 'color', 'lombrices', 'cobertura', 'erosion_visible'];
 const NODULACION = ['sin nódulos', 'nódulos blancos (inactivos)', 'nódulos rosados (activos)'];
@@ -31,41 +33,26 @@ function Fuente({ texto }: { texto: string }) {
 export function PropiedadesBiologicas({
   registro, valores, puntajes, setPuntajes,
   fotoCobertura, alFotoCobertura, alUsarCobertura,
-  alIrResumen, contexto,
+  alIrResumen, diapositiva,
 }: {
   registro: R; valores: V;
   puntajes: Record<string, number>; setPuntajes: (p: Record<string, number>) => void;
   fotoCobertura: { url: string; pct: number } | null;
   alFotoCobertura: (f: FotoLista) => Promise<void>;
   alUsarCobertura: (pct: number) => void;
-  alIrResumen?: () => void; contexto?: string;
+  alIrResumen?: () => void; diapositiva?: number | null;
 }) {
   const [indice, setIndice] = useState(0);
-  const barraRef = useRef<HTMLDivElement>(null);
   const irA = (i: number) => setIndice(Math.max(0, Math.min(DIAPOSITIVAS.length - 1, i)));
   useEffect(() => {
-    barraRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }, [indice]);
+    if (diapositiva !== undefined && diapositiva !== null) irA(diapositiva);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [diapositiva]);
 
   const tocados = INDICADORES_VSA.filter((k) => puntajes[k] !== undefined).length;
 
   return (
     <div className="grid gap-3">
-      {contexto && (
-        <p className="text-xs font-medium text-neutral-500 flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#14736E]" aria-hidden />
-          Trabajando en: {contexto}
-        </p>
-      )}
-
-      <div ref={barraRef} className="glass rounded-2xl px-4 py-3 flex flex-wrap items-center justify-between gap-2 scroll-mt-28 border-b-2 border-b-emerald-500/60">
-        <p className="text-[11px] font-medium tracking-wide">Módulo · Propiedades biológicas</p>
-        <div className="flex items-center gap-2">
-          <span className="text-[11px] font-semibold rounded-full px-3 py-1">Variable · {DIAPOSITIVAS[indice].titulo}</span>
-          <span className="text-[11px]">{indice + 1} de {DIAPOSITIVAS.length}</span>
-        </div>
-      </div>
-
       <div key={indice} className="animacion-entrada bg-white border border-emerald-500/40 shadow-sm rounded-sm p-5 grid gap-4 max-h-[calc(100vh-240px)] min-h-[320px] overflow-y-auto scroll-sutil content-start">
         {indice === 0 && (
           <>

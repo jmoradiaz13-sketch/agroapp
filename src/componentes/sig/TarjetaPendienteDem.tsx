@@ -38,7 +38,7 @@ export function TarjetaPendienteDem({
             </select>
           </label>
           <Boton onClick={alCalcular} disabled={calculando}>
-            {calculando ? 'Muestreando DEM…' : '⛰ Calcular pendiente DEM'}
+            {calculando ? 'Muestreando DEM…' : 'Calcular pendiente DEM'}
           </Boton>
           {estimacion && (
             <div className="grid gap-1 border border-neutral-200 p-3">

@@ -57,7 +57,7 @@ export function BancoEspecies({
     <Tarjeta titulo={`Banco de especies (${especies.length})`}>
       <div className="flex gap-2 flex-wrap">
         <BotonSecundario onClick={() => void sembrarBanco().then((m) => { setMensaje(m); alCambiar(); })}>
-          🌱 Sembrar banco base
+          Sembrar banco base
         </BotonSecundario>
         <BotonSecundario onClick={() => setForm((v) => !v)}>{form ? 'Cerrar' : '＋ Agregar especie'}</BotonSecundario>
       </div>

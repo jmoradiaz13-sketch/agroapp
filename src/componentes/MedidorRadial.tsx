@@ -48,7 +48,7 @@ export function MedidorRadial({ madurez }: { madurez: Madurez }) {
                 ? { background: 'var(--acento-suave)', border: '1px solid var(--acento)', color: 'var(--texto)' }
                 : { background: 'transparent', border: '1px solid var(--borde)', color: 'var(--faint)' }}
             >
-              {i.obtenida ? '★' : '☆'} {i.titulo}
+              {i.obtenida ? '●' : '○'} {i.titulo}
             </span>
           ))}
         </div>

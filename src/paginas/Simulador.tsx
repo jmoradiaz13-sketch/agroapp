@@ -154,7 +154,7 @@ export function Simulador() {
       {paso === 'escenarios' && (
         <Tarjeta titulo="Compatibilidad y escenarios">
           <p className="text-sm text-neutral-600">Evalúa cada especie contra tu zona y genera A productivo, B restauración y C integrado.</p>
-          <div><Boton onClick={() => void generar()} disabled={cargando}>{cargando ? 'Simulando…' : '⚗ Generar escenarios'}</Boton></div>
+          <div><Boton onClick={() => void generar()} disabled={cargando}>{cargando ? 'Simulando…' : 'Generar escenarios'}</Boton></div>
           {compat && (
             <ul className="grid gap-1.5">
               {compat.map((c) => (

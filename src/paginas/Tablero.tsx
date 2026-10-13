@@ -67,7 +67,7 @@ export function PaginaTablero() {
     <div className="grid gap-5 animacion-entrada">
       {/* Hero editorial: declaración + recorrido */}
       <section className="grid gap-5 py-6 sm:py-10" aria-label="Planificación de fincas">
-        <p className="kicker">Surcos · Elige tu recorrido</p>
+        <p className="kicker">SurcAF · Elige tu recorrido</p>
         <h1 className="font-display font-medium leading-[1.02]" style={{ color: 'var(--texto)', fontSize: 'clamp(2.6rem, 7vw, 5.2rem)', maxWidth: '16ch' }}>
           Planificación de fincas
         </h1>

@@ -41,7 +41,7 @@ export function BannerOffline() {
       className="flex flex-wrap items-center gap-2 px-4 py-2 text-xs font-semibold bg-amber-500 text-slate-950"
     >
       <span className="flex items-center gap-1.5">
-        <span aria-hidden>📴</span>
+        <span className="w-1.5 h-1.5 rounded-full bg-slate-950" aria-hidden />
         MODO OFFLINE · guardado local en Dexie · {pendientes} pendientes
       </span>
     </div>

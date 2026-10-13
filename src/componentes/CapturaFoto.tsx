@@ -26,7 +26,7 @@ export function CapturaFoto({
   return (
     <span className="inline-grid gap-1">
       <label className="boton-campo inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-sm bg-white text-emerald-700 border border-[#059669]/40 hover:border-[#059669] hover:bg-green-50/60 transition-all cursor-pointer">
-        📷 {texto}
+          {texto}
         <input
           type="file" accept="image/*" capture="environment" className="hidden"
           aria-label={texto}

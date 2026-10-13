@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { baseDatos, type PredioLocal } from '../base_datos/local';
+import { Icono } from '../componentes/Iconos';
 import { sembrarDemo } from '../servicios/semilla_demo';
 import { usoFlujo } from '../estado/usoFlujo';
 import { Boton, BotonSecundario } from '../componentes/ui/Boton';
@@ -158,7 +159,7 @@ export function PaginaPredios() {
         <div className="grid gap-3">
           {visibles.map((p) => (
             <article key={p.identificador} className="border border-neutral-200 rounded-2xl p-4 grid gap-2 sm:grid-cols-[auto_1fr_auto] sm:items-center">
-              <span className="w-11 h-11 rounded-full bg-emerald-50 border border-emerald-200 grid place-items-center text-xl shrink-0" aria-hidden>🏡</span>
+              <span className="w-11 h-11 rounded-full bg-emerald-50 border border-emerald-200 grid place-items-center shrink-0" style={{ color: 'var(--acento)' }} aria-hidden><Icono id="predios" /></span>
               <div>
                 <h3 className="font-semibold text-humus">{p.nombre}</h3>
                 <p className="text-sm text-neutral-500">

@@ -33,10 +33,10 @@ export function InformePredio() {
         {mensaje && <p className="mensaje-ok" role="status">{mensaje}</p>}
         <div className="flex gap-2 flex-wrap">
           <BotonSecundario onClick={() => void exportarPredioGeoJSON(id).then(setMensaje)}>
-            ⬇ GeoJSON del predio
+            ↓ GeoJSON del predio
           </BotonSecundario>
           <BotonSecundario onClick={() => void exportarFichasCSV(id).then(setMensaje)}>
-            ⬇ CSV de fichas
+            ↓ CSV de fichas
           </BotonSecundario>
         </div>
       </Tarjeta>

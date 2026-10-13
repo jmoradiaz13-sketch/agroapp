@@ -8,8 +8,8 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       manifest: {
-        name: 'Surcos Campo',
-        short_name: 'Surcos',
+        name: 'SurcAF Campo',
+        short_name: 'SurcAF',
         description: 'Gestión de fincas y suelos — funciona en campo sin conexión',
         theme_color: '#0B2F31',
         background_color: '#F6F1E4',

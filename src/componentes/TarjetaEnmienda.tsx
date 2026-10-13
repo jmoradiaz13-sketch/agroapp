@@ -52,7 +52,7 @@ export function TarjetaEnmienda({ predioIdentificador }: { predioIdentificador: 
       ) : (
         <>
           <Boton onClick={() => void calcular()} disabled={cargando}>
-            {cargando ? 'Calculando…' : '🧪 Calcular dosis de cal'}
+            {cargando ? 'Calculando…' : 'Calcular dosis de cal'}
           </Boton>
           {mensaje && <p className="mensaje-error">{mensaje}</p>}
           {enmienda && (

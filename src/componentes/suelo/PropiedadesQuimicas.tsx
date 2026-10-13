@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { UseFormRegister, UseFormSetValue } from 'react-hook-form';
 import type { FichaSueloFormulario } from '../../esquemas/suelo';
 import {
@@ -18,7 +18,7 @@ function textoPh(ph: number | undefined): string {
 type R = UseFormRegister<FichaSueloFormulario>;
 type V = Partial<FichaSueloFormulario>;
 
-const DIAPOSITIVAS = [
+export const DIAPOSITIVAS_QUIMICAS: { id: string; titulo: string }[] = [
   { id: 'acidez', titulo: 'Acidez' },
   { id: 'salinidad', titulo: 'Salinidad' },
   { id: 'materia', titulo: 'MO y N' },
@@ -26,6 +26,8 @@ const DIAPOSITIVAS = [
   { id: 'fosforo', titulo: 'P y micros' },
   { id: 'conclusiones', titulo: 'Conclusiones' },
 ];
+
+const DIAPOSITIVAS = DIAPOSITIVAS_QUIMICAS;
 
 function Fuente({ texto }: { texto: string }) {
   return <p className="text-xs text-neutral-500">Fuente: {texto}</p>;
@@ -102,16 +104,16 @@ function Fila({
 // Deck: una variable química por diapositiva, con método, captura,
 // semáforo en vivo y conclusiones. Campo, laboratorio o mixto.
 export function PropiedadesQuimicas({
-  registro, valores, alIrResumen, contexto,
+  registro, valores, alIrResumen, diapositiva,
 }: {
-  registro: R; valores: V; alIrResumen?: () => void; contexto?: string;
+  registro: R; valores: V; alIrResumen?: () => void; diapositiva?: number | null;
 }) {
   const [indice, setIndice] = useState(0);
-  const barraRef = useRef<HTMLDivElement>(null);
   const irA = (i: number) => setIndice(Math.max(0, Math.min(DIAPOSITIVAS.length - 1, i)));
   useEffect(() => {
-    barraRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }, [indice]);
+    if (diapositiva !== undefined && diapositiva !== null) irA(diapositiva);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [diapositiva]);
   const v = (c: keyof FichaSueloFormulario) => {
     const x = valores[c];
     return typeof x === 'number' && !Number.isNaN(x) ? x : undefined;
@@ -119,21 +121,6 @@ export function PropiedadesQuimicas({
 
   return (
     <div className="grid gap-3">
-      {contexto && (
-        <p className="text-xs font-medium text-neutral-500 flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#14736E]" aria-hidden />
-          Trabajando en: {contexto}
-        </p>
-      )}
-
-      <div ref={barraRef} className="glass rounded-2xl px-4 py-3 flex flex-wrap items-center justify-between gap-2 scroll-mt-28 border-b-2 border-b-emerald-500/60">
-        <p className="text-[11px] font-medium tracking-wide">Módulo · Propiedades químicas</p>
-        <div className="flex items-center gap-2">
-          <span className="text-[11px] font-semibold rounded-full px-3 py-1">Variable · {DIAPOSITIVAS[indice].titulo}</span>
-          <span className="text-[11px]">{indice + 1} de {DIAPOSITIVAS.length}</span>
-        </div>
-      </div>
-
       <div key={indice} className="animacion-entrada bg-white border border-emerald-500/40 shadow-sm rounded-sm p-5 grid gap-4 max-h-[calc(100vh-240px)] min-h-[320px] overflow-y-auto scroll-sutil content-start">
         {indice === 0 && (
           <>

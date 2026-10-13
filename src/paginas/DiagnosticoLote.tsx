@@ -8,30 +8,37 @@ import { TarjetaEnmienda } from '../componentes/TarjetaEnmienda';
 import { SimuladorRusle } from '../componentes/SimuladorRusle';
 import { AyudaCampo } from '../componentes/AyudaCampo';
 import { Boton } from '../componentes/ui/Boton';
-import { EncabezadoPagina } from '../componentes/ui/EncabezadoPagina';
 import { etiquetaCache } from '../base_datos/local';
 
 const GraficoPesado = lazy(() => import('../componentes/GraficoDiagnosticoPesado'));
 
-// Paso 4: diagnóstico premium con puntaje 0-100, radar normalizado y RUSLE.
+// Escena Diagnóstico = interpretar y decidir. La cabecera la pone MarcoEscena.
 export function DiagnosticoLote() {
   const { predioIdentificador } = usoFlujo();
   const { fechaCache } = usoPredio();
-  const id = predioIdentificador ?? 'finca-mirador';
+
+  if (!predioIdentificador) {
+    return (
+      <div className="grid gap-4 animacion-entrada">
+        <p className="mensaje-info">Elige o crea un predio para ver su diagnóstico.</p>
+        <Link to="/predios"><Boton>Ir a Predios</Boton></Link>
+      </div>
+    );
+  }
+
+  const id = predioIdentificador;
 
   return (
     <div className="grid gap-4 animacion-entrada">
-      <EncabezadoPagina
-        kicker="Paso 4 · Diagnóstico agroecológico"
-        titulo="Diagnóstico del lote"
-        descripcion="Salud 0-100 trazable, erosión RUSLE y enmiendas. El sistema sugiere, el técnico decide."
-      />
+      <p className="text-sm" style={{ color: 'var(--muted)', maxWidth: '62ch' }}>
+        Salud 0-100 trazable, erosión RUSLE y enmiendas. El sistema sugiere, el técnico decide.
+      </p>
       <p className="text-[11px]" style={{ color: 'var(--faint)' }}>{fechaCache ? etiquetaCache(fechaCache) : 'Caché local - actualizado el (sin sincronizar)'}</p>
       <Suspense fallback={<p className="mensaje-info">Cargando gráfico…</p>}>
         <GraficoPesado predioIdentificador={id} />
       </Suspense>
-      <SimuladorRusle predioIdentificador={id} />
       <HistorialFichas predioIdentificador={id} />
+      <SimuladorRusle predioIdentificador={id} />
       <TarjetaEnmienda predioIdentificador={id} />
       <PanelEstrategias />
       <AyudaCampo

@@ -44,14 +44,14 @@ export default function App() {
       <BarraSuperior />
       <div className="flex-1 min-w-0 flex flex-col">
         <BannerOffline />
-        <main className="flex-1 w-full px-3 sm:px-6 xl:px-10 py-4 grid gap-4 content-start overflow-x-hidden pb-24 lg:pb-6">
-          <Suspense fallback={<p className="font-medium" style={{ color: 'var(--acento)' }}>🌱 Cargando escena…</p>}>
+        <main className="flex-1 w-full px-4 py-4 grid gap-4 content-start overflow-x-hidden pb-24 lg:pb-6">
+            <Suspense fallback={<p className="font-medium inline-flex items-center gap-2" style={{ color: 'var(--acento)' }}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="w-5 h-5 giro-lento" aria-hidden="true"><circle cx="12" cy="12" r="8.5" /><path d="M12 7.5V12l3 2" strokeLinecap="round" /></svg> Cargando escena…</p>}>
             <Routes>
               <Route path="/" element={<PaginaTablero />} />
               <Route path="/predios" element={<MarcoEscena><PaginaPredios /></MarcoEscena>} />
               <Route path="/diseno" element={<MarcoEscena><PaginaDiseno /></MarcoEscena>} />
               <Route path="/lote" element={<MarcoEscena><DashboardLote /></MarcoEscena>} />
-              <Route path="/ficha" element={<MarcoEscena><FichaLote /></MarcoEscena>} />
+              <Route path="/ficha" element={<FichaLote />} />
               <Route path="/sig" element={<MarcoEscena><SigRestauracion /></MarcoEscena>} />
               <Route path="/simulador" element={<MarcoEscena><Simulador /></MarcoEscena>} />
               <Route path="/biblioteca" element={<MarcoEscena><Biblioteca /></MarcoEscena>} />
@@ -65,7 +65,7 @@ export default function App() {
             <div className="w-full px-4 sm:px-6 xl:px-10 py-8 grid gap-6 md:grid-cols-3">
               <div className="grid content-start gap-2">
                 <p className="text-base font-semibold flex items-center gap-2" style={{ color: 'var(--marca-texto)' }}>
-                  <span className="w-12 h-9 overflow-hidden inline-block shrink-0" aria-hidden><LogoMarca reverso className="w-12 h-9" /></span> <span className="font-display text-lg">SURCOS</span>
+                  <span className="w-12 h-9 overflow-hidden inline-block shrink-0" aria-hidden><LogoMarca reverso className="w-12 h-9" /></span> <span className="font-display text-lg">SURCAF</span>
                 </p>
                 <p className="text-xs leading-relaxed">
                   Gestión de fincas y suelos con enfoque agroecológico. Suelos vivos, campo productivo.
@@ -95,7 +95,7 @@ export default function App() {
             <div style={{ borderTop: '1px solid var(--borde)' }}>
               <div className="w-full px-4 sm:px-6 xl:px-10 py-3 flex flex-wrap items-center justify-between gap-2 text-[11px] font-medium opacity-70">
                 <span className="flex items-center gap-1.5">
-                  <span className="w-5 h-4 rounded overflow-hidden inline-block shrink-0" aria-hidden><LogoMarca reverso className="w-5 h-4" /></span> SURCOS • Gestión de fincas y suelos
+                  <span className="w-5 h-4 rounded overflow-hidden inline-block shrink-0" aria-hidden><LogoMarca reverso className="w-5 h-4" /></span> SURCAF • Gestión de fincas y suelos
                 </span>
                 <span>Caché local • Sincroniza en oficina</span>
               </div>

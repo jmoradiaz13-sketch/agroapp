@@ -1,9 +1,9 @@
 {
-  "name": "surcos",
+  "name": "surcaf",
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Surcos frontend: gestión de fincas y suelos offline-first (WGS84 EPSG:4326)",
+  "description": "SurcAF frontend: gestión de fincas y suelos offline-first (WGS84 EPSG:4326)",
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",

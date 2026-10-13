@@ -46,12 +46,12 @@ function BarraEscritorio() {
   return (
     <div className="hidden lg:block sticky top-0 z-50" style={{ background: 'var(--marca)', borderBottom: '1px solid var(--borde)' }}>
       <div className="w-full px-6 xl:px-10 h-20 flex items-center gap-8">
-        <Link to="/" className="flex items-center gap-3 shrink-0" aria-label="Surcos inicio">
+        <Link to="/" className="flex items-center gap-3 shrink-0" aria-label="SurcAF inicio">
           <span className="w-16 h-11 grid place-items-center shrink-0" aria-hidden>
             <LogoMarca reverso className="w-16 h-11" />
           </span>
           <span className="leading-none grid">
-            <span className="text-lg font-bold tracking-tight" style={{ color: 'var(--marca-texto)' }}>SURCOS</span>
+            <span className="text-lg font-bold tracking-tight" style={{ color: 'var(--marca-texto)' }}>SURCAF</span>
             <span className="mono-micro" style={{ color: 'var(--marca-muted)' }}>fincas y suelos</span>
           </span>
         </Link>
@@ -124,12 +124,12 @@ function BarraMovil() {
     <header className="lg:hidden sticky top-0 z-50" style={{ boxShadow: 'var(--sombra-suave)' }}>
       <div style={{ background: 'var(--marca)', borderBottom: '1px solid var(--borde)' }}>
         <div className="max-w-6xl mx-auto px-3 sm:px-4 py-1.5 flex items-center justify-between gap-2 sm:gap-3">
-          <Link to="/" className="flex items-center gap-2 shrink-0 min-w-0" aria-label="Surcos inicio">
+          <Link to="/" className="flex items-center gap-2 shrink-0 min-w-0" aria-label="SurcAF inicio">
             <span className="w-12 h-9 grid place-items-center shrink-0 overflow-hidden" aria-hidden>
               <LogoMarca reverso className="w-12 h-9" />
             </span>
             <span className="leading-none grid min-w-0">
-              <span className="text-sm font-bold tracking-tight" style={{ color: 'var(--marca-texto)' }}>SURCOS</span>
+              <span className="text-sm font-bold tracking-tight" style={{ color: 'var(--marca-texto)' }}>SURCAF</span>
               <span className="text-[10px] font-medium tracking-wide" style={{ color: 'var(--marca-muted)' }}>Gestión de fincas y suelos</span>
             </span>
           </Link>
