@@ -167,3 +167,16 @@ export const MINERALES_MUNSELL: MineralMunsell[] = [
   { mineral: 'Jarosita', munsell: '5Y 6/4', color: 'Amarillo pálido' },
 ];
 export const FUENTE_MINERALES = 'SENA La Granja (2013), modificado de NRCS-USDA (2002)';
+
+// Agua disponible = CC − PMP (cálculo directo, no se almacena: se muestra).
+// CC: agua retenida a −10/−33 kPa; PMP: −1500 kPa; lo retenido cerca de −10 kPa
+// es fácilmente disponible; poros de 0,2–50 µm la almacenan. Tabla 1.14
+// (Rawls et al. 1992) trae CC/PMP por clase textural.
+export const FUENTE_AGUA =
+  'propiedades_fisicas_de_los_suelos.pdf, cap. 1 (§1.3.8, Tabla 1.14 Rawls et al. 1992)';
+
+export function calcularAguaDisponible(cc?: number, pmp?: number): number | null {
+  if (cc === undefined || pmp === undefined) return null;
+  const disponible = Math.round((cc - pmp) * 10) / 10;
+  return disponible >= 0 ? disponible : null;
+}

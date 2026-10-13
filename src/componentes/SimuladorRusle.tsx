@@ -81,7 +81,7 @@ export function SimuladorRusle({ predioIdentificador }: { predioIdentificador: s
           <p className="text-sm">
             Pérdida estimada <strong className="numeros text-lg" style={{ color }}>{visible.perdida} t/ha/año</strong>
             {' '}· <span className="font-bold capitalize" style={{ color }}>{visible.nivel}</span>
-            {visible.perdida < 5 && <span className="ml-2 text-xs font-bold text-emerald-700 bg-emerald-100 rounded-full px-2 py-0.5">🛡️ Guardián erosión &lt;5</span>}
+            {visible.perdida < 5 && <span className="ml-2 text-xs font-bold text-emerald-700 bg-emerald-100 rounded-full px-2 py-0.5"> Guardián erosión &lt;5</span>}
           </p>
           <p className="text-sm text-neutral-600">{visible.manejo}</p>
           <p className="text-[11px] italic text-neutral-500">Fuente: {FUENTE_RUSLE} · Bajo &lt;5 · Moderado 5-15 · Severo 15-50 · Crítico &gt;50</p>

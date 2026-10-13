@@ -71,6 +71,20 @@ export interface FichaSueloLocal {
   climaReciente?: string;
   profundidadCm?: number;
   laboratorio?: string;
+  // Sitio de muestreo (Datos del terreno)
+  latitud?: number;
+  longitud?: number;
+  precisionM?: number;
+  msnm?: number;
+  pendienteSitioPct?: number;
+  posicionRelieve?: 'cima' | 'hombro' | 'ladera' | 'pie' | 'valle';
+  usoActual?: string;
+  solicitante?: string;
+  tenenciaSitio?: 'propietario' | 'arrendatario' | 'poseedor' | 'otro';
+  manejoReciente?: string;
+  vereda?: string;
+  municipio?: string;
+  departamento?: string;
   // Físicas
   texturaTacto?: string;
   compactacion?: string;

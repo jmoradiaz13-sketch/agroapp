@@ -49,7 +49,7 @@ export function TarjetaRiego() {
           <input className="campo-entrada" type="number" value={tmin} onChange={(e) => setTmin(e.target.value)} />
         </label>
       </div>
-      <div><Boton onClick={() => void calcular()} disabled={cargando}>{cargando ? 'Calculando…' : '💧 Calcular lámina'}</Boton></div>
+      <div><Boton onClick={() => void calcular()} disabled={cargando}>{cargando ? 'Calculando…' : 'Calcular lámina'}</Boton></div>
       {mensaje && <p className="mensaje-error">{mensaje}</p>}
       {riego && (
         <div className="grid gap-1 border border-neutral-200 p-3">

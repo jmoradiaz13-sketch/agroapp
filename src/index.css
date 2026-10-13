@@ -8,7 +8,7 @@
   min-height: 44px;
 }
 
-/* === Surcos · Citrus Grove (claro por defecto) === */
+/* === SurcAF · Citrus Grove (claro por defecto) === */
 :root {
   --fondo: #f6f1e4;
   --panel: #f2e9d8;
@@ -201,6 +201,14 @@ html.tema-oscuro body {
 @keyframes flotar {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-8px); }
+}
+
+/* Reloj de carga sobrio: rotación lenta continua. */
+.giro-lento {
+  animation: giro 1.6s linear infinite;
+}
+@keyframes giro {
+  to { transform: rotate(360deg); }
 }
 
 .animacion-entrada {

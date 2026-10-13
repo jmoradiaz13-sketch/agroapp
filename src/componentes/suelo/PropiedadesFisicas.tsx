@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { UseFormRegister, UseFormSetValue } from 'react-hook-form';
 import type { FichaSueloFormulario } from '../../esquemas/suelo';
 import type { FotoLista } from '../../servicios/fotos';
@@ -8,17 +8,19 @@ import {
   MINERALES_MUNSELL, FUENTE_MINERALES,
   FUENTE_DENSIDAD, calcularDA, calcularPorosidad,
   interpretarPorosidad, FUENTE_POROSIDAD,
+  FUENTE_AGUA, calcularAguaDisponible,
 } from '../../datos/fisicas';
 import {
   Fuente, Columna, ArbolTextura, Triangulo, tactoAClase, SemaforoDensidad,
 } from './fisicas_apoyo';
+import { AyudaCampo } from '../AyudaCampo';
 import { DeckNavegacion } from './DeckNavegacion';
 import { FisicasEstructura } from './FisicasEstructura';
 
 type R = UseFormRegister<FichaSueloFormulario>;
 type V = Partial<FichaSueloFormulario>;
 
-const DIAPOSITIVAS = [
+export const DIAPOSITIVAS_FISICAS: { id: string; titulo: string }[] = [
   { id: 'textura', titulo: 'Textura' },
   { id: 'color', titulo: 'Color' },
   { id: 'densidad', titulo: 'Densidad' },
@@ -27,16 +29,17 @@ const DIAPOSITIVAS = [
   { id: 'conclusiones', titulo: 'Conclusiones' },
 ];
 
+const DIAPOSITIVAS = DIAPOSITIVAS_FISICAS;
+
 // Deck estilo curso/MOOC: una variable por diapositiva con fundamentos,
 // medición y captura DUO (campo + laboratorio), hasta conclusiones.
 export function PropiedadesFisicas({
-  registro, fijar, valores, errorGranulometria, alFoto, alIrResumen, contexto,
+  registro, fijar, valores, errorGranulometria, alFoto, alIrResumen, diapositiva,
 }: {
   registro: R; fijar: UseFormSetValue<FichaSueloFormulario>; valores: V; errorGranulometria?: string;
-  alFoto?: (f: FotoLista) => void; alIrResumen?: () => void; contexto?: string;
+  alFoto?: (f: FotoLista) => void; alIrResumen?: () => void; diapositiva?: number | null;
 }) {
   const [indice, setIndice] = useState(0);
-  const barraRef = useRef<HTMLDivElement>(null);
   const [metodo, setMetodo] = useState('anillo');
   const [pesoSeco, setPesoSeco] = useState('');
   const [volumen, setVolumen] = useState('');
@@ -63,26 +66,12 @@ export function PropiedadesFisicas({
   const irA = (i: number) => setIndice(Math.max(0, Math.min(DIAPOSITIVAS.length - 1, i)));
 
   useEffect(() => {
-    barraRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }, [indice]);
+    if (diapositiva !== undefined && diapositiva !== null) irA(diapositiva);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [diapositiva]);
 
   return (
     <div className="grid gap-3">
-      {contexto && (
-        <p className="text-xs font-medium text-neutral-500 flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#14736E]" aria-hidden />
-          Trabajando en: {contexto}
-        </p>
-      )}
-
-      <div ref={barraRef} className="glass rounded-2xl px-4 py-3 flex flex-wrap items-center justify-between gap-2 scroll-mt-28 border-b-2 border-b-emerald-500/60">
-        <p className="text-[11px] font-medium tracking-wide">Módulo · Propiedades físicas</p>
-        <div className="flex items-center gap-2">
-          <span className="text-[11px] font-semibold rounded-full px-3 py-1">Variable · {DIAPOSITIVAS[indice].titulo}</span>
-          <span className="text-[11px]">{indice + 1} de {DIAPOSITIVAS.length}</span>
-        </div>
-      </div>
-
       <div key={indice} className="animacion-entrada bg-white border border-emerald-500/40 shadow-sm rounded-sm p-5 grid gap-3 lg:grid-cols-3 max-h-[calc(100vh-240px)] min-h-[320px] overflow-y-auto scroll-sutil content-start">
         {indice === 0 && (
           <>
@@ -249,16 +238,35 @@ export function PropiedadesFisicas({
                   <input className="campo-entrada" type="number" step="0.01" min="0" {...registro('densidadReal')} />
                 </label>
                 <div className="grid grid-cols-3 gap-2">
-                  <label className="etiqueta-campo">Porosidad
+                  <label className="etiqueta-campo">Porosidad (%)
                     <input className="campo-entrada" type="number" step="0.1" min="0" {...registro('porosidadPct')} />
                   </label>
-                  <label className="etiqueta-campo">CC
+                  <label className="etiqueta-campo">CC · capacidad de campo (%)
                     <input className="campo-entrada" type="number" step="0.1" min="0" {...registro('capacidadCampoPct')} />
                   </label>
-                  <label className="etiqueta-campo">PMP
+                  <label className="etiqueta-campo">PMP · marchitez permanente (%)
                     <input className="campo-entrada" type="number" step="0.1" min="0" {...registro('pmpPct')} />
                   </label>
                 </div>
+                <AyudaCampo
+                  titulo="CC, PMP y agua disponible"
+                  porque="La capacidad de campo es el agua retenida a −10/−33 kPa y el punto de marchitez a −1500 kPa. Lo retenido cerca de −10 kPa es fácilmente disponible y vive en poros de 0,2–50 µm."
+                  como="Registra CC y PMP del reporte; el agua disponible (CC − PMP) se calcula sola. Si PMP supera a CC, revisa el reporte: es físicamente imposible."
+                  fuente={FUENTE_AGUA}
+                />
+                {(() => {
+                  const cc = valores.capacidadCampoPct;
+                  const pmp = valores.pmpPct;
+                  if (cc === undefined || pmp === undefined) return null;
+                  if (pmp > cc) {
+                    return <p className="mensaje-error">PMP ({pmp} %) mayor que CC ({cc} %): imposible en campo. Verifica el reporte de laboratorio.</p>;
+                  }
+                  return (
+                    <p className="mensaje-ok">
+                      Agua disponible ≈ <strong className="font-semibold">{calcularAguaDisponible(cc, pmp)} %</strong> (CC − PMP, calculado, no se almacena).
+                    </p>
+                  );
+                })()}
               </div>
               {daCalc !== null && !Number.isNaN(daCalc) ? (
                 <div className="grid gap-2 border border-neutral-200 p-3">
@@ -305,6 +313,11 @@ export function PropiedadesFisicas({
                 <div className="flex gap-2"><dt className="text-neutral-500 w-24 shrink-0">Textura</dt><dd className="font-medium">{valores.texturaTacto ?? (auto ? CLASES_ES[auto] : 'Sin registrar')}</dd></div>
                 <div className="flex gap-2"><dt className="text-neutral-500 w-24 shrink-0">Color</dt><dd className="font-medium">{valores.munsellH ? `${valores.munsellH} ${valores.munsellV ?? '?'} / ${valores.munsellC ?? '?'}` : 'Sin registrar'}</dd></div>
                 <div className="flex gap-2"><dt className="text-neutral-500 w-24 shrink-0">Densidad</dt><dd className="font-medium">{valores.densidadAparente !== undefined ? `${valores.densidadAparente} g/cm³` : 'Sin registrar'}</dd></div>
+                <div className="flex gap-2"><dt className="text-neutral-500 w-24 shrink-0">Agua</dt><dd className="font-medium">{
+                  valores.capacidadCampoPct !== undefined && valores.pmpPct !== undefined
+                    ? `CC ${valores.capacidadCampoPct} % · PMP ${valores.pmpPct} % · disponible ≈ ${calcularAguaDisponible(valores.capacidadCampoPct, valores.pmpPct) ?? '?'} %`
+                    : 'Sin registrar'
+                }</dd></div>
                 <div className="flex gap-2"><dt className="text-neutral-500 w-28 shrink-0">Estructura</dt><dd className="font-medium">{valores.estructuraVess !== undefined ? `VESS Sq${valores.estructuraVess}` : (valores.estructuraDesc ?? 'Sin registrar')}</dd></div>
               </dl>
             </Columna>

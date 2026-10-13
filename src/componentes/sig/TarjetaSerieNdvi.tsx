@@ -16,7 +16,7 @@ export function TarjetaSerieNdvi({
   return (
     <Tarjeta titulo="Serie temporal NDVI">
       <Boton onClick={alActualizar} disabled={cargando}>
-        {cargando ? 'Leyendo serie…' : '🛰 Actualizar serie'}
+        {cargando ? 'Leyendo serie…' : ' Actualizar serie'}
       </Boton>
       {!serie ? (
         <p className="mensaje-info">Sin serie en este dispositivo. Actualiza con red o usa la precarga de oficina.</p>

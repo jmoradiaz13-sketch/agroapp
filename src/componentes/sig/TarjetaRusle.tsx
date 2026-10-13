@@ -71,7 +71,7 @@ export function TarjetaRusle({
             </label>
           </div>
           <div>
-            <Boton onClick={() => void consultarLluvia()}>🌧 Lluvia IDEAM del municipio</Boton>
+            <Boton onClick={() => void consultarLluvia()}>Lluvia IDEAM del municipio</Boton>
           </div>
           {mensajeLluvia && <p className="mensaje-info">{mensajeLluvia}</p>}
           {lluvia && (
@@ -89,7 +89,7 @@ export function TarjetaRusle({
             </select>
           </label>
           <Boton onClick={alCalcular} disabled={calculando}>
-            {calculando ? 'Calculando…' : '🧮 Calcular RUSLE'}
+            {calculando ? 'Calculando…' : 'Calcular RUSLE'}
           </Boton>
           {rusle && (
             <div className="grid gap-1 border border-neutral-200 p-3">

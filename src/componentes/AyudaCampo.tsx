@@ -11,7 +11,7 @@ export function AyudaCampo({ titulo, porque, como, fuente }: { titulo: string; p
         onClick={() => setAbierto((v) => !v)}
         aria-expanded={abierto}
       >
-        <span>📚 {titulo}</span>
+        <span>{titulo}</span>
         <span aria-hidden style={{ color: 'var(--acento)' }}>{abierto ? '▲' : '▼'}</span>
       </button>
       {abierto && (

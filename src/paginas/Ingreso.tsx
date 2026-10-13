@@ -54,29 +54,23 @@ export function PaginaIngreso() {
         <div className="h-1 bg-[#059669]" aria-hidden />
         <div className="p-6 sm:p-8 grid gap-5">
           <label className="etiqueta-campo">Usuario
-            <span className="relative block">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" aria-hidden>👤</span>
-              <input
-                className="campo-entrada !pl-10"
-                value={usuario}
-                onChange={(e) => setUsuario(e.target.value)}
-                autoComplete="username"
-                placeholder="Nombre de usuario"
-              />
-            </span>
+            <input
+              className="campo-entrada"
+              value={usuario}
+              onChange={(e) => setUsuario(e.target.value)}
+              autoComplete="username"
+              placeholder="Nombre de usuario"
+            />
           </label>
           <label className="etiqueta-campo">Clave
-            <span className="relative block">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" aria-hidden>🔒</span>
-              <input
-                className="campo-entrada !pl-10"
-                type="password"
-                value={clave}
-                onChange={(e) => setClave(e.target.value)}
-                autoComplete="current-password"
-                placeholder="••••••••"
-              />
-            </span>
+            <input
+              className="campo-entrada"
+              type="password"
+              value={clave}
+              onChange={(e) => setClave(e.target.value)}
+              autoComplete="current-password"
+              placeholder="••••••••"
+            />
           </label>
           {error && <p className="mensaje-error" role="alert">{error}</p>}
           <Boton type="submit" disabled={cargando} className="w-full !py-3">

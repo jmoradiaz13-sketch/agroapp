@@ -33,7 +33,7 @@ export function TarjetaFrontera({ predioId }: { predioId: string }) {
   return (
     <Tarjeta titulo="Frontera agrícola (UPRA)">
       <Boton onClick={() => void consultar()} disabled={cargando}>
-        {cargando ? 'Consultando…' : '🏛 Consultar frontera'}
+        {cargando ? 'Consultando…' : 'Consultar frontera'}
       </Boton>
       {mensaje && <p className="mensaje-info">{mensaje}</p>}
       {frontera && (

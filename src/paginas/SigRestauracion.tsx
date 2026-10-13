@@ -237,7 +237,7 @@ export function SigRestauracion() {
           </p>
         </div>
         <Boton onClick={() => void precargar()} disabled={cargando} className="!bg-[#059669] hover:!bg-[#047857]">
-          {cargando ? 'Precargando…' : '📦 Precargar para campo'}
+          {cargando ? 'Precargando…' : 'Precargar para campo'}
         </Boton>
       </section>
       {mensaje && <p className="mensaje-ok" role="status">{mensaje}</p>}
