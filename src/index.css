@@ -387,6 +387,18 @@ html [class*="accent-"] {
   border-color: var(--marca-texto);
 }
 
+/* Ventana fija estilo teatro: PC alta, móvil ajustada a header+tabs. */
+.ventana-ficha {
+  height: calc(100dvh - 128px);
+  min-height: 480px;
+}
+@media (max-width: 1023px) {
+  .ventana-ficha {
+    height: calc(100dvh - 172px);
+    min-height: 440px;
+  }
+}
+
 /* Footer sobre marca: enlaces con hover legible en ambos temas */
 footer a {
   color: var(--marca-muted);

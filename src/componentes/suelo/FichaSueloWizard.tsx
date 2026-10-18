@@ -11,12 +11,17 @@ import { blobAUrl, coberturaVerde, type FotoLista } from '../../servicios/fotos'
 import { usarGps, textoPrecision } from '../../servicios/gps';
 import { baseDatos } from '../../base_datos/local';
 import { Boton } from '../ui/Boton';
+import { IndiceCategoria } from './IndiceCategoria';
+import {
+  VARIABLES_FISICAS, VARIABLES_QUIMICAS, VARIABLES_BIOLOGICAS, resumenVariables,
+} from '../../datos/variables_suelo';
 
-type Paso = 'bienvenida' | 'general' | 'fisicas' | 'quimicas' | 'biologicas' | 'resumen';
+type Paso = 'bienvenida' | 'general' | 'categorias' | 'fisicas' | 'quimicas' | 'biologicas' | 'resumen';
 
 const PASOS: { id: Paso; titulo: string }[] = [
   { id: 'bienvenida', titulo: 'Presentación' },
   { id: 'general', titulo: 'Datos del terreno' },
+  { id: 'categorias', titulo: 'Ficha' },
   { id: 'fisicas', titulo: 'Propiedades físicas' },
   { id: 'quimicas', titulo: 'Propiedades químicas' },
   { id: 'biologicas', titulo: 'Propiedades biológicas' },
@@ -39,6 +44,28 @@ const OPCIONES = {
   olorSuelo: ['tierra fresca', 'neutro', 'putrefacción / azufre'],
   descomposicionMo: ['residuos frescos', 'parcialmente descompuestos', 'humus estable'],
 } as const;
+
+// Campos del paso "Datos del terreno": se validan al pulsar "Registrar y continuar".
+const CAMPOS_GENERALES: { nombre: keyof FichaSueloFormulario; etiqueta: string }[] = [
+  { nombre: 'predioIdentificador', etiqueta: 'Predio' },
+  { nombre: 'fecha', etiqueta: 'Fecha de muestreo' },
+  { nombre: 'vereda', etiqueta: 'Vereda' },
+  { nombre: 'municipio', etiqueta: 'Municipio' },
+  { nombre: 'departamento', etiqueta: 'Departamento' },
+  { nombre: 'latitud', etiqueta: 'Latitud' },
+  { nombre: 'longitud', etiqueta: 'Longitud' },
+  { nombre: 'precisionM', etiqueta: 'Precisión GPS' },
+  { nombre: 'msnm', etiqueta: 'Altitud (msnm)' },
+  { nombre: 'pendienteSitioPct', etiqueta: 'Pendiente (%)' },
+  { nombre: 'posicionRelieve', etiqueta: 'Posición en el relieve' },
+  { nombre: 'solicitante', etiqueta: 'Nombre del solicitante' },
+  { nombre: 'tenenciaSitio', etiqueta: 'Tenencia del sitio' },
+  { nombre: 'laboratorio', etiqueta: 'Laboratorio / observador' },
+  { nombre: 'profundidadCm', etiqueta: 'Profundidad de muestreo (cm)' },
+  { nombre: 'usoActual', etiqueta: 'Uso actual' },
+  { nombre: 'tipoEvaluacion', etiqueta: 'Tipo de evaluación' },
+  { nombre: 'manejoReciente', etiqueta: 'Historial de uso' },
+];
 
 function Num({
   etiqueta, unidad, paso = '0.01', registro, nombre,
@@ -97,15 +124,34 @@ const TEXTO_SEMAFORO: Record<Semaforo, string> = {
   'sin-dato': 'Sin dato',
 };
 
-// Submenús del riel: variables de cada deck (3.1 Textura, 4.1 Acidez…).
+// Submenús del riel: variables de cada deck (4.1 Textura, 5.1 Acidez…).
 const SUBMENUS: Partial<Record<'fisicas' | 'quimicas' | 'biologicas', { id: string; titulo: string }[]>> = {
   fisicas: DIAPOSITIVAS_FISICAS,
   quimicas: DIAPOSITIVAS_QUIMICAS,
   biologicas: DIAPOSITIVAS_BIOLOGICAS,
 };
 const NUMERO_PASO: Record<Paso, number> = {
-  bienvenida: 1, general: 2, fisicas: 3, quimicas: 4, biologicas: 5, resumen: 6,
+  bienvenida: 1, general: 2, categorias: 3, fisicas: 4, quimicas: 5, biologicas: 6, resumen: 7,
 };
+
+// Ficha: las 3 categorías como botones de selección hacia su índice.
+const CATEGORIAS_FICHA: { id: 'fisicas' | 'quimicas' | 'biologicas'; titulo: string; descripcion: string; imagen: string; imagenAlt: string }[] = [
+  {
+    id: 'fisicas', titulo: 'Físicas: la casa',
+    descripcion: 'Textura, estructura, densidad y porosidad definen dónde viven las raíces, cuánta agua se guarda y si el aire circula.',
+    imagen: '/imagenes/3.jpg', imagenAlt: 'Agregados del suelo',
+  },
+  {
+    id: 'quimicas', titulo: 'Químicas: la despensa',
+    descripcion: 'pH, materia orgánica y nutrientes dicen qué hay disponible para comer. La planta vigorosa es la prueba final.',
+    imagen: '/imagenes/4.jpg', imagenAlt: 'Cultivo vigoroso',
+  },
+  {
+    id: 'biologicas', titulo: 'Biológicas: la vida',
+    descripcion: 'Lombrices, raíces y microorganismos trabajan el suelo gratis. Donde hay vida, el suelo respira.',
+    imagen: '/imagenes/1.jpg', imagenAlt: 'Plántulas emergiendo',
+  },
+];
 export function FichaSueloWizard({ predioIdentificador }: { predioIdentificador: string }) {
   const [paso, setPaso] = useState<Paso>('bienvenida');
   const [visitados, setVisitados] = useState<Paso[]>(['bienvenida']);
@@ -113,13 +159,17 @@ export function FichaSueloWizard({ predioIdentificador }: { predioIdentificador:
   const [diapos, setDiapos] = useState<Partial<Record<'fisicas' | 'quimicas' | 'biologicas', number>>>({});
   const [puntajes, setPuntajes] = useState<Record<string, number>>({});
   const [mensaje, setMensaje] = useState('');
+  // Nota del registro de terreno: error en "Datos del terreno", éxito en "Ficha".
+  const [notaTerreno, setNotaTerreno] = useState<{ tipo: 'ok' | 'error'; texto: string; detalle?: string[] } | null>(null);
   const [fotosEtapa, setFotosEtapa] = useState<FotoLista[]>([]);
   const [fotoCobertura, setFotoCobertura] = useState<{ url: string; pct: number } | null>(null);
-  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<FichaSueloFormulario>({
+  const { register, handleSubmit, watch, setValue, getValues, formState: { errors } } = useForm<FichaSueloFormulario>({
     resolver: zodResolver(esquemaFichaSuelo),
     defaultValues: { predioIdentificador, fecha: new Date().toISOString().slice(0, 10), tipoEvaluacion: 'mixta' },
   });
   const valores = watch();
+  const tocadosVsa = INDICADORES_VSA.filter((k) => puntajes[k] !== undefined).length;
+  const conteosVsa = { vsa: { hechos: tocadosVsa, total: INDICADORES_VSA.length } };
   const gps = usarGps();
   const fijarGps = () => {
     gps.ubicar((lat, lng, acc) => {
@@ -150,6 +200,7 @@ export function FichaSueloWizard({ predioIdentificador }: { predioIdentificador:
   };
 
   const alGuardar = async (datos: FichaSueloFormulario) => {
+    setNotaTerreno(null);
     const existentes = await baseDatos.fichasSuelo.where('predioIdentificador').equals(datos.predioIdentificador).count();
     const fichaId = await baseDatos.fichasSuelo.add({ ...datos, version: existentes + 1, sincronizada: false });
     for (const f of fotosEtapa) {
@@ -174,6 +225,45 @@ export function FichaSueloWizard({ predioIdentificador }: { predioIdentificador:
     setMensaje(`Ficha v${existentes + 1} guardada offline. Lo interpretado con rango validado aparece en Diagnóstico; lo demás queda registrado sin interpretar.`);
   };
 
+  // "Registrar y continuar": valida los datos del terreno, crea la primera
+  // versión de la ficha en Dexie y sigue trabajando sobre ese predio.
+  const [registrando, setRegistrando] = useState(false);
+  const registrarYContinuar = async () => {
+    if (registrando) return;
+    setRegistrando(true);
+    try {
+      const datos = getValues();
+      const validacion = esquemaFichaSuelo.safeParse(datos);
+      const issues = validacion.success ? [] : validacion.error.issues;
+      const delTerreno = issues.filter((i) => CAMPOS_GENERALES.some((c) => c.nombre === i.path[0]));
+      if (issues.length > 0) {
+        const detalle = delTerreno.map((i) => {
+          const campo = CAMPOS_GENERALES.find((c) => c.nombre === i.path[0]);
+          return `${campo?.etiqueta ?? String(i.path[0])}: ${i.message}`;
+        });
+        const otros = issues.length - delTerreno.length;
+        setNotaTerreno({
+          tipo: 'error',
+          texto: otros > 0
+            ? 'Corrige los datos del terreno marcados y los inválidos de otras secciones antes de continuar.'
+            : 'Corrige los siguientes datos del terreno antes de continuar.',
+          detalle,
+        });
+        return;
+      }
+      const existentes = await baseDatos.fichasSuelo.where('predioIdentificador').equals(datos.predioIdentificador).count();
+      const version = existentes + 1;
+      await baseDatos.fichasSuelo.add({ ...datos, version, sincronizada: false });
+      setNotaTerreno({
+        tipo: 'ok',
+        texto: `Datos del terreno registrados (v${version}). Seguimos trabajando sobre este predio: lo que registres a continuación se suma a su historial.`,
+      });
+      irAPaso('categorias');
+    } finally {
+      setRegistrando(false);
+    }
+  };
+
   const conValor = RANGOS_VALIDADOS.filter((r) => {
     const v = valores[r.parametro as keyof FichaSueloFormulario];
     return typeof v === 'number' && !Number.isNaN(v);
@@ -191,10 +281,10 @@ export function FichaSueloWizard({ predioIdentificador }: { predioIdentificador:
   };
 
   return (
-    <form onSubmit={handleSubmit(alGuardar)} className="grid lg:grid-cols-[300px_minmax(0,1fr)] overflow-hidden w-full" style={{ background: 'var(--marca)', border: '1px solid var(--borde)', boxShadow: 'var(--sombra-suave)', height: 'calc(100dvh - 128px)', minHeight: '480px' }} aria-label="Caracterización del suelo">
+    <form onSubmit={handleSubmit(alGuardar)} className="ventana-ficha grid lg:grid-cols-[300px_minmax(0,1fr)] overflow-hidden w-full" style={{ background: 'var(--marca)', border: '1px solid var(--borde)', boxShadow: 'var(--sombra-suave)' }} aria-label="Caracterización del suelo">
       {/* Riel de lecciones integrado: título + pasos plegables */}
-      <aside className="grid gap-3 content-start p-4 sm:p-5 border-b lg:border-b-0 lg:border-r overflow-y-auto min-h-0 scroll-sutil" style={{ borderColor: 'var(--borde)' }} aria-label="Contenido de la caracterización">
-        <div className="grid gap-1.5 pb-3" style={{ borderBottom: '1px solid var(--borde)' }}>
+      <aside className="grid gap-2 content-start p-3 sm:p-5 border-b lg:border-b-0 lg:border-r lg:overflow-y-auto lg:min-h-0 scroll-sutil" style={{ borderColor: 'var(--borde)' }} aria-label="Contenido de la caracterización">
+        <div className="hidden lg:grid gap-1.5 pb-3" style={{ borderBottom: '1px solid var(--borde)' }}>
           <Link to="/" className="mono-micro inline-flex items-center gap-1.5 w-fit transition-opacity hover:opacity-70" style={{ color: 'var(--marca-muted)' }}>
             <span aria-hidden>←</span> Tablero
           </Link>
@@ -203,7 +293,7 @@ export function FichaSueloWizard({ predioIdentificador }: { predioIdentificador:
             Ficha de caracterización física, química y biológica por versiones. Cada guardado crea una nueva versión con fecha.
           </p>
         </div>
-        <div className="grid gap-1.5">
+        <div className="hidden lg:grid gap-1.5">
           <p className="mono-micro" style={{ color: 'var(--marca-muted)' }}>Caracterización · {visitados.length} de {PASOS.length}</p>
         </div>
         <ol className="hidden lg:grid gap-1" role="tablist" aria-label="Pasos de caracterización">
@@ -275,11 +365,56 @@ export function FichaSueloWizard({ predioIdentificador }: { predioIdentificador:
             </button>
           ))}
         </div>
+        {paso === 'fisicas' && (
+          <div className="grid gap-2 mt-2 p-2 border" style={{ borderColor: 'var(--borde)' }} aria-label="Índice de variables físicas">
+            <p className="mono-micro" style={{ color: 'var(--marca-muted)' }}>Físicas · ¿qué variable estudias?</p>
+            <IndiceCategoria
+              categoria="fisicas"
+              valores={valores}
+              variableActiva={VARIABLES_FISICAS[(diapos.fisicas ?? 0)]?.id ?? null}
+              alElegir={(id) => {
+                const i = VARIABLES_FISICAS.findIndex((v) => v.id === id);
+                // Agua vive en la diapositiva de densidad (índice 2).
+                const destino = id === 'agua' ? 2 : Math.max(0, i);
+                irAVariable('fisicas', Math.min(destino, DIAPOSITIVAS_FISICAS.length - 1));
+              }}
+            />
+          </div>
+        )}
+        {paso === 'quimicas' && (
+          <div className="grid gap-2 mt-2 p-2 border" style={{ borderColor: 'var(--borde)' }} aria-label="Índice de variables químicas">
+            <p className="mono-micro" style={{ color: 'var(--marca-muted)' }}>Químicas · ¿qué variable estudias?</p>
+            <IndiceCategoria
+              categoria="quimicas"
+              valores={valores}
+              variableActiva={VARIABLES_QUIMICAS[(diapos.quimicas ?? 0)]?.id ?? null}
+              alElegir={(id) => {
+                const i = VARIABLES_QUIMICAS.findIndex((v) => v.id === id);
+                irAVariable('quimicas', Math.min(Math.max(0, i), DIAPOSITIVAS_QUIMICAS.length - 1));
+              }}
+            />
+          </div>
+        )}
+        {paso === 'biologicas' && (
+          <div className="grid gap-2 mt-2 p-2 border" style={{ borderColor: 'var(--borde)' }} aria-label="Índice de variables biológicas">
+            <p className="mono-micro" style={{ color: 'var(--marca-muted)' }}>Biológicas · ¿qué variable estudias?</p>
+            <IndiceCategoria
+              categoria="biologicas"
+              valores={valores}
+              variableActiva={VARIABLES_BIOLOGICAS[(diapos.biologicas ?? 0)]?.id ?? null}
+              alElegir={(id) => {
+                const i = VARIABLES_BIOLOGICAS.findIndex((v) => v.id === id);
+                irAVariable('biologicas', Math.min(Math.max(0, i), DIAPOSITIVAS_BIOLOGICAS.length - 1));
+              }}
+              conteosExtra={conteosVsa}
+            />
+          </div>
+        )}
       </aside>
 
       {/* Pantalla: marco oscuro + pantalla clara con scroll interno */}
-      <div className="grid grid-rows-[minmax(0,1fr)_auto] min-h-0 min-w-0 p-3 sm:p-4 gap-3">
-      <div key={paso} className="animacion-entrada p-5 grid gap-5 content-start overflow-y-auto min-h-0 scroll-sutil" style={{ background: 'var(--sup)' }} role="tabpanel" aria-label={PASOS.find((p) => p.id === paso)?.titulo}>
+      <div className="grid grid-rows-[minmax(0,1fr)_auto] min-h-0 min-w-0 p-2 sm:p-4 gap-2 sm:gap-3">
+      <div key={paso} className="animacion-entrada p-4 sm:p-5 grid gap-4 sm:gap-5 content-start overflow-y-auto min-h-0 scroll-sutil" style={{ background: 'var(--sup)' }} role="tabpanel" aria-label={PASOS.find((p) => p.id === paso)?.titulo}>
         {paso === 'bienvenida' && (
           <div className="grid gap-5">
             <div className="relative overflow-hidden">
@@ -290,42 +425,18 @@ export function FichaSueloWizard({ predioIdentificador }: { predioIdentificador:
                 <span className="font-display text-2xl sm:text-3xl font-medium leading-tight" style={{ color: '#F2E9D8' }}>Conoce tu suelo antes de medirlo</span>
               </span>
             </div>
-            <div className="grid gap-5 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] lg:items-start">
-              <div className="grid gap-3 content-start">
-                <p className="text-sm leading-relaxed" style={{ color: 'var(--muted)' }}>
-                  Caracterizar es describir el suelo tal como está en campo para decidir con datos, no por costumbre.
-                  Cada suelo se lee en tres dimensiones que trabajan juntas: lo que se ve y se toca, lo que alimenta
-                  a la planta y lo que vive en él. Registrarlas por separado —y con fecha— permite comparar en el
-                  tiempo y demostrar el efecto de cada práctica.
-                </p>
-                <p className="text-[13px]" style={{ color: 'var(--muted)' }}>
-                  Pasa el cursor por cada dimensión para verla en grande. A continuación: los <strong style={{ color: 'var(--texto)' }}>datos del terreno</strong> — fecha, profundidad y condiciones del muestreo.
-                </p>
-                <div><Boton type="button" onClick={() => irAPaso('general')}>Empezar</Boton></div>
-              </div>
-              <div className="grid gap-3">
-                <article className="grid grid-cols-[96px_1fr] gap-3 items-center p-3" style={{ background: 'var(--sup-2)', border: '1px solid var(--borde)' }}>
-                  <img src="/imagenes/3.jpg" alt="Agregados del suelo" loading="lazy" className="w-24 h-20 object-cover" />
-                  <span className="grid gap-0.5 content-start">
-                    <strong className="font-display text-base font-medium leading-tight" style={{ color: 'var(--texto)' }}>Físicas: la casa</strong>
-                    <span className="text-[12.5px] leading-relaxed" style={{ color: 'var(--muted)' }}>Textura, estructura, densidad y porosidad definen dónde viven las raíces, cuánta agua se guarda y si el aire circula.</span>
-                  </span>
-                </article>
-                <article className="grid grid-cols-[96px_1fr] gap-3 items-center p-3" style={{ background: 'var(--sup-2)', border: '1px solid var(--borde)' }}>
-                  <img src="/imagenes/4.jpg" alt="Cultivo vigoroso" loading="lazy" className="w-24 h-20 object-cover" />
-                  <span className="grid gap-0.5 content-start">
-                    <strong className="font-display text-base font-medium leading-tight" style={{ color: 'var(--texto)' }}>Químicas: la despensa</strong>
-                    <span className="text-[12.5px] leading-relaxed" style={{ color: 'var(--muted)' }}>pH, materia orgánica y nutrientes dicen qué hay disponible para comer. La planta vigorosa es la prueba final.</span>
-                  </span>
-                </article>
-                <article className="grid grid-cols-[96px_1fr] gap-3 items-center p-3" style={{ background: 'var(--sup-2)', border: '1px solid var(--borde)' }}>
-                  <img src="/imagenes/1.jpg" alt="Plántulas emergiendo" loading="lazy" className="w-24 h-20 object-cover" />
-                  <span className="grid gap-0.5 content-start">
-                    <strong className="font-display text-base font-medium leading-tight" style={{ color: 'var(--texto)' }}>Biológicas: la vida</strong>
-                    <span className="text-[12.5px] leading-relaxed" style={{ color: 'var(--muted)' }}>Lombrices, raíces y microorganismos trabajan el suelo gratis. Donde hay vida, el suelo respira.</span>
-                  </span>
-                </article>
-              </div>
+            <div className="grid gap-3 content-start" style={{ maxWidth: '62ch' }}>
+              <p className="text-sm leading-relaxed" style={{ color: 'var(--muted)' }}>
+                Caracterizar es describir el suelo tal como está en campo para decidir con datos, no por costumbre.
+                Cada suelo se lee en tres dimensiones que trabajan juntas: lo que se ve y se toca, lo que alimenta
+                a la planta y lo que vive en él. Registrarlas por separado —y con fecha— permite comparar en el
+                tiempo y demostrar el efecto de cada práctica.
+              </p>
+              <p className="text-[13px]" style={{ color: 'var(--muted)' }}>
+                A continuación: los <strong style={{ color: 'var(--texto)' }}>datos del terreno</strong> — fecha, profundidad y condiciones del muestreo.
+                Después abrirás la ficha y elegirás qué dimensiones caracterizar.
+              </p>
+              <div><Boton type="button" onClick={() => irAPaso('general')}>Empezar</Boton></div>
             </div>
           </div>
         )}
@@ -395,7 +506,69 @@ export function FichaSueloWizard({ predioIdentificador }: { predioIdentificador:
                 </label>
               </div>
             </Grupo>
+            {notaTerreno?.tipo === 'error' && (
+              <div className="grid gap-1" role="alert">
+                <p className="mensaje-error">{notaTerreno.texto}</p>
+                {(notaTerreno.detalle ?? []).map((d) => (
+                  <p key={d} className="mensaje-error">{d}</p>
+                ))}
+              </div>
+            )}
           </div>
+        )}
+
+        {paso === 'categorias' && (
+          <div className="grid gap-4">
+            <div className="grid gap-1" style={{ maxWidth: '62ch' }}>
+              <h2 className="font-display text-2xl font-medium" style={{ color: 'var(--texto)' }}>Ficha de caracterización</h2>
+              <p className="text-sm" style={{ color: 'var(--muted)' }}>
+                Elige qué dimensiones caracterizar: una sola, dos, o las tres para una interpretación integral.
+                Cada botón abre su índice de variables; puedes volver aquí para cambiar de categoría.
+              </p>
+            </div>
+            {notaTerreno?.tipo === 'ok' && (
+              <p className="mensaje-ok" role="status">{notaTerreno.texto}</p>
+            )}
+            <div className="grid gap-4 sm:grid-cols-3 sm:items-start">
+              {CATEGORIAS_FICHA.map((c) => {
+                const extra = c.id === 'biologicas' ? conteosVsa : undefined;
+                const r = resumenVariables(c.id, valores, extra);
+                return (
+                  <button
+                    key={c.id}
+                    type="button"
+                    onClick={() => irAPaso(c.id)}
+                    className="boton-campo grid grid-rows-[auto_1fr] gap-0 p-0 text-left transition-all min-h-[44px] hover:-translate-y-0.5 overflow-hidden"
+                    style={{ background: 'var(--sup-2)', border: '1px solid var(--borde)' }}
+                    aria-label={`Entrar a ${c.titulo}: ${r.registradas} de ${r.total} variables registradas`}
+                  >
+                    <img src={c.imagen} alt={c.imagenAlt} loading="lazy" className="w-full h-28 sm:h-32 object-cover" />
+                    <span className="grid gap-1.5 p-3 content-start">
+                      <strong className="font-display text-base font-medium leading-tight" style={{ color: 'var(--texto)' }}>{c.titulo}</strong>
+                      <span className="text-[12.5px] leading-relaxed" style={{ color: 'var(--muted)' }}>{c.descripcion}</span>
+                      <span className="relative block h-1 mt-1 rounded-full bg-neutral-200" aria-hidden>
+                        <span className="absolute inset-y-0 left-0 rounded-full bg-[#059669]" style={{ width: `${r.total ? Math.round((r.registradas / r.total) * 100) : 0}%` }} />
+                      </span>
+                      <span className="text-[11px] font-semibold" style={{ color: 'var(--acento)' }}>
+                        {r.registradas} de {r.total} variables · Entrar →
+                      </span>
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {(paso === 'fisicas' || paso === 'quimicas' || paso === 'biologicas') && (
+          <button
+            type="button"
+            onClick={() => irAPaso('categorias')}
+            className="boton-campo w-fit px-4 py-2 text-sm font-semibold transition-colors"
+            style={{ background: 'transparent', color: 'var(--acento)', border: '1px solid var(--borde)' }}
+          >
+            ← Ficha · categorías
+          </button>
         )}
 
         {paso === 'fisicas' && (
@@ -501,7 +674,8 @@ export function FichaSueloWizard({ predioIdentificador }: { predioIdentificador:
         )}
         </div>
         {paso !== 'bienvenida' && (
-        <nav className="flex items-center justify-between gap-2 px-5 py-3 border-t" style={{ borderColor: 'var(--borde)' }} aria-label="Navegación de la ficha">
+        <nav className="flex items-center justify-end gap-2 px-4 sm:px-5 py-2.5 sm:py-3 border-t" style={{ borderColor: 'var(--borde)' }} aria-label="Navegación de la ficha">
+          {paso !== 'general' && (
           <button
             type="button"
             onClick={() => irIndice(indicePaso - 1)}
@@ -511,17 +685,15 @@ export function FichaSueloWizard({ predioIdentificador }: { predioIdentificador:
           >
             <span aria-hidden>←</span> Anterior
           </button>
-          <span className="mono-micro hidden sm:block" style={{ color: 'var(--marca-muted)' }} aria-hidden>
-            {indicePaso + 1} / {PASOS.length}
-          </span>
+          )}
           <button
             type="button"
-            onClick={() => irIndice(indicePaso + 1)}
-            disabled={indicePaso === PASOS.length - 1}
+            onClick={() => { if (paso === 'general') void registrarYContinuar(); else irIndice(indicePaso + 1); }}
+            disabled={registrando || indicePaso === PASOS.length - 1}
             className="boton-campo inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold transition-all disabled:opacity-40"
             style={{ background: 'var(--marca-texto)', color: 'var(--marca)' }}
           >
-            Siguiente <span aria-hidden>→</span>
+            {paso === 'general' ? 'Registrar y continuar' : 'Continuar'} <span aria-hidden>→</span>
           </button>
         </nav>
         )}

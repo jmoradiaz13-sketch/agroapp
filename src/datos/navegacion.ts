@@ -52,6 +52,7 @@ export const TITULOS_RUTA: Record<string, string> = {
   '/predios': 'Predios',
   '/lote': 'Lotes',
   '/ficha': 'Análisis de suelos',
+  '/suelo-historial': 'Historial de suelos',
   '/sig': 'SIG · Restauración',
   '/simulador': 'Simulador',
   '/diseno': 'Diseño',

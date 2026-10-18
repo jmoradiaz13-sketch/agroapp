@@ -1,7 +1,8 @@
 import { Suspense, lazy } from 'react';
 import { Link } from 'react-router-dom';
-import { usoFlujo } from '../estado/usoFlujo';
 import { usoPredio } from '../estado/usoPredio';
+import { TabsSuelos } from '../componentes/suelo/TabsSuelos';
+import { AMBITO_SUELOS } from '../datos/variables_suelo';
 import { HistorialFichas } from '../componentes/HistorialFichas';
 import { PanelEstrategias } from '../componentes/PanelEstrategias';
 import { TarjetaEnmienda } from '../componentes/TarjetaEnmienda';
@@ -12,26 +13,17 @@ import { etiquetaCache } from '../base_datos/local';
 
 const GraficoPesado = lazy(() => import('../componentes/GraficoDiagnosticoPesado'));
 
-// Escena Diagnóstico = interpretar y decidir. La cabecera la pone MarcoEscena.
+// Herramienta Diagnóstico = interpretar y decidir. La cabecera la pone MarcoEscena.
 export function DiagnosticoLote() {
-  const { predioIdentificador } = usoFlujo();
   const { fechaCache } = usoPredio();
-
-  if (!predioIdentificador) {
-    return (
-      <div className="grid gap-4 animacion-entrada">
-        <p className="mensaje-info">Elige o crea un predio para ver su diagnóstico.</p>
-        <Link to="/predios"><Boton>Ir a Predios</Boton></Link>
-      </div>
-    );
-  }
-
-  const id = predioIdentificador;
+  const id = AMBITO_SUELOS;
 
   return (
     <div className="grid gap-4 animacion-entrada">
+      <TabsSuelos />
       <p className="text-sm" style={{ color: 'var(--muted)', maxWidth: '62ch' }}>
         Salud 0-100 trazable, erosión RUSLE y enmiendas. El sistema sugiere, el técnico decide.
+        La interpretación siempre está disponible, aun con datos parciales: indica límites y qué medir para confirmar.
       </p>
       <p className="text-[11px]" style={{ color: 'var(--faint)' }}>{fechaCache ? etiquetaCache(fechaCache) : 'Caché local - actualizado el (sin sincronizar)'}</p>
       <Suspense fallback={<p className="mensaje-info">Cargando gráfico…</p>}>

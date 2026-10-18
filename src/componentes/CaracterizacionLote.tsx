@@ -15,7 +15,7 @@ export function CaracterizacionLote({ predioIdentificador }: { predioIdentificad
     setLotes(await baseDatos.lotes.where('predioIdentificador').equals(predioIdentificador).toArray());
   };
 
-  if (lotes.length === 0) return <p className="mensaje-info">Sin lotes. Siembra la demo en Predios o dibuja el primero en el mapa.</p>;
+  if (lotes.length === 0) return <p className="mensaje-info">Sin lotes. Dibuja el primero en el mapa.</p>;
   return (
     <section className="grid gap-3">
       <h2 className="text-lg font-semibold text-humus border-b-2 border-[#059669] pb-2">
