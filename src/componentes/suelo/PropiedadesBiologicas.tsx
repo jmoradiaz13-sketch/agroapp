@@ -3,7 +3,6 @@ import type { UseFormRegister } from 'react-hook-form';
 import type { FichaSueloFormulario } from '../../esquemas/suelo';
 import type { FotoLista } from '../../servicios/fotos';
 import { CapturaFoto } from '../CapturaFoto';
-import { DeckNavegacion } from './DeckNavegacion';
 import { GaugeArco } from '../GaugeArco';
 
 type R = UseFormRegister<FichaSueloFormulario>;
@@ -53,7 +52,7 @@ export function PropiedadesBiologicas({
 
   return (
     <div className="grid gap-3">
-      <div key={indice} className="animacion-entrada bg-white border border-emerald-500/40 shadow-sm rounded-sm p-5 grid gap-4 max-h-[calc(100vh-240px)] min-h-[320px] overflow-y-auto scroll-sutil content-start">
+      <div key={indice} className="animacion-entrada bg-white border border-emerald-500/40 shadow-sm rounded-sm p-4 sm:p-5 grid gap-4 content-start">
         {indice === 0 && (
           <>
             <div>
@@ -220,8 +219,6 @@ export function PropiedadesBiologicas({
           </>
         )}
       </div>
-
-      <DeckNavegacion diapositivas={DIAPOSITIVAS} indice={indice} alIr={irA} />
     </div>
   );
 }

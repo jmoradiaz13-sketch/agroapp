@@ -6,7 +6,7 @@ import { normalizarParaRadar, colorEstado } from '../servicios/diagnostico';
 // Superficie del tema en ambos modos (`oscuro` se conserva por compatibilidad).
 export function GraficoSuelo({ hallazgos, oscuro = true }: { hallazgos: Hallazgo[]; oscuro?: boolean }) {
   void oscuro;
-  if (hallazgos.length === 0) return <p className="mensaje-info">Sin datos para graficar. Crea una ficha o siembra la demo.</p>;
+  if (hallazgos.length === 0) return <p className="mensaje-info">Sin datos para graficar. Registra una ficha de suelo.</p>;
   const datos = normalizarParaRadar(hallazgos);
   const barras = hallazgos.map((h) => ({
     parametro: h.parametro.replace('_pct', '').replace('_mg_kg', '').replace('_cmol_kg', '').replace('_ds_m', '').slice(0, 10),

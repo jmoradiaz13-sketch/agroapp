@@ -22,6 +22,7 @@ const InformePredio = lazy(() => import('./paginas/InformePredio').then((m) => (
 const SigRestauracion = lazy(() => import('./paginas/SigRestauracion').then((m) => ({ default: m.SigRestauracion })));
 const Simulador = lazy(() => import('./paginas/Simulador').then((m) => ({ default: m.Simulador })));
 const Biblioteca = lazy(() => import('./paginas/Biblioteca').then((m) => ({ default: m.Biblioteca })));
+const HistorialSuelos = lazy(() => import('./paginas/HistorialSuelos').then((m) => ({ default: m.HistorialSuelos })));
 
 export default function App() {
   const ubicacion = useLocation();
@@ -51,7 +52,8 @@ export default function App() {
               <Route path="/predios" element={<MarcoEscena><PaginaPredios /></MarcoEscena>} />
               <Route path="/diseno" element={<MarcoEscena><PaginaDiseno /></MarcoEscena>} />
               <Route path="/lote" element={<MarcoEscena><DashboardLote /></MarcoEscena>} />
-              <Route path="/ficha" element={<FichaLote />} />
+              <Route path="/ficha" element={<MarcoEscena><FichaLote /></MarcoEscena>} />
+              <Route path="/suelo-historial" element={<MarcoEscena><HistorialSuelos /></MarcoEscena>} />
               <Route path="/sig" element={<MarcoEscena><SigRestauracion /></MarcoEscena>} />
               <Route path="/simulador" element={<MarcoEscena><Simulador /></MarcoEscena>} />
               <Route path="/biblioteca" element={<MarcoEscena><Biblioteca /></MarcoEscena>} />

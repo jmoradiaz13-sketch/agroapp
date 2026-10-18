@@ -20,7 +20,7 @@ export function TarjetaPendienteDem({
   return (
     <Tarjeta titulo="Pendiente DEM del lote">
       {lotes.length === 0 ? (
-        <p className="mensaje-info">Sin lotes en {predioId}. Dibuja el primero en Lotes o siembra la demo en Predios.</p>
+        <p className="mensaje-info">Sin lotes en {predioId}. Dibuja el primero en Lotes.</p>
       ) : (
         <>
           <label className="etiqueta-campo">

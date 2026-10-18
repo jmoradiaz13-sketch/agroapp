@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { baseDatos, type PredioLocal } from '../base_datos/local';
 import { Icono } from '../componentes/Iconos';
-import { sembrarDemo } from '../servicios/semilla_demo';
 import { usoFlujo } from '../estado/usoFlujo';
 import { Boton, BotonSecundario } from '../componentes/ui/Boton';
 import { Tarjeta } from '../componentes/ui/Tarjeta';
@@ -76,6 +75,29 @@ export function PaginaPredios() {
     await cargar();
   };
 
+  // Elimina el predio y sus datos locales (lotes, fichas, puntos, fotos,
+  // capas, diseños y monitoreos de sus lotes). Sin deshacer.
+  const eliminarPredio = async (p: PredioLocal) => {
+    if (!window.confirm(`Eliminar "${p.nombre}" y sus datos locales? No se puede deshacer.`)) return;
+    const nombresLotes = (await baseDatos.lotes.where('predioIdentificador').equals(p.identificador).toArray()).map((l) => l.nombre);
+    await baseDatos.lotes.where('predioIdentificador').equals(p.identificador).delete();
+    await baseDatos.fichasSuelo.where('predioIdentificador').equals(p.identificador).delete();
+    await baseDatos.puntosMuestreo.where('predioIdentificador').equals(p.identificador).delete();
+    await baseDatos.fotos.where('predioIdentificador').equals(p.identificador).delete();
+    await baseDatos.capasIgac.where('predioIdentificador').equals(p.identificador).delete();
+    await baseDatos.geotiffs.where('predioIdentificador').equals(p.identificador).delete();
+    await baseDatos.disenos.where('predioIdentificador').equals(p.identificador).delete();
+    await baseDatos.escenarios.where('predioIdentificador').equals(p.identificador).delete();
+    for (const n of nombresLotes) {
+      await baseDatos.monitoreos.where('loteNombre').equals(n).delete();
+      await baseDatos.estrategias.where('loteNombre').equals(n).delete();
+    }
+    if (p.id !== undefined) await baseDatos.predios.delete(p.id);
+    fijarPredio(null);
+    setMensaje(`Predio "${p.nombre}" eliminado del caché local.`);
+    await cargar();
+  };
+
   const visibles = filtro
     ? predios.filter((p) =>
         [p.nombre, p.propietario ?? '', p.municipio ?? '', p.departamento ?? '']
@@ -94,9 +116,6 @@ export function PaginaPredios() {
             <button onClick={() => setMostrarFormulario((v) => !v)} className="boton-campo bg-[#059669] text-white text-sm font-semibold px-5 py-2.5 rounded-sm hover:bg-[#047857] transition-colors">
               {mostrarFormulario ? 'Cerrar' : '＋ Agregar predio'}
             </button>
-            <BotonSecundario onClick={async () => { setMensaje(await sembrarDemo()); await cargar(); }} className="!bg-transparent !text-white !border-white/40 hover:!bg-white/10">
-              Sembrar demo
-            </BotonSecundario>
           </>
         }
       />
@@ -153,7 +172,7 @@ export function PaginaPredios() {
       <Tarjeta titulo={`Predios (${visibles.length})${filtro ? ` — filtro: "${params.get('buscar')}"` : ''}`}>
         {visibles.length === 0 && (
           <p className="text-sm text-neutral-500">
-            {predios.length === 0 ? 'Sin predios. Agrega el primero o siembra la demo Andina.' : 'Sin resultados para ese filtro.'}
+            {predios.length === 0 ? 'Sin predios. Agrega el primero.' : 'Sin resultados para ese filtro.'}
           </p>
         )}
         <div className="grid gap-3">
@@ -208,9 +227,14 @@ export function PaginaPredios() {
                   </div>
                 </details>
               </div>
-              <Boton onClick={() => { fijarPredio(p.identificador); navegar('/lote'); }}>
-                Abrir → Lote
-              </Boton>
+              <div className="flex gap-2 flex-wrap">
+                <Boton onClick={() => { fijarPredio(p.identificador); navegar('/lote'); }}>
+                  Abrir → Lote
+                </Boton>
+                <BotonSecundario onClick={() => void eliminarPredio(p)}>
+                  Eliminar
+                </BotonSecundario>
+              </div>
             </article>
           ))}
         </div>

@@ -30,7 +30,7 @@ export default function GraficoDiagnosticoPesado({ predioIdentificador }: { pred
       } as Diagnostico;
     }
   });
-  if (!data) return <p className="text-sm">Gráfico disponible con conexión o tras sembrar demo (offline usa tarjetas).</p>;
+  if (!data) return <p className="text-sm">Gráfico disponible con conexión (offline usa tarjetas).</p>;
   const puntaje = data.puntajeSalud ?? puntajeLocal(data.hallazgos);
   return (
     <div className="grid gap-4">

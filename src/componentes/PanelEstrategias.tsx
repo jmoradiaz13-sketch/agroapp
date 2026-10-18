@@ -21,7 +21,7 @@ export function PanelEstrategias() {
       <h2 className="text-lg font-semibold text-humus border-b-2 border-[#059669] pb-2">
         Estrategias productivas ({items.length})
       </h2>
-      {items.length === 0 && <p className="mensaje-info">Sin estrategias. Siembra la demo en Predios.</p>}
+      {items.length === 0 && <p className="mensaje-info">Sin estrategias registradas.</p>}
       {items.map((e) => (
         <article key={e.id} className="bg-white border border-neutral-200 border-l-4 border-l-[#059669] p-4 grid gap-1.5">
           <h3 className="font-semibold text-humus">{e.loteNombre} — {e.tipo} (v{e.version})</h3>

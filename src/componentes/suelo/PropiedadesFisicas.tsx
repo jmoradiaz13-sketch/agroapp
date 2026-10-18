@@ -14,8 +14,8 @@ import {
   Fuente, Columna, ArbolTextura, Triangulo, tactoAClase, SemaforoDensidad,
 } from './fisicas_apoyo';
 import { AyudaCampo } from '../AyudaCampo';
-import { DeckNavegacion } from './DeckNavegacion';
 import { FisicasEstructura } from './FisicasEstructura';
+import { VARIABLES_FISICAS, estadoVariable } from '../../datos/variables_suelo';
 
 type R = UseFormRegister<FichaSueloFormulario>;
 type V = Partial<FichaSueloFormulario>;
@@ -72,7 +72,18 @@ export function PropiedadesFisicas({
 
   return (
     <div className="grid gap-3">
-      <div key={indice} className="animacion-entrada bg-white border border-emerald-500/40 shadow-sm rounded-sm p-5 grid gap-3 lg:grid-cols-3 max-h-[calc(100vh-240px)] min-h-[320px] overflow-y-auto scroll-sutil content-start">
+      {/* Etapas por variable: Comprender → Evaluar y registrar → Interpretar.
+          No son páginas nuevas; son pestañas/secciones dentro de cada variable.
+          La interpretación siempre está disponible, aun sin datos. */}
+      <ol className="flex flex-wrap gap-1.5" aria-label="Etapas de la variable">
+        {['1 · Comprender', '2 · Evaluar y registrar', '3 · Interpretar'].map((t, i) => (
+          <li key={t} className="text-[11px] font-semibold px-3 py-1.5 border border-neutral-200 bg-neutral-50 text-neutral-600">
+            {t}{i < 2 && <span aria-hidden> →</span>}
+          </li>
+        ))}
+      </ol>
+      <p className="text-[11px] text-neutral-500">Comprender: qué es y por qué importa · Evaluar: cómo medir y qué registrar · Interpretar: qué indican los datos (siempre abierta, aun sin datos).</p>
+      <div key={indice} className="animacion-entrada bg-white border border-emerald-500/40 shadow-sm rounded-sm p-4 sm:p-5 grid gap-3 lg:grid-cols-3 content-start">
         {indice === 0 && (
           <>
             <Columna titulo="Fundamentos">
@@ -321,18 +332,29 @@ export function PropiedadesFisicas({
                 <div className="flex gap-2"><dt className="text-neutral-500 w-28 shrink-0">Estructura</dt><dd className="font-medium">{valores.estructuraVess !== undefined ? `VESS Sq${valores.estructuraVess}` : (valores.estructuraDesc ?? 'Sin registrar')}</dd></div>
               </dl>
             </Columna>
-            <Columna titulo="Interpretación física">
+            <Columna titulo="Interpretación física (siempre disponible)">
               {valores.densidadAparente !== undefined && claseDensidad ? (
                 <SemaforoDensidad da={valores.densidadAparente} clase={claseDensidad} />
               ) : (
-                <p className="text-sm text-neutral-500">Registra densidad + textura para el semáforo, o continúa: la interpretación completa está en la pestaña Interpretación del wizard.</p>
+                <p className="text-sm text-neutral-500">Sin densidad + textura no hay semáforo, pero sí interpretación: usa VESS e infiltración como proxy y confirma con cilindro.</p>
               )}
               {valores.porosidadPct !== undefined && (
                 <p className="text-sm">Porosidad: <strong className="font-semibold">{valores.porosidadPct} % ({interpretarPorosidad(valores.porosidadPct)})</strong></p>
               )}
+              <div className="grid gap-2 mt-2">
+                {VARIABLES_FISICAS.map((v) => {
+                  const e = estadoVariable(v, valores);
+                  if (e.estado === 'registrada') return null;
+                  return (
+                    <p key={v.id} className="text-xs text-neutral-600 border border-neutral-200 bg-neutral-50 p-2">
+                      <strong className="font-semibold">{v.titulo} ({e.conDato}/{v.campos.length}):</strong> {v.sinDatosQueDecir} Para confirmar: {v.paraConfirmar}
+                    </p>
+                  );
+                })}
+              </div>
               <Fuente texto={`${FUENTE_DENSIDAD}; ${FUENTE_POROSIDAD}`} />
             </Columna>
-            <Columna titulo="Siguiente paso">
+            <Columna titulo="Relacionadas">
               <p className="text-sm text-neutral-600">Las conclusiones físicas alimentan la interpretación general de la ficha.</p>
               {alIrResumen && (
                 <div>
@@ -345,8 +367,6 @@ export function PropiedadesFisicas({
           </>
         )}
       </div>
-
-      <DeckNavegacion diapositivas={DIAPOSITIVAS} indice={indice} alIr={irA} />
     </div>
   );
 }

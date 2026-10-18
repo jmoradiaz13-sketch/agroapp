@@ -1,24 +1,16 @@
-import { Link } from 'react-router-dom';
-import { usoFlujo } from '../estado/usoFlujo';
 import { FichaSueloWizard } from '../componentes/suelo/FichaSueloWizard';
-import { Boton } from '../componentes/ui/Boton';
+import { TabsSuelos } from '../componentes/suelo/TabsSuelos';
+import { AMBITO_SUELOS } from '../datos/variables_suelo';
 
-// Escena Suelos = capturar: wizard de 5 pasos. La cabecera la pone MarcoEscena.
+// Herramienta Suelos · Registrar: caracterización física, química y biológica.
+// Se accede desde el Tablero o el menú Suelo. Sin predios ni contextos.
 export function FichaLote() {
-  const { predioIdentificador } = usoFlujo();
-
-  if (!predioIdentificador) {
-    return (
-      <div className="grid gap-4 animacion-entrada">
-        <p className="mensaje-info">Elige o crea un predio para registrar su ficha de suelo.</p>
-        <Link to="/predios"><Boton>Ir a Predios</Boton></Link>
-      </div>
-    );
-  }
-
   return (
-    <div className="grid animacion-entrada" style={{ minHeight: 'max(496px, calc(100dvh - 112px))', alignItems: 'center', padding: '8px' }}>
-      <FichaSueloWizard predioIdentificador={predioIdentificador} />
+    <div className="grid gap-3 animacion-entrada">
+      <TabsSuelos />
+      <div className="grid animacion-entrada" style={{ minHeight: 'max(496px, calc(100dvh - 112px))', alignItems: 'center', padding: '8px' }}>
+        <FichaSueloWizard predioIdentificador={AMBITO_SUELOS} />
+      </div>
     </div>
   );
 }
