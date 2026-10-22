@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" role="img" aria-label="Cilindro metálico para muestra indisturbada de suelo">
+  <rect width="160" height="120" fill="none"/>
+  <ellipse cx="80" cy="30" rx="26" ry="8" fill="#E7EFEC" stroke="#14736E" stroke-width="2"/>
+  <path d="M54 30v46c0 5 12 8 26 8s26-3 26-8V30" fill="#EFE7DD" stroke="#14736E" stroke-width="2"/>
+  <path d="M54 62c0 5 12 8 26 8s26-3 26-8" fill="none" stroke="#C9B79F" stroke-width="2"/>
+  <path d="M58 44h44M58 56h44" stroke="#C9B79F" stroke-width="1.5" opacity="0.8"/>
+  <text x="80" y="110" font-family="system-ui, sans-serif" font-size="9" fill="#14736E" text-anchor="middle">V = π · r² · h</text>
+</svg>

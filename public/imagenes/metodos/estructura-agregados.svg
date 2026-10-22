@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" role="img" aria-label="Agregados friables con poros y raíces frente a terrones compactos">
+  <rect width="160" height="120" fill="none"/>
+  <g stroke="#5B3D22" stroke-width="1.5" fill="#A9773F">
+    <path d="M18 44l12-8 12 7-3 13-14 2z"/>
+    <path d="M46 38l10-7 11 6-2 11-12 2z"/>
+    <path d="M32 68l11-7 12 6-2 12-13 2z"/>
+    <path d="M62 60l10-6 11 7-3 11-12 1z"/>
+  </g>
+  <circle cx="30" cy="52" r="2.5" fill="#F3EEE4"/>
+  <circle cx="54" cy="66" r="2" fill="#F3EEE4"/>
+  <path d="M62 74c4 6 2 12-2 16M70 70c5 5 5 11 2 17" stroke="#3E9A90" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+  <path d="M104 38h40v50h-40z" fill="#7A5634" stroke="#4A321C" stroke-width="2"/>
+  <path d="M110 52h28M110 66h28M110 80h18" stroke="#4A321C" stroke-width="1.5" opacity="0.6"/>
+  <text x="42" y="110" font-family="system-ui, sans-serif" font-size="8" fill="#14736E" text-anchor="middle">friable · poroso</text>
+  <text x="124" y="110" font-family="system-ui, sans-serif" font-size="8" fill="#B45309" text-anchor="middle">compacto · macizo</text>
+</svg>

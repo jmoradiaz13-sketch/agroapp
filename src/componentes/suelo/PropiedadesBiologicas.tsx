@@ -1,224 +1,145 @@
-import { useEffect, useState } from 'react';
-import type { UseFormRegister } from 'react-hook-form';
+import { useEffect, useRef, useState } from 'react';
+import type { UseFormRegister, UseFormSetValue } from 'react-hook-form';
 import type { FichaSueloFormulario } from '../../esquemas/suelo';
 import type { FotoLista } from '../../servicios/fotos';
-import { CapturaFoto } from '../CapturaFoto';
-import { GaugeArco } from '../GaugeArco';
+import {
+  META_BIOLOGICA, PASOS_BIOLOGICOS, SLIDE_DE_VARIABLE_BIOLOGICA, avanceVsa, estadoVsa,
+  puntajesVsa, type FotoCoberturaVista,
+} from '../../datos/biologicas';
+import { VARIABLES_BIOLOGICAS, estadoVariable, type EstadoVariable } from '../../datos/variables_suelo';
+import { CabeceraVariable } from './biologicas_apoyo';
+import { PanelVida } from './PanelVida';
+import { PanelVsa } from './PanelVsa';
+import { PanelCobertura } from './PanelCobertura';
+import { PanelLaboratorio } from './PanelLaboratorio';
+import { ResumenBiologico } from './ResumenBiologico';
+import { PieDeck, TiraPasos, useNavegacionDeck, type PasoDeck } from './NavegacionDeck';
 
 type R = UseFormRegister<FichaSueloFormulario>;
+type S = UseFormSetValue<FichaSueloFormulario>;
 type V = Partial<FichaSueloFormulario>;
 
-export const DIAPOSITIVAS_BIOLOGICAS: { id: string; titulo: string }[] = [
-  { id: 'vida', titulo: 'Vida' },
-  { id: 'vsa', titulo: 'VSA' },
-  { id: 'cobertura', titulo: 'Cobertura' },
-  { id: 'laboratorio', titulo: 'Laboratorio' },
-  { id: 'conclusiones', titulo: 'Conclusiones' },
-];
+export const DIAPOSITIVAS_BIOLOGICAS: { id: string; titulo: string }[] = PASOS_BIOLOGICOS.map(({ id, titulo }) => ({ id, titulo }));
 
-const DIAPOSITIVAS = DIAPOSITIVAS_BIOLOGICAS;
+const IDS_VARIABLES = ['vida', 'vsa', 'cobertura', 'laboratorio'] as const;
 
-const INDICADORES_VSA = ['estructura', 'porosidad', 'color', 'lombrices', 'cobertura', 'erosion_visible'];
-const NODULACION = ['sin nódulos', 'nódulos blancos (inactivos)', 'nódulos rosados (activos)'];
-const OLOR = ['tierra fresca', 'neutro', 'putrefacción / azufre'];
-const DESCOMPOSICION = ['residuos frescos', 'parcialmente descompuestos', 'humus estable'];
-
-function Fuente({ texto }: { texto: string }) {
-  return <p className="text-xs text-neutral-500">Fuente: {texto}</p>;
+function avanceDeVariable(id: string, valores: V, vsa: ReturnType<typeof puntajesVsa>): number {
+  if (id === 'vsa') return avanceVsa(vsa);
+  const def = VARIABLES_BIOLOGICAS.find((v) => v.id === id);
+  return def ? estadoVariable(def, valores).avance : 0;
 }
 
-// Deck: una variable biológica por diapositiva, con marco, navegación
-// mínima y scroll automático al contenido. Campo, laboratorio o mixto.
 export function PropiedadesBiologicas({
-  registro, valores, puntajes, setPuntajes,
+  registro, fijar, valores, puntajes, setPuntajes,
   fotoCobertura, alFotoCobertura, alUsarCobertura,
-  alIrResumen, diapositiva,
+  alIrResumen, alNavegar, diapositiva,
 }: {
-  registro: R; valores: V;
+  registro: R; fijar: S; valores: V;
   puntajes: Record<string, number>; setPuntajes: (p: Record<string, number>) => void;
-  fotoCobertura: { url: string; pct: number } | null;
+  fotoCobertura: FotoCoberturaVista | null;
   alFotoCobertura: (f: FotoLista) => Promise<void>;
   alUsarCobertura: (pct: number) => void;
-  alIrResumen?: () => void; diapositiva?: number | null;
+  alIrResumen?: () => void; alNavegar?: (indice: number) => void; diapositiva?: number | null;
 }) {
   const [indice, setIndice] = useState(0);
-  const irA = (i: number) => setIndice(Math.max(0, Math.min(DIAPOSITIVAS.length - 1, i)));
+  const primerRender = useRef(true);
+  const resumenVsa = puntajesVsa(puntajes);
+
+  const estados: Record<string, EstadoVariable> = {
+    vida: estadoVariable(VARIABLES_BIOLOGICAS.find((v) => v.id === 'vida')!, valores).estado,
+    vsa: estadoVsa(resumenVsa),
+    cobertura: estadoVariable(VARIABLES_BIOLOGICAS.find((v) => v.id === 'cobertura')!, valores).estado,
+    laboratorio: estadoVariable(VARIABLES_BIOLOGICAS.find((v) => v.id === 'laboratorio')!, valores).estado,
+  };
+  const estadoCierre: EstadoVariable = IDS_VARIABLES.every((id) => estados[id] === 'registrada')
+    ? 'registrada'
+    : IDS_VARIABLES.some((id) => estados[id] !== 'pendiente')
+      ? 'en_progreso'
+      : 'pendiente';
+  const pasos: PasoDeck[] = PASOS_BIOLOGICOS.map((p) => ({
+    ...p,
+    estado: p.id === 'conclusiones' ? estadoCierre : estados[p.id] ?? 'pendiente',
+  }));
+  const avanceCierre = Math.round(
+    IDS_VARIABLES.reduce((total, id) => total + avanceDeVariable(id, valores, resumenVsa), 0) / IDS_VARIABLES.length,
+  );
+  const avanceActual = indice === PASOS_BIOLOGICOS.length - 1
+    ? avanceCierre
+    : avanceDeVariable(PASOS_BIOLOGICOS[indice].id, valores, resumenVsa);
+  const metaActual = META_BIOLOGICA[PASOS_BIOLOGICOS[indice].id];
+
+  const irA = (i: number, avisar = true) => {
+    const destino = Math.max(0, Math.min(PASOS_BIOLOGICOS.length - 1, i));
+    setIndice(destino);
+    if (avisar) alNavegar?.(destino);
+  };
+
   useEffect(() => {
-    if (diapositiva !== undefined && diapositiva !== null) irA(diapositiva);
+    if (diapositiva !== undefined && diapositiva !== null) irA(diapositiva, false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [diapositiva]);
 
-  const tocados = INDICADORES_VSA.filter((k) => puntajes[k] !== undefined).length;
+  useEffect(() => {
+    if (primerRender.current) {
+      primerRender.current = false;
+      return;
+    }
+    document.getElementById('bio-paso-titulo')?.focus({ preventScroll: true });
+  }, [indice]);
+
+  const gestos = useNavegacionDeck({
+    actual: indice,
+    total: PASOS_BIOLOGICOS.length,
+    alCambiar: (i) => irA(i),
+  });
 
   return (
-    <div className="grid gap-3">
-      <div key={indice} className="animacion-entrada bg-white border border-emerald-500/40 shadow-sm rounded-sm p-4 sm:p-5 grid gap-4 content-start">
-        {indice === 0 && (
-          <>
-            <div>
-              <h3 className="text-lg font-semibold text-humus">Vida del suelo</h3>
-              <p className="text-xs text-neutral-500">Macrofauna y signos vitales: el núcleo agroecológico.</p>
-            </div>
-            <div className="border border-neutral-200 bg-neutral-50 p-2.5 grid gap-1.5 text-sm text-neutral-600">
-              <p className="text-xs font-semibold text-emerald-700">Método · Cubo de 20×20×20 cm</p>
-              <p>Excava el cubo y cuenta lombrices e insectos a simple vista. Nódulos rosados en leguminosas = fijación activa. Olor a tierra fresca = actividad aeróbica sana.</p>
-              <p className="text-xs text-neutral-500">Fuente: Shepherd, VSA Field Guides (FAO, 2008).</p>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <label className="etiqueta-campo">Lombrices (cubo 20×20×20 cm)
-                <input className="campo-entrada" type="number" step="1" min="0" {...registro('lombricesConteo')} />
-              </label>
-              <label className="etiqueta-campo">Nodulación en leguminosas
-                <select className="campo-entrada" defaultValue="" {...registro('nodulacion')}>
-                  <option value="">— Sin registrar —</option>
-                  {NODULACION.map((n) => <option key={n} value={n}>{n}</option>)}
-                </select>
-              </label>
-              <label className="etiqueta-campo">Olor del suelo
-                <select className="campo-entrada" defaultValue="" {...registro('olorSuelo')}>
-                  <option value="">— Sin registrar —</option>
-                  {OLOR.map((n) => <option key={n} value={n}>{n}</option>)}
-                </select>
-              </label>
-              <label className="etiqueta-campo">Descomposición de MO
-                <select className="campo-entrada" defaultValue="" {...registro('descomposicionMo')}>
-                  <option value="">— Sin registrar —</option>
-                  {DESCOMPOSICION.map((n) => <option key={n} value={n}>{n}</option>)}
-                </select>
-              </label>
-            </div>
-          </>
-        )}
+    <div
+      className="bio-deck grid gap-3"
+      style={{ touchAction: 'pan-y' }}
+      onTouchStart={gestos.alTocarInicio}
+      onTouchEnd={gestos.alTocarFin}
+      onTouchCancel={gestos.alCancelarToque}
+    >
+      <TiraPasos pasos={pasos} actual={indice} alCambiar={(i) => irA(i)} />
 
-        {indice === 1 && (
-          <>
-            <div>
-              <h3 className="text-lg font-semibold text-humus">Puntuación visual VSA</h3>
-              <p className="text-xs text-neutral-500">0 pobre · 1 moderado · 2 bueno. Alimenta el índice de calidad.</p>
-            </div>
-            <div className="border border-neutral-200 bg-neutral-50 p-2.5 grid gap-1.5 text-sm text-neutral-600">
-              <p className="text-xs font-semibold text-emerald-700">Método · Tarjeta VSA</p>
-              <p>Compara cada indicador con la guía fotográfica y puntúa. Ponderadores: estructura ×3, porosidad ×3, color ×2, lombrices ×2.</p>
-              <p className="text-xs text-neutral-500">Fuente: Shepherd, VSA Field Guides (FAO, 2008).</p>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              {INDICADORES_VSA.map((ind) => (
-                <label key={ind} className="etiqueta-campo">{ind.replace('_', ' ')}
-                  <select
-                    className="campo-entrada"
-                    value={puntajes[ind] ?? ''}
-                    onChange={(e) => setPuntajes({ ...puntajes, [ind]: Number(e.target.value) })}
-                  >
-                    <option value="">—</option>
-                    <option value={0}>0 — pobre</option>
-                    <option value={1}>1 — moderado</option>
-                    <option value={2}>2 — bueno</option>
-                  </select>
-                </label>
-              ))}
-            </div>
-            <p className="text-xs text-neutral-500">{tocados} de {INDICADORES_VSA.length} indicadores puntuados.</p>
-            <div className="bg-selva rounded-sm p-4">
-              <GaugeArco
-                valor={Object.values(puntajes).reduce((a, b) => a + b, 0)}
-                minimo={0}
-                maximo={INDICADORES_VSA.length * 2}
-                titulo={`VSA · ${tocados}/${INDICADORES_VSA.length}`}
-                subtexto={
-                  tocados === 0 ? 'Puntúa para ver el índice'
-                  : Object.values(puntajes).reduce((a, b) => a + b, 0) <= 4 ? 'Condición pobre'
-                  : Object.values(puntajes).reduce((a, b) => a + b, 0) <= 8 ? 'Condición moderada'
-                  : 'Buena estructura'
-                }
-              />
-            </div>
-          </>
-        )}
+      <p className="sr-only" aria-live="polite">
+        Paso {indice + 1} de {PASOS_BIOLOGICOS.length}: {PASOS_BIOLOGICOS[indice].titulo}
+      </p>
 
+      <CabeceraVariable
+        meta={metaActual}
+        estado={pasos[indice].estado}
+        avance={avanceActual}
+        paso={indice + 1}
+        total={PASOS_BIOLOGICOS.length}
+      />
+
+      <div key={indice} className="animacion-entrada grid gap-3">
+        {indice === 0 && <PanelVida registro={registro} fijar={fijar} valores={valores} />}
+        {indice === 1 && <PanelVsa puntajes={puntajes} setPuntajes={setPuntajes} />}
         {indice === 2 && (
-          <>
-            <div>
-              <h3 className="text-lg font-semibold text-humus">Cobertura por foto</h3>
-              <p className="text-xs text-neutral-500">Foto cenital a ≥ 60 cm: % verde calculado offline.</p>
-            </div>
-            <div className="border border-neutral-200 bg-neutral-50 p-2.5 grid gap-1.5 text-sm text-neutral-600">
-              <p className="text-xs font-semibold text-emerald-700">Método · Canopeo</p>
-              <p>Foto vertical del dosel; el sistema cuenta píxeles verdes en el dispositivo, sin red.</p>
-              <p className="text-xs text-neutral-500">Fuente: Patrignani &amp; Ochsner 2015, Agronomy Journal.</p>
-            </div>
-            <div className="flex gap-2 flex-wrap items-center">
-              <CapturaFoto texto="Foto cenital" tipo="cobertura" alCapturar={(f) => void alFotoCobertura(f)} />
-              {fotoCobertura && (
-                <>
-                  <img src={fotoCobertura.url} alt="Miniatura de cobertura" className="w-16 h-16 object-cover rounded-sm border border-neutral-200" />
-                  <span className="text-sm">Cobertura: <strong className="font-semibold text-emerald-700">{fotoCobertura.pct} %</strong></span>
-                  <button
-                    type="button"
-                    onClick={() => alUsarCobertura(fotoCobertura.pct)}
-                    className="boton-campo px-4 py-2 text-sm font-semibold rounded-sm bg-[#059669] text-white hover:bg-[#047857] transition-colors"
-                  >
-                    Usar en la ficha
-                  </button>
-                </>
-              )}
-            </div>
-          </>
+          <PanelCobertura
+            registro={registro}
+            valores={valores}
+            fotoCobertura={fotoCobertura}
+            alFotoCobertura={alFotoCobertura}
+            alUsarCobertura={alUsarCobertura}
+          />
         )}
-
-        {indice === 3 && (
-          <>
-            <div>
-              <h3 className="text-lg font-semibold text-humus">Biología de laboratorio</h3>
-              <p className="text-xs text-neutral-500">Respiración, biomasa microbiana y micorrizas del reporte.</p>
-            </div>
-            <div className="border border-neutral-200 bg-neutral-50 p-2.5 grid gap-1.5 text-sm text-neutral-600">
-              <p className="text-xs font-semibold text-emerald-700">Método · Reporte</p>
-              <p>Transcribe respiración basal (CO₂), carbono de biomasa microbiana y % de colonización micorrízica.</p>
-              <p className="text-xs text-neutral-500">Fuente: manual de agroecología y agroforestería.</p>
-            </div>
-            <div className="grid grid-cols-[1fr_7rem_4.5rem] items-center gap-2 border-b border-neutral-100 py-1.5">
-              <span className="text-sm text-neutral-700">Respiración basal</span>
-              <input className="campo-entrada !min-h-[44px] !py-1.5" type="number" step="0.1" min="0" aria-label="Respiración basal" {...registro('respiracionSuelo')} />
-              <span className="text-xs text-neutral-400">mg C-CO₂/kg/día</span>
-            </div>
-            <div className="grid grid-cols-[1fr_7rem_4.5rem] items-center gap-2 border-b border-neutral-100 py-1.5">
-              <span className="text-sm text-neutral-700">Carbono biomasa</span>
-              <input className="campo-entrada !min-h-[44px] !py-1.5" type="number" step="0.1" min="0" aria-label="Carbono biomasa" {...registro('carbonoBiomasa')} />
-              <span className="text-xs text-neutral-400">mg/kg</span>
-            </div>
-            <div className="grid gap-2 sm:grid-cols-2">
-              <label className="etiqueta-campo">Colonización micorrízica
-                <input className="campo-entrada" placeholder="Ej: 60 % raíces colonizadas" {...registro('micorrizas')} />
-              </label>
-              <label className="etiqueta-campo">Cobertura vegetal (%)
-                <input className="campo-entrada" type="number" step="0.1" min="0" {...registro('coberturaVegetalPct')} />
-              </label>
-            </div>
-          </>
-        )}
-
+        {indice === 3 && <PanelLaboratorio registro={registro} valores={valores} />}
         {indice === 4 && (
-          <>
-            <div>
-              <h3 className="text-lg font-semibold text-humus">Conclusiones biológicas</h3>
-              <p className="text-xs text-neutral-500">Lo registrado en este recorrido, listo para la interpretación.</p>
-            </div>
-            <dl className="grid gap-1.5 text-sm border border-neutral-200 p-4">
-              <div className="flex gap-2"><dt className="text-neutral-500 w-28 shrink-0">Lombrices</dt><dd className="font-medium">{valores.lombricesConteo !== undefined ? `${valores.lombricesConteo} / cubo` : 'Sin registrar'}</dd></div>
-              <div className="flex gap-2"><dt className="text-neutral-500 w-28 shrink-0">VSA</dt><dd className="font-medium">{tocados > 0 ? `${tocados} de ${INDICADORES_VSA.length} puntuados` : 'Sin registrar'}</dd></div>
-              <div className="flex gap-2"><dt className="text-neutral-500 w-28 shrink-0">Cobertura</dt><dd className="font-medium">{valores.coberturaVegetalPct !== undefined ? `${valores.coberturaVegetalPct} %` : 'Sin registrar'}</dd></div>
-              <div className="flex gap-2"><dt className="text-neutral-500 w-28 shrink-0">Respiración</dt><dd className="font-medium">{valores.respiracionSuelo !== undefined ? `${valores.respiracionSuelo} mg C-CO₂/kg/día` : 'Sin registrar'}</dd></div>
-            </dl>
-            {alIrResumen && (
-              <div>
-                <button type="button" onClick={alIrResumen} className="boton-campo px-4 py-2 text-sm font-semibold rounded-sm bg-[#059669] text-white hover:bg-[#047857] transition-colors">
-                  Ir a Interpretación →
-                </button>
-              </div>
-            )}
-          </>
+          <ResumenBiologico
+            valores={valores}
+            puntajes={puntajes}
+            fotoCobertura={fotoCobertura}
+            alElegir={(id) => irA(SLIDE_DE_VARIABLE_BIOLOGICA[id] ?? 0)}
+            alIrResumen={alIrResumen}
+          />
         )}
       </div>
+
+      <PieDeck pasos={pasos} actual={indice} alCambiar={(i) => irA(i)} alCerrar={alIrResumen} />
     </div>
   );
 }

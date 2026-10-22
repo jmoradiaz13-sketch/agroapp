@@ -6,7 +6,7 @@ import { Boton } from './ui/Boton';
 
 // Enmienda de cal desde la última ficha: Al + CICE + textura.
 // Dosis validada y fraccionada por el servidor (máx 2,5 t/ha por vez).
-export function TarjetaEnmienda({ predioIdentificador }: { predioIdentificador: string }) {
+export function TarjetaEnmienda({ predioIdentificador, loteNombre }: { predioIdentificador: string; loteNombre?: string }) {
   const [enmienda, setEnmienda] = useState<EnmiendaCal | null>(null);
   const [mensaje, setMensaje] = useState('');
   const [cargando, setCargando] = useState(false);
@@ -16,15 +16,17 @@ export function TarjetaEnmienda({ predioIdentificador }: { predioIdentificador: 
   useEffect(() => {
     void baseDatos.fichasSuelo.where('predioIdentificador').equals(predioIdentificador).toArray()
       .then((fs) => {
-        const ultima = fs.sort((a, b) => b.fecha.localeCompare(a.fecha))[0];
+        const delContexto = loteNombre ? fs.filter((f) => f.loteNombre === loteNombre) : fs;
+        const ultima = delContexto.sort((a, b) => b.fecha.localeCompare(a.fecha))[0];
         setTieneDatos(!!ultima?.aluminioCmolKg && !!ultima?.cicCmolKg);
       });
-  }, [predioIdentificador]);
+  }, [predioIdentificador, loteNombre]);
 
   const calcular = async () => {
     setCargando(true);
     const fs = await baseDatos.fichasSuelo.where('predioIdentificador').equals(predioIdentificador).toArray();
-    const ultima = fs.sort((a, b) => b.fecha.localeCompare(a.fecha))[0];
+    const delContexto = loteNombre ? fs.filter((f) => f.loteNombre === loteNombre) : fs;
+    const ultima = delContexto.sort((a, b) => b.fecha.localeCompare(a.fecha))[0];
     if (!ultima?.aluminioCmolKg || !ultima?.cicCmolKg) {
       setMensaje('La última ficha no trae Al ni CICE: registra el reporte de laboratorio.');
       setCargando(false);

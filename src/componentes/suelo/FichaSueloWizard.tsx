@@ -4,16 +4,18 @@ import { useForm, type UseFormRegister } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { esquemaFichaSuelo, type FichaSueloFormulario } from '../../esquemas/suelo';
 import { RANGOS_VALIDADOS, semaforoPara, type Semaforo } from '../../datos/rangos';
-import { PropiedadesFisicas, DIAPOSITIVAS_FISICAS } from './PropiedadesFisicas';
+import { PropiedadesFisicas, DIAPOSITIVAS_FISICAS, SLIDE_DE_VARIABLE_FISICA, variableFisicaDeSlide } from './PropiedadesFisicas';
 import { PropiedadesQuimicas, DIAPOSITIVAS_QUIMICAS } from './PropiedadesQuimicas';
 import { PropiedadesBiologicas, DIAPOSITIVAS_BIOLOGICAS } from './PropiedadesBiologicas';
-import { blobAUrl, coberturaVerde, type FotoLista } from '../../servicios/fotos';
+import { INDICADORES_VSA, SLIDE_DE_VARIABLE_BIOLOGICA } from '../../datos/biologicas';
+import { analizarCobertura, blobAUrl, type FotoLista } from '../../servicios/fotos';
+import type { FotoCoberturaVista } from '../../datos/biologicas';
 import { usarGps, textoPrecision } from '../../servicios/gps';
 import { baseDatos } from '../../base_datos/local';
 import { Boton } from '../ui/Boton';
 import { IndiceCategoria } from './IndiceCategoria';
 import {
-  VARIABLES_FISICAS, VARIABLES_QUIMICAS, VARIABLES_BIOLOGICAS, resumenVariables,
+  VARIABLES_QUIMICAS, VARIABLES_BIOLOGICAS, resumenVariables,
 } from '../../datos/variables_suelo';
 
 type Paso = 'bienvenida' | 'general' | 'categorias' | 'fisicas' | 'quimicas' | 'biologicas' | 'resumen';
@@ -28,7 +30,16 @@ const PASOS: { id: Paso; titulo: string }[] = [
   { id: 'resumen', titulo: 'Interpretación' },
 ];
 
-const INDICADORES_VSA = ['estructura', 'porosidad', 'color', 'lombrices', 'cobertura', 'erosion_visible'];
+function normalizarValoresSuelo(valores: FichaSueloFormulario): FichaSueloFormulario {
+  return Object.fromEntries(
+    Object.entries(valores).map(([clave, valor]) => [
+      clave,
+      valor === '' || valor === null || (typeof valor === 'number' && !Number.isFinite(valor))
+        ? undefined
+        : valor,
+    ]),
+  ) as FichaSueloFormulario;
+}
 
 const OPCIONES = {
   tipoEvaluacion: [
@@ -152,7 +163,7 @@ const CATEGORIAS_FICHA: { id: 'fisicas' | 'quimicas' | 'biologicas'; titulo: str
     imagen: '/imagenes/1.jpg', imagenAlt: 'Plántulas emergiendo',
   },
 ];
-export function FichaSueloWizard({ predioIdentificador }: { predioIdentificador: string }) {
+export function FichaSueloWizard({ predioIdentificador, loteNombre }: { predioIdentificador: string; loteNombre?: string }) {
   const [paso, setPaso] = useState<Paso>('bienvenida');
   const [visitados, setVisitados] = useState<Paso[]>(['bienvenida']);
   // Diapositiva destino por deck (la fija el submenú del riel).
@@ -162,12 +173,76 @@ export function FichaSueloWizard({ predioIdentificador }: { predioIdentificador:
   // Nota del registro de terreno: error en "Datos del terreno", éxito en "Ficha".
   const [notaTerreno, setNotaTerreno] = useState<{ tipo: 'ok' | 'error'; texto: string; detalle?: string[] } | null>(null);
   const [fotosEtapa, setFotosEtapa] = useState<FotoLista[]>([]);
-  const [fotoCobertura, setFotoCobertura] = useState<{ url: string; pct: number } | null>(null);
-  const { register, handleSubmit, watch, setValue, getValues, formState: { errors } } = useForm<FichaSueloFormulario>({
+  const [fotoCobertura, setFotoCobertura] = useState<FotoCoberturaVista | null>(null);
+  const [borradorRestaurado, setBorradorRestaurado] = useState(false);
+  const [cargandoBorrador, setCargandoBorrador] = useState(true);
+  const [finalizado, setFinalizado] = useState(false);
+  const claveBorrador = `${predioIdentificador}::${loteNombre ?? ''}`;
+  const valoresIniciales: FichaSueloFormulario = {
+    predioIdentificador,
+    loteNombre,
+    fecha: new Date().toISOString().slice(0, 10),
+    tipoEvaluacion: 'mixta',
+  };
+  const { register, handleSubmit, watch, setValue, getValues, reset, formState: { errors } } = useForm<FichaSueloFormulario>({
     resolver: zodResolver(esquemaFichaSuelo),
-    defaultValues: { predioIdentificador, fecha: new Date().toISOString().slice(0, 10), tipoEvaluacion: 'mixta' },
+    defaultValues: valoresIniciales,
   });
-  const valores = watch();
+  const valores = normalizarValoresSuelo(watch());
+
+  // Recupera el borrador del contexto (predio + lote) sin crear una ficha parcial.
+  useEffect(() => {
+    let vigente = true;
+    setCargandoBorrador(true);
+    void baseDatos.borradoresSuelo.where('clave').equals(claveBorrador).first()
+      .then((b) => {
+        if (!vigente || !b) return;
+        reset({ ...valoresIniciales, ...b.datos });
+        setPuntajes(b.puntajes);
+        setBorradorRestaurado(true);
+        setPaso('general');
+        setVisitados(['bienvenida', 'general']);
+      })
+      .finally(() => { if (vigente) setCargandoBorrador(false); });
+    return () => { vigente = false; };
+    // El componente se remonta cuando cambia el contexto (key en PaginaSuelos).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [claveBorrador, reset]);
+
+  // Autoguardado: nunca inventa una versión histórica ni sincroniza el borrador.
+  useEffect(() => {
+    if (cargandoBorrador || finalizado || paso === 'bienvenida') return;
+    const temporizador = window.setTimeout(() => {
+      void (async () => {
+        const existente = await baseDatos.borradoresSuelo.where('clave').equals(claveBorrador).first();
+        await baseDatos.borradoresSuelo.put({
+          ...(existente?.id !== undefined ? { id: existente.id } : {}),
+          clave: claveBorrador,
+          predioIdentificador,
+          loteNombre,
+          datos: valores,
+          puntajes,
+          fechaActualizacion: new Date().toISOString(),
+        });
+      })();
+    }, 700);
+    return () => window.clearTimeout(temporizador);
+  }, [valores, puntajes, cargandoBorrador, finalizado, paso, claveBorrador, predioIdentificador, loteNombre]);
+
+  const descartarBorrador = async () => {
+    await baseDatos.borradoresSuelo.where('clave').equals(claveBorrador).delete();
+    reset(valoresIniciales);
+    setPuntajes({});
+    setDiapos({});
+    setFotosEtapa([]);
+    setFotoCobertura(null);
+    setBorradorRestaurado(false);
+    setFinalizado(false);
+    setPaso('bienvenida');
+    setVisitados(['bienvenida']);
+    setMensaje('Borrador descartado. Puedes empezar una ficha nueva.');
+  };
+
   const tocadosVsa = INDICADORES_VSA.filter((k) => puntajes[k] !== undefined).length;
   const conteosVsa = { vsa: { hechos: tocadosVsa, total: INDICADORES_VSA.length } };
   const gps = usarGps();
@@ -201,62 +276,77 @@ export function FichaSueloWizard({ predioIdentificador }: { predioIdentificador:
 
   const alGuardar = async (datos: FichaSueloFormulario) => {
     setNotaTerreno(null);
-    const existentes = await baseDatos.fichasSuelo.where('predioIdentificador').equals(datos.predioIdentificador).count();
-    const fichaId = await baseDatos.fichasSuelo.add({ ...datos, version: existentes + 1, sincronizada: false });
+    const fecha = datos.fecha || new Date().toISOString().slice(0, 10);
+    const lote = datos.loteNombre ?? '';
+    const hermanas = await baseDatos.fichasSuelo.where('predioIdentificador').equals(datos.predioIdentificador).toArray();
+    const delContexto = hermanas.filter((f) => (f.loteNombre ?? '') === lote);
+    const version = Math.max(0, ...delContexto.map((f) => f.version)) + 1;
+    const fichaId = await baseDatos.fichasSuelo.add({ ...datos, fecha, version, sincronizada: false });
     for (const f of fotosEtapa) {
       await baseDatos.fotos.add({
         fichaId, predioIdentificador: datos.predioIdentificador,
         tipo: f.tipo, foto: f.blob, miniatura: f.miniatura,
         lat: f.lat, lng: f.lng, coberturaPct: f.coberturaPct,
-        fecha: datos.fecha, sincronizada: false,
+        fecha, sincronizada: false,
       });
     }
     setFotosEtapa([]);
     const tocados = INDICADORES_VSA.filter((i) => puntajes[i] !== undefined);
     if (tocados.length > 0) {
+      const completo = tocados.length === INDICADORES_VSA.length;
       const vals = INDICADORES_VSA.map((i) => puntajes[i] ?? 0);
-      const indice = Math.round((vals.reduce((a, b) => a + b, 0) / (INDICADORES_VSA.length * 2)) * 100);
+      const indice = completo
+        ? Math.round((vals.reduce((a, b) => a + b, 0) / (INDICADORES_VSA.length * 2)) * 100)
+        : undefined;
       await baseDatos.monitoreos.add({
-        loteNombre: 'general', fecha: datos.fecha,
-        indicadores: { vsa_indice: indice, ...puntajes }, observaciones: `VSA campo índice ${indice}/100`,
+        fichaId,
+        predioIdentificador: datos.predioIdentificador,
+        loteNombre: datos.loteNombre ?? 'predio',
+        fecha,
+        indicadores: { ...(indice !== undefined ? { vsa_indice: indice } : {}), ...puntajes },
+        observaciones: completo
+          ? `VSA campo índice ${indice}/100`
+          : `VSA parcial ${tocados.length}/${INDICADORES_VSA.length}; sin índice`,
         sincronizada: false,
       });
     }
-    setMensaje(`Ficha v${existentes + 1} guardada offline. Lo interpretado con rango validado aparece en Diagnóstico; lo demás queda registrado sin interpretar.`);
+    await baseDatos.borradoresSuelo.where('clave').equals(claveBorrador).delete();
+    setBorradorRestaurado(false);
+    setFinalizado(true);
+    setMensaje(`Ficha v${version} guardada offline. Lo interpretado con rango validado aparece en Lectura; lo demás queda registrado sin interpretar.`);
   };
 
-  // "Registrar y continuar": valida los datos del terreno, crea la primera
-  // versión de la ficha en Dexie y sigue trabajando sobre ese predio.
+  // "Registrar y continuar": los datos del terreno son opcionales; se registra
+  // con lo que se tenga y se pasa a "Ficha" para las propiedades del suelo.
   const [registrando, setRegistrando] = useState(false);
   const registrarYContinuar = async () => {
     if (registrando) return;
     setRegistrando(true);
     try {
-      const datos = getValues();
+      const datosBase = getValues();
+      // Trazabilidad mínima (§2.1): si la fecha quedó vacía, se repone a hoy.
+      const fecha = datosBase.fecha || new Date().toISOString().slice(0, 10);
+      if (fecha !== datosBase.fecha) setValue('fecha', fecha);
+      const datos = { ...datosBase, fecha };
       const validacion = esquemaFichaSuelo.safeParse(datos);
       const issues = validacion.success ? [] : validacion.error.issues;
+      // Solo un valor inválido de este paso (ej. latitud fuera de rango) puede
+      // frenar el registro; lo demás se corrige en su propio paso.
       const delTerreno = issues.filter((i) => CAMPOS_GENERALES.some((c) => c.nombre === i.path[0]));
-      if (issues.length > 0) {
-        const detalle = delTerreno.map((i) => {
-          const campo = CAMPOS_GENERALES.find((c) => c.nombre === i.path[0]);
-          return `${campo?.etiqueta ?? String(i.path[0])}: ${i.message}`;
-        });
-        const otros = issues.length - delTerreno.length;
+      if (delTerreno.length > 0) {
         setNotaTerreno({
           tipo: 'error',
-          texto: otros > 0
-            ? 'Corrige los datos del terreno marcados y los inválidos de otras secciones antes de continuar.'
-            : 'Corrige los siguientes datos del terreno antes de continuar.',
-          detalle,
+          texto: 'Corrige los siguientes datos del terreno antes de continuar.',
+          detalle: delTerreno.map((i) => {
+            const campo = CAMPOS_GENERALES.find((c) => c.nombre === i.path[0]);
+            return `${campo?.etiqueta ?? String(i.path[0])}: ${i.message}`;
+          }),
         });
         return;
       }
-      const existentes = await baseDatos.fichasSuelo.where('predioIdentificador').equals(datos.predioIdentificador).count();
-      const version = existentes + 1;
-      await baseDatos.fichasSuelo.add({ ...datos, version, sincronizada: false });
       setNotaTerreno({
         tipo: 'ok',
-        texto: `Datos del terreno registrados (v${version}). Seguimos trabajando sobre este predio: lo que registres a continuación se suma a su historial.`,
+        texto: 'Datos del terreno validados. El borrador queda en este dispositivo; la ficha se guarda como nueva versión al finalizar.',
       });
       irAPaso('categorias');
     } finally {
@@ -337,7 +427,7 @@ export function FichaSueloWizard({ predioIdentificador }: { predioIdentificador:
                           onClick={() => irAVariable(p.id, j)}
                           className="boton-campo w-full text-left px-2 py-2 text-[12.5px] transition-colors hover:underline underline-offset-4"
                           style={{ color: 'var(--marca-texto)' }}
-                          aria-current={diapos[p.id as 'fisicas'] === j}
+                          aria-current={diapos[p.id as 'fisicas' | 'quimicas' | 'biologicas'] === j}
                         >
                           <span className="mono-micro" style={{ opacity: 0.65 }} aria-hidden>{NUMERO_PASO[p.id]}.{j + 1} </span>
                           {s.titulo}
@@ -371,12 +461,9 @@ export function FichaSueloWizard({ predioIdentificador }: { predioIdentificador:
             <IndiceCategoria
               categoria="fisicas"
               valores={valores}
-              variableActiva={VARIABLES_FISICAS[(diapos.fisicas ?? 0)]?.id ?? null}
+              variableActiva={variableFisicaDeSlide(diapos.fisicas ?? 0)}
               alElegir={(id) => {
-                const i = VARIABLES_FISICAS.findIndex((v) => v.id === id);
-                // Agua vive en la diapositiva de densidad (índice 2).
-                const destino = id === 'agua' ? 2 : Math.max(0, i);
-                irAVariable('fisicas', Math.min(destino, DIAPOSITIVAS_FISICAS.length - 1));
+                irAVariable('fisicas', SLIDE_DE_VARIABLE_FISICA[id] ?? 0);
               }}
             />
           </div>
@@ -396,16 +483,13 @@ export function FichaSueloWizard({ predioIdentificador }: { predioIdentificador:
           </div>
         )}
         {paso === 'biologicas' && (
-          <div className="grid gap-2 mt-2 p-2 border" style={{ borderColor: 'var(--borde)' }} aria-label="Índice de variables biológicas">
+          <div className="hidden lg:grid gap-2 mt-2 p-2 border" style={{ borderColor: 'var(--borde)' }} aria-label="Índice de variables biológicas">
             <p className="mono-micro" style={{ color: 'var(--marca-muted)' }}>Biológicas · ¿qué variable estudias?</p>
             <IndiceCategoria
               categoria="biologicas"
               valores={valores}
               variableActiva={VARIABLES_BIOLOGICAS[(diapos.biologicas ?? 0)]?.id ?? null}
-              alElegir={(id) => {
-                const i = VARIABLES_BIOLOGICAS.findIndex((v) => v.id === id);
-                irAVariable('biologicas', Math.min(Math.max(0, i), DIAPOSITIVAS_BIOLOGICAS.length - 1));
-              }}
+              alElegir={(id) => irAVariable('biologicas', SLIDE_DE_VARIABLE_BIOLOGICA[id] ?? 0)}
               conteosExtra={conteosVsa}
             />
           </div>
@@ -415,6 +499,16 @@ export function FichaSueloWizard({ predioIdentificador }: { predioIdentificador:
       {/* Pantalla: marco oscuro + pantalla clara con scroll interno */}
       <div className="grid grid-rows-[minmax(0,1fr)_auto] min-h-0 min-w-0 p-2 sm:p-4 gap-2 sm:gap-3">
       <div key={paso} className="animacion-entrada p-4 sm:p-5 grid gap-4 sm:gap-5 content-start overflow-y-auto min-h-0 scroll-sutil" style={{ background: 'var(--sup)' }} role="tabpanel" aria-label={PASOS.find((p) => p.id === paso)?.titulo}>
+        {borradorRestaurado && !finalizado && (
+          <div className="flex flex-wrap items-center gap-2 p-3" style={{ background: 'var(--acento-suave)', border: '1px solid var(--borde)' }} role="status">
+            <p className="text-sm" style={{ color: 'var(--texto)' }}>
+              Borrador recuperado de este predio{loteNombre ? ` y lote ${loteNombre}` : ''}. Se guardará como versión solo al finalizar.
+            </p>
+            <button type="button" onClick={() => void descartarBorrador()} className="boton-campo ml-auto text-xs font-semibold underline underline-offset-4" style={{ color: 'var(--texto)' }}>
+              Descartar borrador
+            </button>
+          </div>
+        )}
         {paso === 'bienvenida' && (
           <div className="grid gap-5">
             <div className="relative overflow-hidden">
@@ -560,39 +654,37 @@ export function FichaSueloWizard({ predioIdentificador }: { predioIdentificador:
           </div>
         )}
 
-        {(paso === 'fisicas' || paso === 'quimicas' || paso === 'biologicas') && (
-          <button
-            type="button"
-            onClick={() => irAPaso('categorias')}
-            className="boton-campo w-fit px-4 py-2 text-sm font-semibold transition-colors"
-            style={{ background: 'transparent', color: 'var(--acento)', border: '1px solid var(--borde)' }}
-          >
-            ← Ficha · categorías
-          </button>
-        )}
-
         {paso === 'fisicas' && (
           <PropiedadesFisicas registro={register} fijar={setValue} valores={valores} errorGranulometria={errors.arcillaPct?.message} alFoto={(f) => setFotosEtapa((v) => [...v, f])} alIrResumen={() => irAPaso('resumen')} diapositiva={diapos.fisicas ?? null} />
         )}
 
         {paso === 'quimicas' && (
-          <PropiedadesQuimicas registro={register} valores={valores} alIrResumen={() => irAPaso('resumen')} diapositiva={diapos.quimicas ?? null} />
+          <PropiedadesQuimicas
+            registro={register}
+            fijar={setValue}
+            valores={valores}
+            alIrResumen={() => irAPaso('resumen')}
+            alNavegar={(i) => setDiapos((d) => ({ ...d, quimicas: i }))}
+            diapositiva={diapos.quimicas ?? null}
+          />
         )}
 
         {paso === 'biologicas' && (
           <PropiedadesBiologicas
             registro={register}
+            fijar={setValue}
             valores={valores}
             puntajes={puntajes}
             setPuntajes={setPuntajes}
             fotoCobertura={fotoCobertura}
             alFotoCobertura={async (f) => {
-              const pct = await coberturaVerde(f.blob);
-              setFotoCobertura({ url: blobAUrl(f.miniatura), pct });
-              setFotosEtapa((v) => [...v.filter((x) => x.tipo !== 'cobertura'), { ...f, coberturaPct: pct }]);
+              const analisis = await analizarCobertura(f.blob);
+              setFotoCobertura({ url: blobAUrl(f.miniatura), pct: analisis.pct, mascara: analisis.mascara });
+              setFotosEtapa((v) => [...v.filter((x) => x.tipo !== 'cobertura'), { ...f, coberturaPct: analisis.pct }]);
             }}
             alUsarCobertura={(pct) => setValue('coberturaVegetalPct', pct)}
             alIrResumen={() => irAPaso('resumen')}
+            alNavegar={(i) => setDiapos((d) => ({ ...d, biologicas: i }))}
             diapositiva={diapos.biologicas ?? null}
           />
         )}
@@ -675,26 +767,49 @@ export function FichaSueloWizard({ predioIdentificador }: { predioIdentificador:
         </div>
         {paso !== 'bienvenida' && (
         <nav className="flex items-center justify-end gap-2 px-4 sm:px-5 py-2.5 sm:py-3 border-t" style={{ borderColor: 'var(--borde)' }} aria-label="Navegación de la ficha">
-          {paso !== 'general' && (
-          <button
-            type="button"
-            onClick={() => irIndice(indicePaso - 1)}
-            disabled={indicePaso === 0}
-            className="boton-campo inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold transition-all disabled:opacity-40"
-            style={{ background: 'transparent', color: 'var(--marca-texto)', border: '1px solid var(--marca-muted)' }}
-          >
-            <span aria-hidden>←</span> Anterior
-          </button>
+          {paso === 'categorias' ? (
+            <button
+              type="button"
+              onClick={() => irAPaso('general')}
+              className="boton-campo inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold transition-all"
+              style={{ background: 'transparent', color: 'var(--marca-texto)', border: '1px solid var(--marca-muted)' }}
+            >
+              <span aria-hidden>←</span> Volver a datos
+            </button>
+          ) : (
+            <>
+              {(paso === 'fisicas' || paso === 'quimicas' || paso === 'biologicas') && (
+                <button
+                  type="button"
+                  onClick={() => irAPaso('categorias')}
+                  className="boton-campo inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold transition-all"
+                  style={{ background: 'transparent', color: 'var(--acento)', border: '1px solid var(--borde)' }}
+                >
+                  Categorías
+                </button>
+              )}
+              {paso !== 'general' && (
+              <button
+                type="button"
+                onClick={() => irIndice(indicePaso - 1)}
+                disabled={indicePaso === 0}
+                className="boton-campo inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold transition-all disabled:opacity-40"
+                style={{ background: 'transparent', color: 'var(--marca-texto)', border: '1px solid var(--marca-muted)' }}
+              >
+                <span aria-hidden>←</span> Anterior
+              </button>
+              )}
+              <button
+                type="button"
+                onClick={() => { if (paso === 'general') void registrarYContinuar(); else irIndice(indicePaso + 1); }}
+                disabled={registrando || indicePaso === PASOS.length - 1}
+                className="boton-campo inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold transition-all disabled:opacity-40"
+                style={{ background: 'var(--marca-texto)', color: 'var(--marca)' }}
+              >
+                {paso === 'general' ? 'Registrar y continuar' : 'Continuar'} <span aria-hidden>→</span>
+              </button>
+            </>
           )}
-          <button
-            type="button"
-            onClick={() => { if (paso === 'general') void registrarYContinuar(); else irIndice(indicePaso + 1); }}
-            disabled={registrando || indicePaso === PASOS.length - 1}
-            className="boton-campo inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold transition-all disabled:opacity-40"
-            style={{ background: 'var(--marca-texto)', color: 'var(--marca)' }}
-          >
-            {paso === 'general' ? 'Registrar y continuar' : 'Continuar'} <span aria-hidden>→</span>
-          </button>
         </nav>
         )}
       </div>

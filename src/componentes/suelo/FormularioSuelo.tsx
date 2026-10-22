@@ -85,9 +85,12 @@ export function FormularioSuelo({ predioIdentificador }: { predioIdentificador: 
   });
 
   const alGuardar = async (datos: FichaSueloFormulario) => {
+    // Trazabilidad mínima (§2.1): si la fecha quedó vacía, se repone a hoy.
+    const fecha = datos.fecha || new Date().toISOString().slice(0, 10);
     const existentes = await baseDatos.fichasSuelo.where('predioIdentificador').equals(datos.predioIdentificador).count();
     await baseDatos.fichasSuelo.add({
       ...datos,
+      fecha,
       version: existentes + 1,
       sincronizada: false
     });

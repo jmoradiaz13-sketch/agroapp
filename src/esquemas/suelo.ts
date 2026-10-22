@@ -3,38 +3,43 @@ import { z } from 'zod';
 // Unidades de almacenamiento según AGENTS.md. Conversiones solo en presentación.
 // Panel completo del plan "Determina las características de tu suelo":
 // general + físicas (campo/lab) + químicas (campo/lab) + biológicas (campo/lab).
+const aNumeroOpcional = (v: unknown): number | undefined => {
+  if (v === '' || v === null || v === undefined) return undefined;
+  const n = typeof v === 'number' ? v : Number(v);
+  return Number.isFinite(n) ? n : undefined;
+};
+
 const numero = (max: number) =>
-  z.preprocess(
-    (v) => (v === '' || v === null || Number.isNaN(v) ? undefined : Number(v)),
-    z.number().min(0).max(max).optional()
-  );
+  z.preprocess(aNumeroOpcional, z.number().min(0).max(max).optional());
+
+const numeroEntre = (min: number, max: number) =>
+  z.preprocess(aNumeroOpcional, z.number().min(min).max(max).optional());
+
+const enteroEntre = (min: number, max: number) =>
+  z.preprocess(aNumeroOpcional, z.number().int().min(min).max(max).optional());
+
+const textoOpcional = (v: unknown) => (v === '' || v === null || v === undefined ? undefined : v);
 
 export const esquemaFichaSuelo = z.object({
   predioIdentificador: z.string().min(1, 'Requerido'),
-  fecha: z.string().min(1, 'Requerido'),
-  tipoEvaluacion: z.enum(['campo', 'laboratorio', 'mixta']).optional(),
+  // Lote/parcela opcional: la ficha siempre queda bajo un predio.
+  loteNombre: z.string().max(200).optional(),
+  // Fecha opcional en formulario: si falta, se repone a hoy al guardar (trazabilidad §2.1).
+  fecha: z.string().optional(),
+  tipoEvaluacion: z.preprocess(textoOpcional, z.enum(['campo', 'laboratorio', 'mixta']).optional()),
   climaReciente: z.string().max(500).optional(),
   profundidadCm: numero(200),
   laboratorio: z.string().max(200).optional(),
   // Sitio de muestreo (Datos del terreno)
-  latitud: z.preprocess(
-    (v) => (v === '' || v === null || Number.isNaN(v) ? undefined : Number(v)),
-    z.number().min(-90).max(90).optional()
-  ),
-  longitud: z.preprocess(
-    (v) => (v === '' || v === null || Number.isNaN(v) ? undefined : Number(v)),
-    z.number().min(-180).max(180).optional()
-  ),
+  latitud: numeroEntre(-90, 90),
+  longitud: numeroEntre(-180, 180),
   precisionM: numero(10000),
-  msnm: z.preprocess(
-    (v) => (v === '' || v === null || Number.isNaN(v) ? undefined : Number(v)),
-    z.number().min(-500).max(6000).optional()
-  ),
+  msnm: numeroEntre(-500, 6000),
   pendienteSitioPct: numero(200),
-  posicionRelieve: z.enum(['cima', 'hombro', 'ladera', 'pie', 'valle']).optional(),
+  posicionRelieve: z.preprocess(textoOpcional, z.enum(['cima', 'hombro', 'ladera', 'pie', 'valle']).optional()),
   usoActual: z.string().max(200).optional(),
   solicitante: z.string().max(200).optional(),
-  tenenciaSitio: z.enum(['propietario', 'arrendatario', 'poseedor', 'otro']).optional(),
+  tenenciaSitio: z.preprocess(textoOpcional, z.enum(['propietario', 'arrendatario', 'poseedor', 'otro']).optional()),
   manejoReciente: z.string().max(1000).optional(),
   vereda: z.string().max(100).optional(),
   municipio: z.string().max(100).optional(),
@@ -44,10 +49,7 @@ export const esquemaFichaSuelo = z.object({
   compactacion: z.string().max(100).optional(),
   infiltracion: z.string().max(100).optional(),
   estructuraDesc: z.string().max(100).optional(),
-  estructuraVess: z.preprocess(
-    (v) => (v === '' || v === null || Number.isNaN(v) ? undefined : Number(v)),
-    z.number().int().min(1).max(5).optional()
-  ),
+  estructuraVess: enteroEntre(1, 5),
   colorMunsell: z.string().max(50).optional(),
   munsellH: z.string().max(10).optional(),
   munsellV: numero(10),
@@ -79,7 +81,7 @@ export const esquemaFichaSuelo = z.object({
   saturacionAlPct: numero(100),
   cicCmolKg: numero(60),
   fosforoMgKg: numero(500),
-  metodoFosforo: z.enum(['Bray II', 'Olsen', 'otro']).optional(),
+  metodoFosforo: z.preprocess(textoOpcional, z.enum(['Bray II', 'Olsen', 'otro']).optional()),
   azufreMgKg: numero(2000),
   materiaOrganicaPct: numero(20),
   nitrogenoPct: numero(2),

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" role="img" aria-label="Secado de la muestra de suelo en estufa a 105 grados">
+  <rect width="160" height="120" fill="none"/>
+  <rect x="34" y="30" width="92" height="58" rx="6" fill="#F3EEE4" stroke="#C9B79F" stroke-width="2"/>
+  <rect x="42" y="38" width="76" height="42" rx="3" fill="#fff" stroke="#C9B79F" stroke-width="1.5"/>
+  <circle cx="118" cy="52" r="6" fill="none" stroke="#14736E" stroke-width="2"/>
+  <line x1="118" y1="52" x2="118" y2="47" stroke="#14736E" stroke-width="1.5"/>
+  <path d="M56 70h48" stroke="#C9B79F" stroke-width="2" stroke-linecap="round"/>
+  <path d="M62 58c3-3 6-3 9 0M80 58c3-3 6-3 9 0M98 58c3-3 6-3 9 0" stroke="#3E9A90" stroke-width="0" fill="none"/>
+  <text x="80" y="108" font-family="system-ui, sans-serif" font-size="9" fill="#14736E" text-anchor="middle">105 °C · 24 h</text>
+</svg>

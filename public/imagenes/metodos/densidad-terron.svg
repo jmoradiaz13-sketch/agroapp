@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" role="img" aria-label="Terrón de suelo parafinado para medir volumen por desplazamiento">
+  <rect width="160" height="120" fill="none"/>
+  <path d="M46 84c-6-16 3-34 22-40 18-5 36 3 41 21 4 14-5 27-21 31-13 3-28 0-42-12z" fill="#8B5E34" stroke="#5B3D22" stroke-width="2"/>
+  <path d="M56 50c8-6 18-8 27-4" stroke="#E7EFEC" stroke-width="3" fill="none" stroke-linecap="round" opacity="0.8"/>
+  <path d="M108 24c4 6 7 10 7 14a7 7 0 0 1-14 0c0-4 3-8 7-14z" fill="#3E9A90" stroke="#14736E" stroke-width="1.5"/>
+  <text x="80" y="110" font-family="system-ui, sans-serif" font-size="9" fill="#14736E" text-anchor="middle">volumen por desplazamiento</text>
+</svg>

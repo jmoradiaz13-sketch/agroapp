@@ -36,6 +36,16 @@ export function clasificarTextura(arena?: number, limo?: number, arcilla?: numbe
   return 'franco';
 }
 
+// Reversa de CLASES_ES: convierte la etiqueta guardada en el campo texturaTacto
+// (p. ej. "Franco arenoso") a la clave interna de clase textural.
+export function claseDeEtiqueta(etiqueta?: string | null): ClaseTextural | null {
+  if (!etiqueta) return null;
+  const objetivo = etiqueta.trim().toLowerCase();
+  const entrada = (Object.entries(CLASES_ES) as [ClaseTextural, string][])
+    .find(([, valor]) => valor.toLowerCase() === objetivo);
+  return entrada ? entrada[0] : null;
+}
+
 // VESS Sq1–Sq5 (Ball et al. 2007, 2017): coexiste con VSA 0–2 de biológicas.
 export interface NivelVess { sq: number; titulo: string; descripcion: string }
 export const NIVELES_VESS: NivelVess[] = [
@@ -49,11 +59,36 @@ export const FUENTE_VESS = 'Ball et al., Visual Evaluation of Soil Structure (So
 
 // Munsell: matices con chips sRGB PUBLICADOS (no aproximaciones inventadas).
 // Fuente: USGS Open-File Report 2006-1195 (tabla Munsell→sRGB).
-// Si la combinación no tiene chip publicado, se muestra el más cercano
-// del mismo tono, etiquetado como aproximado. La carta física manda.
-export const MUNSELL_TONOS = ['10R', '5R', '10YR', '5YR', '5Y', '10Y'];
+// Si la combinación no tiene chip publicado, se muestra el chip publicado más
+// cercano (mismo tono si existe; si no, por cercanía de tono), etiquetado como
+// aproximado. La carta física manda.
+// Matices estándar de la carta de suelos Munsell (Munsell Color 2009).
+export const MUNSELL_TONOS = ['10R', '2.5YR', '5YR', '7.5YR', '10YR', '2.5Y', '5Y'];
 
 interface ChipMunsell { rgb: [number, number, number]; nombre: string }
+
+// Posición del matiz en el círculo Munsell (R=0, YR=10, Y=20, ...) para medir
+// cercanía entre tonos al buscar el chip publicado más próximo.
+const BASE_MUNSELL: Record<string, number> = {
+  R: 0, YR: 10, Y: 20, GY: 30, G: 40, BG: 50, B: 60, PB: 70, P: 80, RP: 90,
+};
+
+function posHue(tono: string): number {
+  const m = /^([0-9.]+)([A-Z]+)$/.exec(tono);
+  if (!m) return Number.NaN;
+  const base = BASE_MUNSELL[m[2]];
+  return base === undefined ? Number.NaN : base + Number(m[1]);
+}
+
+// Distancia entre un chip publicado (clave "tono-v-c") y el tono/v/croma objetivo.
+// El tono pesa el doble para priorizar el matiz antes que valor y croma.
+function distanciaChip(clave: string, tono: string, v: number, c: number): number {
+  const corte = clave.indexOf('-');
+  const kTono = clave.slice(0, corte);
+  const [vv, cc] = clave.slice(corte + 1).split('-').map(Number);
+  const dh = Math.abs(posHue(kTono) - posHue(tono));
+  return (Number.isNaN(dh) ? 99 : dh * 2) + Math.abs(vv - v) + Math.abs(cc - c);
+}
 
 const CHIPS_USGS: Record<string, ChipMunsell> = {
   '10R-8-2': { rgb: [215, 196, 190], nombre: 'rosa naranja grisáceo' },
@@ -83,10 +118,12 @@ export function munsellChip(
     return { css: `rgb(${r}, ${g}, ${b})`, etiqueta: `${tono} ${v}/${c} · ${exacto.nombre} (chip publicado)`, exacto: true };
   }
   let mejor: { clave: string; chip: ChipMunsell; dist: number } | null = null;
-  for (const [k, chip] of Object.entries(CHIPS_USGS)) {
-    if (!k.startsWith(`${tono}-`)) continue;
-    const [, vv, cc] = k.split('-').map(Number);
-    const dist = Math.abs(vv - v) + Math.abs(cc - c);
+  const claves = Object.keys(CHIPS_USGS);
+  const delMismoTono = claves.filter((k) => k.startsWith(`${tono}-`));
+  const bolsa = delMismoTono.length > 0 ? delMismoTono : claves;
+  for (const k of bolsa) {
+    const chip = CHIPS_USGS[k];
+    const dist = distanciaChip(k, tono, v, c);
     if (!mejor || dist < mejor.dist) mejor = { clave: k, chip, dist };
   }
   if (!mejor) return null;

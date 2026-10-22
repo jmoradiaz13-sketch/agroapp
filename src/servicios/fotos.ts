@@ -19,7 +19,7 @@ function aCanvas(bitmap: ImageBitmap, maxLado: number): HTMLCanvasElement {
   const canvas = document.createElement('canvas');
   canvas.width = Math.max(1, Math.round(bitmap.width * escala));
   canvas.height = Math.max(1, Math.round(bitmap.height * escala));
-  canvas.getContext('2d')!.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  canvas.getContext('2d', { willReadFrequently: true })!.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
   return canvas;
 }
 
@@ -37,19 +37,55 @@ export async function comprimirFoto(archivo: Blob, maxLado = 1280, calidad = 0.8
   return { blob, miniatura };
 }
 
-export async function coberturaVerde(foto: Blob, maxLado = 800): Promise<number> {
+export interface AnalisisCobertura {
+  pct: number;
+  mascara: string;
+  verdes: number;
+  total: number;
+}
+
+function esVerde(r: number, g: number, b: number): boolean {
+  return g > r + 10 && g > b + 10;
+}
+
+// Devuelve el porcentaje y una máscara PNG (fondo transparente, píxeles
+// verdes resaltados) para mostrar la evidencia sin salir del dispositivo.
+export async function analizarCobertura(foto: Blob, maxLado = 800): Promise<AnalisisCobertura> {
   const bitmap = await aBitmap(foto);
   const canvas = aCanvas(bitmap, maxLado);
-  const ctx = canvas.getContext('2d')!;
+  const ctx = canvas.getContext('2d', { willReadFrequently: true })!;
   const datos = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-  let verdes = 0;
   const total = canvas.width * canvas.height;
+
+  const mascara = document.createElement('canvas');
+  mascara.width = canvas.width;
+  mascara.height = canvas.height;
+  const ctxMascara = mascara.getContext('2d')!;
+  const pixeles = ctxMascara.createImageData(canvas.width, canvas.height);
+
+  let verdes = 0;
   for (let i = 0; i < datos.length; i += 4) {
-    const r = datos[i], g = datos[i + 1], b = datos[i + 2];
-    if (g > r + 10 && g > b + 10) verdes += 1;
+    if (!esVerde(datos[i], datos[i + 1], datos[i + 2])) continue;
+    verdes += 1;
+    pixeles.data[i] = 20;
+    pixeles.data[i + 1] = 115;
+    pixeles.data[i + 2] = 110;
+    pixeles.data[i + 3] = 255;
   }
+  ctxMascara.putImageData(pixeles, 0, 0);
   bitmap.close();
-  return Math.round((verdes / total) * 1000) / 10;
+
+  return {
+    pct: Math.round((verdes / total) * 1000) / 10,
+    mascara: mascara.toDataURL('image/png'),
+    verdes,
+    total,
+  };
+}
+
+export async function coberturaVerde(foto: Blob, maxLado = 800): Promise<number> {
+  const analisis = await analizarCobertura(foto, maxLado);
+  return analisis.pct;
 }
 
 export function blobAUrl(blob: Blob): string {

@@ -1,5 +1,5 @@
 import { Suspense, lazy, useEffect } from 'react';
-import { Routes, Route, Link, useLocation } from 'react-router-dom';
+import { Routes, Route, Link, Navigate, useLocation } from 'react-router-dom';
 import { PaginaIngreso } from './paginas/Ingreso';
 import { PaginaPredios } from './paginas/Predios';
 import { PaginaTablero } from './paginas/Tablero';
@@ -11,34 +11,37 @@ import { BannerOffline } from './componentes/BannerOffline';
 import { MarcoEscena } from './componentes/escenario/MarcoEscena';
 import { leerTemaOscuro, aplicarTema } from './componentes/InterruptorTema';
 import { iniciarSincronizacionAutomatica } from './servicios/sincronizacion';
+import { migrarFichasSueloAntiguas } from './servicios/migraciones';
 import { usoFlujo, type Paso } from './estado/usoFlujo';
 import { usoPredio } from './estado/usoPredio';
 import { etiquetaCache } from './base_datos/local';
 
 const DashboardLote = lazy(() => import('./paginas/DashboardLote').then((m) => ({ default: m.DashboardLote })));
-const FichaLote = lazy(() => import('./paginas/FichaLote').then((m) => ({ default: m.FichaLote })));
-const DiagnosticoLote = lazy(() => import('./paginas/DiagnosticoLote').then((m) => ({ default: m.DiagnosticoLote })));
+const PaginaSuelos = lazy(() => import('./paginas/Suelos').then((m) => ({ default: m.PaginaSuelos })));
 const InformePredio = lazy(() => import('./paginas/InformePredio').then((m) => ({ default: m.InformePredio })));
 const SigRestauracion = lazy(() => import('./paginas/SigRestauracion').then((m) => ({ default: m.SigRestauracion })));
 const Simulador = lazy(() => import('./paginas/Simulador').then((m) => ({ default: m.Simulador })));
 const Biblioteca = lazy(() => import('./paginas/Biblioteca').then((m) => ({ default: m.Biblioteca })));
-const HistorialSuelos = lazy(() => import('./paginas/HistorialSuelos').then((m) => ({ default: m.HistorialSuelos })));
 
 export default function App() {
   const ubicacion = useLocation();
   const { fechaCache } = usoPredio();
 
+  useEffect(() => { void migrarFichasSueloAntiguas().catch(() => undefined); }, []);
   useEffect(() => iniciarSincronizacionAutomatica(), []);
   useEffect(() => {
     aplicarTema(leerTemaOscuro());
   }, []);
   useEffect(() => {
     const mapa: Record<string, Paso> = {
-      '/predios': 'predios', '/lote': 'lote', '/ficha': 'ficha', '/sig': 'sig', '/simulador': 'simulador',
-      '/diseno': 'diseno', '/diagnostico': 'diagnostico', '/informe': 'informe'
+      '/predios': 'predios', '/lote': 'lote', '/suelos': 'ficha', '/sig': 'sig', '/simulador': 'simulador',
+      '/diseno': 'diseno', '/informe': 'informe'
     };
-    if (mapa[ubicacion.pathname]) usoFlujo.getState().irPaso(mapa[ubicacion.pathname]);
-  }, [ubicacion.pathname]);
+    const paso = ubicacion.pathname === '/suelos' && ubicacion.search.includes('vista=lectura')
+      ? 'diagnostico'
+      : mapa[ubicacion.pathname];
+    if (paso) usoFlujo.getState().irPaso(paso);
+  }, [ubicacion.pathname, ubicacion.search]);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -52,12 +55,13 @@ export default function App() {
               <Route path="/predios" element={<MarcoEscena><PaginaPredios /></MarcoEscena>} />
               <Route path="/diseno" element={<MarcoEscena><PaginaDiseno /></MarcoEscena>} />
               <Route path="/lote" element={<MarcoEscena><DashboardLote /></MarcoEscena>} />
-              <Route path="/ficha" element={<MarcoEscena><FichaLote /></MarcoEscena>} />
-              <Route path="/suelo-historial" element={<MarcoEscena><HistorialSuelos /></MarcoEscena>} />
+              <Route path="/suelos" element={<MarcoEscena><PaginaSuelos /></MarcoEscena>} />
+              <Route path="/ficha" element={<Navigate to="/suelos?vista=ficha" replace />} />
+              <Route path="/suelo-historial" element={<Navigate to="/suelos?vista=lectura" replace />} />
+              <Route path="/diagnostico" element={<Navigate to="/suelos?vista=lectura" replace />} />
               <Route path="/sig" element={<MarcoEscena><SigRestauracion /></MarcoEscena>} />
               <Route path="/simulador" element={<MarcoEscena><Simulador /></MarcoEscena>} />
               <Route path="/biblioteca" element={<MarcoEscena><Biblioteca /></MarcoEscena>} />
-              <Route path="/diagnostico" element={<MarcoEscena><DiagnosticoLote /></MarcoEscena>} />
               <Route path="/informe" element={<MarcoEscena><InformePredio /></MarcoEscena>} />
               <Route path="/ingreso" element={<PaginaIngreso />} />
             </Routes>
@@ -75,9 +79,9 @@ export default function App() {
               </div>
               <nav className="grid content-start gap-1" aria-label="Otras secciones">
                 <p className="kicker mb-1" style={{ color: 'var(--marca-texto)' }}>Otras secciones</p>
-                <Link to="/ficha" className="text-xs transition-colors">Análisis de suelos VSA</Link>
+                <Link to="/suelos" className="text-xs transition-colors">Suelos · ficha y lectura</Link>
                 <Link to="/sig" className="text-xs transition-colors">SIG restauración ecológica</Link>
-                <Link to="/diagnostico" className="text-xs transition-colors">Diagnóstico agroecológico</Link>
+                <Link to="/suelos?vista=lectura" className="text-xs transition-colors">Lectura y diagnóstico del suelo</Link>
                 <Link to="/informe" className="text-xs transition-colors">Informe del predio</Link>
                 <Link to="/diseno" className="text-xs transition-colors">Diseño de agroecosistemas</Link>
                 <Link to="/simulador" className="text-xs transition-colors">Simulador de sistemas</Link>

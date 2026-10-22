@@ -55,7 +55,6 @@ export function PaginaTablero() {
     predios: predios.length === 0 ? 'Crea el primero' : `${predios.length} predio(s) · activo: ${predio?.nombre ?? '—'}`,
     lote: lotes.length === 0 ? 'Dibuja el primero en el mapa' : `${lotes.length} lotes · ${areaLotes.toFixed(1)} ha`,
     ficha: ficha ? `v${ficha.version} · pH ${ficha.phAgua ?? '?'} · MO ${ficha.materiaOrganicaPct ?? '?'} %` : 'Sin ficha registrada',
-    diagnostico: ficha ? `Ficha v${ficha.version} lista para interpretar` : 'Registra una ficha primero',
     sig: lotes.length === 0 ? 'Delimita lotes para cruzar capas' : `${lotes.length} lotes para enriquecer`,
     simulador: `${conteoPlan.escenarios} escenarios · ${conteoPlan.disenos} diseños`,
     diseno: `${conteoPlan.disenos} diseños guardados`,

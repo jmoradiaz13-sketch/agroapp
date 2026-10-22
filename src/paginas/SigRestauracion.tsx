@@ -361,10 +361,10 @@ export function SigRestauracion() {
             <div className="flex gap-2 flex-wrap">
               {pestana === 'ndvi' && <Boton onClick={() => void crearPunto()}>＋ Crear punto en zona débil</Boton>}
               <Link to="/lote"><BotonSecundario>Ir a lotes →</BotonSecundario></Link>
-              <Link to="/ficha" className="boton-campo inline-flex items-center px-5 py-2.5 font-semibold text-sm text-emerald-700 underline underline-offset-4">
+              <Link to="/suelos?vista=ficha" className="boton-campo inline-flex items-center px-5 py-2.5 font-semibold text-sm text-emerald-700 underline underline-offset-4">
                 Registrar ficha VSA →
               </Link>
-              <Link to="/diagnostico" className="boton-campo inline-flex items-center px-5 py-2.5 font-semibold text-sm text-emerald-700 underline underline-offset-4">
+              <Link to="/suelos?vista=lectura" className="boton-campo inline-flex items-center px-5 py-2.5 font-semibold text-sm text-emerald-700 underline underline-offset-4">
                 Ver diagnóstico →
               </Link>
             </div>

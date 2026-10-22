@@ -145,24 +145,24 @@ export const VARIABLES_BIOLOGICAS: VariableSuelo[] = [
     descripcion: 'Macrofauna y signos vitales del suelo.',
     campos: ['lombricesConteo', 'nodulacion', 'olorSuelo', 'descomposicionMo'],
     minimoParaRegistrar: 1,
-    sinDatosQueDecir: 'Sin conteo no se valora la actividad biológica.',
+    sinDatosQueDecir: 'Sin conteo ni signos de actividad no se valora la biología de campo.',
     paraConfirmar: 'Lombrices en cubo de 20×20×20 + nodulación, olor y descomposición.',
   },
   {
     id: 'vsa', categoria: 'biologicas', titulo: 'VSA',
-    descripcion: 'Puntuación visual 0 pobre · 1 moderado · 2 bueno.',
+    descripcion: 'Puntuación visual 0 pobre · 1 moderado · 2 bueno en seis indicadores.',
     campos: [],
     minimoParaRegistrar: 6,
-    sinDatosQueDecir: 'Sin puntuar no hay índice visual de calidad.',
-    paraConfirmar: 'Los 6 indicadores comparados con la guía fotográfica.',
+    sinDatosQueDecir: 'Sin puntuar no hay suma visual de los indicadores.',
+    paraConfirmar: 'Los 6 indicadores comparados con la guía fotográfica; el índice se guarda como monitoreo.',
   },
   {
     id: 'cobertura', categoria: 'biologicas', titulo: 'Cobertura',
     descripcion: 'Foto cenital del dosel: % verde calculado offline.',
     campos: ['coberturaVegetalPct'],
     minimoParaRegistrar: 1,
-    sinDatosQueDecir: 'Sin foto no hay % verde calculado.',
-    paraConfirmar: 'Foto cenital a ≥ 60 cm + % registrado en la ficha.',
+    sinDatosQueDecir: 'Sin foto ni porcentaje no hay lectura de cobertura.',
+    paraConfirmar: 'Foto cenital a ≥ 60 cm o porcentaje medido/transcrito y registrado en la ficha.',
   },
   {
     id: 'laboratorio', categoria: 'biologicas', titulo: 'Laboratorio',
@@ -186,9 +186,14 @@ export const TEXTO_ESTADO: Record<EstadoVariable, string> = {
   registrada: 'Registrada',
 };
 
-// Ámbito local de la herramienta Suelos: cajón único donde se guardan las
-// fichas hasta que la capa de planificación (con sesión) las vincule a predios.
+// Ámbito legado de la herramienta Suelos. Solo se usa para migrar fichas
+// antiguas; las fichas nuevas siempre llevan un predio real.
 export const AMBITO_SUELOS = 'suelos';
+
+// Ámbito virtual para fichas huérfanas migradas, pendientes de reasignación.
+// No es un predio real y nunca se sincroniza.
+export const PREDIO_SIN_ASIGNAR = 'sin-asignar';
+export const ETIQUETA_PREDIO_SIN_ASIGNAR = 'Sin asignar';
 
 // Conteos externos (no viven en el formulario, ej. puntajes VSA 0·1·2).
 export interface ConteoExtra { hechos: number; total: number }

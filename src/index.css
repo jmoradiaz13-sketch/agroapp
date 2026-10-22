@@ -246,6 +246,30 @@ html.tema-oscuro body {
   background: var(--acento);
 }
 
+/* === Sección biológica: identidad propia sin romper el tema === */
+.bio-deck {
+  --bio-vida: #5a6b3d;
+  --bio-vsa: #14736e;
+  --bio-cobertura: #9a6f14;
+  --bio-laboratorio: #5f6b7a;
+  --bio-cierre: #0b2f31;
+}
+html.tema-oscuro .bio-deck {
+  --bio-vida: #9aa578;
+  --bio-vsa: #3e9a90;
+  --bio-cobertura: #f6b23d;
+  --bio-laboratorio: #9fb3c8;
+  --bio-cierre: #f2e9d8;
+}
+
+.bio-deck .bio-pulso {
+  animation: bio-pulso 3s ease-in-out infinite;
+}
+@keyframes bio-pulso {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+}
+
 /* === Formularios y mensajes (superficies del tema) === */
 .campo-entrada {
   border: 1px solid var(--borde);
@@ -437,7 +461,8 @@ button:focus-visible {
 /* Respeto a movimiento reducido */
 @media (prefers-reduced-motion: reduce) {
   .animacion-entrada,
-  .animacion-flotar {
+  .animacion-flotar,
+  .bio-deck .bio-pulso {
     animation: none;
   }
 }

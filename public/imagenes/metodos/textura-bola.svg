@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" role="img" aria-label="Mano formando una bola de suelo húmedo de unos 3 cm">
+  <rect width="160" height="120" fill="none"/>
+  <path d="M28 96c0-15 12-27 27-27h50c15 0 27 12 27 27v4H28z" fill="#E7EFEC" stroke="#14736E" stroke-width="2"/>
+  <circle cx="80" cy="58" r="21" fill="#8B5E34" stroke="#5B3D22" stroke-width="2"/>
+  <circle cx="72" cy="52" r="3" fill="#5B3D22" opacity="0.45"/>
+  <circle cx="89" cy="61" r="2.5" fill="#5B3D22" opacity="0.45"/>
+  <circle cx="78" cy="69" r="2" fill="#5B3D22" opacity="0.45"/>
+  <line x1="80" y1="34" x2="116" y2="34" stroke="#14736E" stroke-width="1.5"/>
+  <line x1="80" y1="30" x2="80" y2="38" stroke="#14736E" stroke-width="1.5"/>
+  <line x1="116" y1="30" x2="116" y2="38" stroke="#14736E" stroke-width="1.5"/>
+  <text x="98" y="27" font-family="system-ui, sans-serif" font-size="10" fill="#14736E" text-anchor="middle">≈ 3 cm</text>
+</svg>

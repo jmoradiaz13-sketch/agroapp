@@ -16,9 +16,9 @@ const FILTROS: { id: GuiaPaso['paso'] | 'todas'; titulo: string }[] = [
 // Cada guía abre su escena real: la biblioteca es paisaje, no callejón.
 const ESCENA_POR_PASO: Record<GuiaPaso['paso'], { ruta: string; etiqueta: string }> = {
   general: { ruta: '/predios', etiqueta: 'Abrir escena Predios →' },
-  fisicas: { ruta: '/ficha', etiqueta: 'Abrir escena Suelos →' },
-  quimicas: { ruta: '/ficha', etiqueta: 'Abrir escena Suelos →' },
-  biologicas: { ruta: '/ficha', etiqueta: 'Abrir escena Suelos →' },
+  fisicas: { ruta: '/suelos', etiqueta: 'Abrir escena Suelos →' },
+  quimicas: { ruta: '/suelos', etiqueta: 'Abrir escena Suelos →' },
+  biologicas: { ruta: '/suelos', etiqueta: 'Abrir escena Suelos →' },
   sig: { ruta: '/sig', etiqueta: 'Abrir escena SIG →' },
   riego: { ruta: '/simulador', etiqueta: 'Abrir escena Simulador →' },
 };
