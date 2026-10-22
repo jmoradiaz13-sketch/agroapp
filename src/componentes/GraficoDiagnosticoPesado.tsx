@@ -9,12 +9,13 @@ import type { Diagnostico } from '../esquemas/diagnostico';
 const URL_API = import.meta.env.VITE_URL_API ?? 'http://localhost:8000';
 
 // Envoltorio lazy: solo se descarga Recharts cuando se visita diagnóstico.
-export default function GraficoDiagnosticoPesado({ predioIdentificador }: { predioIdentificador: string }) {
+export default function GraficoDiagnosticoPesado({ predioIdentificador, loteNombre }: { predioIdentificador: string; loteNombre?: string }) {
   const { fechaCache } = usoPredio();
+  const consultaLote = loteNombre ? `?lote_nombre=${encodeURIComponent(loteNombre)}` : '';
   const { data } = useQuery({
-    queryKey: ['diagnostico-graf', predioIdentificador],
+    queryKey: ['diagnostico-graf', predioIdentificador, loteNombre ?? null],
     queryFn: async () => {
-      const r = await fetch(`${URL_API}/diagnostico/${predioIdentificador}/ultimo`);
+      const r = await fetch(`${URL_API}/diagnostico/${predioIdentificador}/ultimo${consultaLote}`);
       if (!r.ok) return null;
       const c = await r.json();
       return {

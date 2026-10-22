@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" role="img" aria-label="Tacto suave y harinoso característico del limo">
+  <rect width="160" height="120" fill="none"/>
+  <ellipse cx="80" cy="66" rx="52" ry="26" fill="#F3EEE4" stroke="#C9B79F" stroke-width="2"/>
+  <g fill="#B8A88A" opacity="0.85">
+    <circle cx="52" cy="58" r="1.6"/><circle cx="62" cy="70" r="1.5"/>
+    <circle cx="72" cy="54" r="1.4"/><circle cx="84" cy="66" r="1.7"/>
+    <circle cx="94" cy="56" r="1.5"/><circle cx="104" cy="68" r="1.4"/>
+    <circle cx="66" cy="62" r="1.3"/><circle cx="88" cy="74" r="1.5"/>
+    <circle cx="78" cy="60" r="1.3"/><circle cx="98" cy="72" r="1.4"/>
+    <circle cx="58" cy="74" r="1.3"/><circle cx="112" cy="60" r="1.3"/>
+  </g>
+  <path d="M46 40c6-3 12-4 18-3M96 37c8-1 14 1 20 5" stroke="#C9B79F" stroke-width="2" fill="none" stroke-linecap="round" opacity="0.6"/>
+  <text x="80" y="104" font-family="system-ui, sans-serif" font-size="9" fill="#14736E" text-anchor="middle">suave · harinoso (limo)</text>
+</svg>

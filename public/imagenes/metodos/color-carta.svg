@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" role="img" aria-label="Comparación de la muestra con los chips de la carta Munsell">
+  <rect width="160" height="120" fill="none"/>
+  <rect x="16" y="24" width="52" height="72" rx="4" fill="#fff" stroke="#C9B79F" stroke-width="2"/>
+  <g stroke="#C9B79F" stroke-width="1">
+    <rect x="22" y="30" width="40" height="12" fill="#D6C6AF"/>
+    <rect x="22" y="44" width="40" height="12" fill="#B08A5A"/>
+    <rect x="22" y="58" width="40" height="12" fill="#6F4A28"/>
+    <rect x="22" y="72" width="40" height="12" fill="#4E341D"/>
+  </g>
+  <path d="M84 86c-5-14 3-30 20-35 16-4 31 3 35 18 4 13-4 24-18 27-11 3-26 1-37-10z" fill="#7A5230" stroke="#5B3D22" stroke-width="2"/>
+  <text x="80" y="112" font-family="system-ui, sans-serif" font-size="9" fill="#14736E" text-anchor="middle">compara con la carta Munsell</text>
+</svg>

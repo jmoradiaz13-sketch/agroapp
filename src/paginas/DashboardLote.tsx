@@ -13,7 +13,7 @@ import { PuntosMuestreo } from '../componentes/PuntosMuestreo';
 
 // Paso 2: dashboard del predio con lotes y mapa único.
 export function DashboardLote() {
-  const { predioIdentificador, fijarLote } = usoFlujo();
+  const { predioIdentificador } = usoFlujo();
   const [conteo, setConteo] = useState({ lotes: 0, fichas: 0, pendientes: 0 });
 
   useEffect(() => {
@@ -63,9 +63,9 @@ export function DashboardLote() {
       <PanelMonitoreo />
       <Tarjeta titulo="Siguiente paso">
         <div className="flex gap-2 flex-wrap">
-          <Link to="/ficha" onClick={() => fijarLote('general')}><Boton>Ir a ficha</Boton></Link>
-          <Link to="/diagnostico" className="boton-campo inline-flex items-center px-5 py-2.5 font-semibold text-sm text-emerald-700 underline underline-offset-4">
-            Ver diagnóstico →
+          <Link to="/suelos?vista=ficha"><Boton>Ir a ficha</Boton></Link>
+          <Link to="/suelos?vista=lectura" className="boton-campo inline-flex items-center px-5 py-2.5 font-semibold text-sm text-emerald-700 underline underline-offset-4">
+            Ver lectura →
           </Link>
         </div>
       </Tarjeta>

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" role="img" aria-label="Suelo pegajoso y brillante característico de la arcilla">
+  <rect width="160" height="120" fill="none"/>
+  <path d="M40 74c-4-20 10-38 30-40 18-2 34 8 38 24 3 14-4 26-16 30-8 3-12-2-17 4-6 7-14 6-20 1-8-7-12-11-15-19z" fill="#7A5230" stroke="#5B3D22" stroke-width="2"/>
+  <path d="M56 48c8-6 18-8 27-5" stroke="#B98E63" stroke-width="3.5" fill="none" stroke-linecap="round" opacity="0.9"/>
+  <circle cx="70" cy="44" r="3" fill="#D8BE9E" opacity="0.8"/>
+  <text x="80" y="104" font-family="system-ui, sans-serif" font-size="9" fill="#14736E" text-anchor="middle">pegajoso · brillante (arcilla)</text>
+</svg>

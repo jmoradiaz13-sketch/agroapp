@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" role="img" aria-label="Formación de una cinta de suelo entre el pulgar y el índice">
+  <rect width="160" height="120" fill="none"/>
+  <rect x="48" y="14" width="15" height="48" rx="7" fill="#F2D9C0" stroke="#C08A5E" stroke-width="2"/>
+  <rect x="97" y="14" width="15" height="48" rx="7" fill="#F2D9C0" stroke="#C08A5E" stroke-width="2"/>
+  <path d="M55 40h50v11H55z" fill="#8B5E34" stroke="#5B3D22" stroke-width="2"/>
+  <path d="M80 50v50" stroke="#8B5E34" stroke-width="9" stroke-linecap="round"/>
+  <path d="M80 100h0" stroke="#5B3D22" stroke-width="9" stroke-linecap="round"/>
+  <text x="80" y="116" font-family="system-ui, sans-serif" font-size="9" fill="#14736E" text-anchor="middle">cinta (2,5 – 5 cm)</text>
+</svg>

@@ -1,4 +1,5 @@
 import Dexie, { type Table } from 'dexie';
+import type { FichaSueloFormulario } from '../esquemas/suelo';
 
 // Tipos en español, coordenadas cliente en WGS84 (EPSG:4326) según AGENTS.md.
 export interface PredioLocal {
@@ -41,6 +42,8 @@ export interface LoteLocal {
 
 export interface MonitoreoLocal {
   id?: number;
+  fichaId?: number;
+  predioIdentificador?: string;
   loteNombre: string;
   fecha: string;
   indicadores: Record<string, number | string>;
@@ -64,6 +67,8 @@ export interface EstrategiaLocal {
 export interface FichaSueloLocal {
   id?: number;
   predioIdentificador: string;
+  /** Lote/parcela opcional. Si falta, la ficha queda a escala de predio. */
+  loteNombre?: string;
   fecha: string; // serie temporal, nunca se sobrescribe
   version: number;
   // Unidades almacenamiento: cmol/kg, mg/kg, %, dS/m (pH sin unidad)
@@ -142,6 +147,22 @@ export interface FichaSueloLocal {
   coberturaVegetalPct?: number;
   referenciaBibliografica?: string; // fuente registrada (opcional)
   sincronizada: boolean;
+  /** Ficha huérfana migrada desde el ámbito antiguo 'suelos'. */
+  requiereAsignacion?: boolean;
+  reasignadaEn?: string;
+  predioAnterior?: string;
+  loteAnterior?: string;
+}
+
+/** Borrador editable de una ficha: no es una versión histórica ni se sincroniza. */
+export interface BorradorSueloLocal {
+  id?: number;
+  clave: string; // predioIdentificador + loteNombre
+  predioIdentificador: string;
+  loteNombre?: string;
+  datos: Partial<FichaSueloFormulario>;
+  puntajes: Record<string, number>;
+  fechaActualizacion: string;
 }
 
 export interface UsoSueloDiseno {
@@ -258,6 +279,7 @@ export const LIMITE_CACHE_PREDIO_BYTES = 200 * 1024 * 1024;
 class BaseDatosAgroApp extends Dexie {
   predios!: Table<PredioLocal, number>;
   fichasSuelo!: Table<FichaSueloLocal, number>;
+  borradoresSuelo!: Table<BorradorSueloLocal, number>;
   capasIgac!: Table<CapaIgacLocal, number>;
   geotiffs!: Table<GeotiffCache, number>;
   lotes!: Table<LoteLocal, number>;
@@ -299,6 +321,12 @@ class BaseDatosAgroApp extends Dexie {
     this.version(6).stores({
       especies: '++id, nombreCientifico',
       escenarios: '++id, predioIdentificador, fecha'
+    });
+    // Ficha ligada a predio + lote opcional, borradores editables y VSA enlazada.
+    this.version(7).stores({
+      fichasSuelo: '++id, predioIdentificador, fecha, version, loteNombre, [predioIdentificador+loteNombre]',
+      monitoreos: '++id, loteNombre, fecha, fichaId, predioIdentificador',
+      borradoresSuelo: '++id, clave, fechaActualizacion'
     });
   }
 }

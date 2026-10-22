@@ -1,4 +1,5 @@
 import { baseDatos } from '../base_datos/local';
+import { PREDIO_SIN_ASIGNAR } from '../datos/variables_suelo';
 
 const URL_API = import.meta.env.VITE_URL_API ?? 'http://localhost:8000';
 
@@ -95,12 +96,15 @@ async function sincronizarLotes(cabeceras: Cabeceras): Promise<{ enviadas: numbe
 }
 
 async function sincronizarFichas(cabeceras: Cabeceras): Promise<{ enviadas: number; errores: number }> {
-  const pendientes = await baseDatos.fichasSuelo.filter((f) => !f.sincronizada).toArray();
+  const pendientes = await baseDatos.fichasSuelo.filter(
+    (f) => !f.sincronizada && !f.requiereAsignacion && f.predioIdentificador !== PREDIO_SIN_ASIGNAR
+  ).toArray();
   let enviadas = 0;
   let errores = 0;
   for (const ficha of pendientes) {
     const ok = await post(`${URL_API}/fichas-suelo/nueva-version`, cabeceras, {
       predio_identificador: ficha.predioIdentificador,
+      lote_nombre: ficha.loteNombre,
       fecha: ficha.fecha,
       tipo_evaluacion: ficha.tipoEvaluacion,
       clima_reciente: ficha.climaReciente,
@@ -283,7 +287,9 @@ async function sincronizarPuntos(cabeceras: Cabeceras): Promise<{ enviadas: numb
 // Cola de fotos: multipart por archivo, atadas a predio+versión en servidor.
 export async function sincronizarFotos(token: string | null): Promise<{ enviadas: number; errores: number }> {
   if (!navigator.onLine) return { enviadas: 0, errores: 0 };
-  const pendientes = await baseDatos.fotos.filter((f) => !f.sincronizada).toArray();
+  const pendientes = await baseDatos.fotos.filter(
+    (f) => !f.sincronizada && f.predioIdentificador !== PREDIO_SIN_ASIGNAR
+  ).toArray();
   let enviadas = 0;
   let errores = 0;
   for (const foto of pendientes) {

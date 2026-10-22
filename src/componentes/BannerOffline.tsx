@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { baseDatos } from '../base_datos/local';
+import { PREDIO_SIN_ASIGNAR } from '../datos/variables_suelo';
 
 // Banner de conectividad: SOLO visible sin red (ámbar). Con red no estorba:
 // el estado de sync vive en el sidebar (PC). En campo avisa que todo
@@ -10,8 +11,12 @@ export function BannerOffline() {
 
   const contar = async () => {
     const [fichas, fotos, lotes, puntos] = await Promise.all([
-      baseDatos.fichasSuelo.filter((f) => !f.sincronizada).count(),
-      baseDatos.fotos.filter((f) => !f.sincronizada).count(),
+      baseDatos.fichasSuelo.filter(
+        (f) => !f.sincronizada && !f.requiereAsignacion && f.predioIdentificador !== PREDIO_SIN_ASIGNAR
+      ).count(),
+      baseDatos.fotos.filter(
+        (f) => !f.sincronizada && f.predioIdentificador !== PREDIO_SIN_ASIGNAR
+      ).count(),
       baseDatos.lotes.filter((l) => (l.estadoSincronizacion ?? 'pendiente') !== 'sincronizado').count(),
       baseDatos.puntosMuestreo.filter((p) => !p.sincronizada).count(),
     ]);

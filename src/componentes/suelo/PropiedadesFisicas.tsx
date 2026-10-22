@@ -4,17 +4,26 @@ import type { FichaSueloFormulario } from '../../esquemas/suelo';
 import type { FotoLista } from '../../servicios/fotos';
 import {
   CLASES_ES, clasificarTextura,
-  MUNSELL_TONOS, munsellChip, ADVERTENCIA_MUNSELL, FUENTE_MUNSELL,
-  MINERALES_MUNSELL, FUENTE_MINERALES,
-  FUENTE_DENSIDAD, calcularDA, calcularPorosidad,
+  claseDeEtiqueta,
+  FUENTE_MUNSELL,
+  FUENTE_DENSIDAD,
   interpretarPorosidad, FUENTE_POROSIDAD,
   FUENTE_AGUA, calcularAguaDisponible,
+  FUENTE_VESS,
 } from '../../datos/fisicas';
 import {
-  Fuente, Columna, ArbolTextura, Triangulo, tactoAClase, SemaforoDensidad,
+  Fuente, Columna, Triangulo, SemaforoDensidad,
 } from './fisicas_apoyo';
+import { FlujoTextura } from './FlujoTextura';
+import { AsesoriaTextura } from './AsesoriaTextura';
+import { FlujoColor } from './FlujoColor';
+import { AsesoriaColor } from './AsesoriaColor';
+import { FlujoDensidad } from './FlujoDensidad';
+import { AsesoriaDensidad } from './AsesoriaDensidad';
+import { FlujoEstructura } from './FlujoEstructura';
+import { AsesoriaEstructura } from './AsesoriaEstructura';
 import { AyudaCampo } from '../AyudaCampo';
-import { FisicasEstructura } from './FisicasEstructura';
+import { CapturaFoto } from '../CapturaFoto';
 import { VARIABLES_FISICAS, estadoVariable } from '../../datos/variables_suelo';
 
 type R = UseFormRegister<FichaSueloFormulario>;
@@ -25,11 +34,20 @@ export const DIAPOSITIVAS_FISICAS: { id: string; titulo: string }[] = [
   { id: 'color', titulo: 'Color' },
   { id: 'densidad', titulo: 'Densidad' },
   { id: 'estructura', titulo: 'Estructura' },
-  { id: 'manejo', titulo: 'Manejo' },
   { id: 'conclusiones', titulo: 'Conclusiones' },
 ];
 
 const DIAPOSITIVAS = DIAPOSITIVAS_FISICAS;
+
+// Cada variable del índice apunta a su diapositiva: agua y densidad comparten
+// la 2, estructura es la 3 y la 4 cierra con las conclusiones.
+export const SLIDE_DE_VARIABLE_FISICA: Record<string, number> = {
+  textura: 0, color: 1, densidad: 2, agua: 2, estructura: 3,
+};
+
+export function variableFisicaDeSlide(indice: number): string | null {
+  return ['textura', 'color', 'densidad', 'estructura', null][indice] ?? null;
+}
 
 // Deck estilo curso/MOOC: una variable por diapositiva con fundamentos,
 // medición y captura DUO (campo + laboratorio), hasta conclusiones.
@@ -40,28 +58,9 @@ export function PropiedadesFisicas({
   alFoto?: (f: FotoLista) => void; alIrResumen?: () => void; diapositiva?: number | null;
 }) {
   const [indice, setIndice] = useState(0);
-  const [metodo, setMetodo] = useState('anillo');
-  const [pesoSeco, setPesoSeco] = useState('');
-  const [volumen, setVolumen] = useState('');
-  const [diametro, setDiametro] = useState('');
-  const [altura, setAltura] = useState('');
-  const [daDirecta, setDaDirecta] = useState('');
 
   const auto = clasificarTextura(valores.arenaPct, valores.limoPct, valores.arcillaPct);
-  const claseDensidad = auto ?? (valores.texturaTacto ? tactoAClase(valores.texturaTacto) : null);
-  const munsell = valores.munsellH
-    ? munsellChip(valores.munsellH, valores.munsellV, valores.munsellC)
-    : null;
-
-  const volAnillo = diametro && altura
-    ? Math.round(Math.PI * (Number(diametro) / 2) ** 2 * Number(altura) * 100) / 100
-    : null;
-  const volEfectivo = metodo === 'anillo' ? volAnillo : volumen ? Number(volumen) : null;
-  const daCalc = metodo === 'directo'
-    ? (daDirecta ? Number(daDirecta) : null)
-    : volEfectivo && pesoSeco ? calcularDA(Number(pesoSeco), volEfectivo) : null;
-  const poroCalc = daCalc !== null ? calcularPorosidad(daCalc) : null;
-  const poroLab = valores.densidadAparente !== undefined ? calcularPorosidad(valores.densidadAparente) : null;
+  const claseDensidad = auto ?? claseDeEtiqueta(valores.texturaTacto);
 
   const irA = (i: number) => setIndice(Math.max(0, Math.min(DIAPOSITIVAS.length - 1, i)));
 
@@ -72,249 +71,137 @@ export function PropiedadesFisicas({
 
   return (
     <div className="grid gap-3">
-      {/* Etapas por variable: Comprender → Evaluar y registrar → Interpretar.
-          No son páginas nuevas; son pestañas/secciones dentro de cada variable.
-          La interpretación siempre está disponible, aun sin datos. */}
-      <ol className="flex flex-wrap gap-1.5" aria-label="Etapas de la variable">
-        {['1 · Comprender', '2 · Evaluar y registrar', '3 · Interpretar'].map((t, i) => (
-          <li key={t} className="text-[11px] font-semibold px-3 py-1.5 border border-neutral-200 bg-neutral-50 text-neutral-600">
-            {t}{i < 2 && <span aria-hidden> →</span>}
-          </li>
-        ))}
-      </ol>
-      <p className="text-[11px] text-neutral-500">Comprender: qué es y por qué importa · Evaluar: cómo medir y qué registrar · Interpretar: qué indican los datos (siempre abierta, aun sin datos).</p>
+      {/* Encabezado compacto de la variable de esta diapositiva.
+          key única: no debe coincidir con la de la tarjeta de abajo (hermanos con la misma key dejan fantasmas en el DOM). */}
+      <div key={`titulo-${indice}`} className="animacion-entrada border-b-2 pb-1" style={{ borderColor: 'var(--acento)' }}>
+        <h3 className="text-lg font-semibold leading-tight text-humus">{DIAPOSITIVAS[indice].titulo}</h3>
+      </div>
       <div key={indice} className="animacion-entrada bg-white border border-emerald-500/40 shadow-sm rounded-sm p-4 sm:p-5 grid gap-3 lg:grid-cols-3 content-start">
         {indice === 0 && (
           <>
+            <div className="lg:col-span-3">
+              <FlujoTextura fijar={fijar} valorActual={valores.texturaTacto} />
+            </div>
             <Columna titulo="Fundamentos">
               <p className="text-sm text-neutral-600">Arena (2–0,05 mm), limo (0,05–0,002 mm) y arcilla (&lt; 0,002 mm) definen retención de agua, aireación y manejo.</p>
               <Triangulo arena={valores.arenaPct ?? 40} limo={valores.limoPct ?? 40} arcilla={valores.arcillaPct ?? 20} clase={auto ? CLASES_ES[auto] : 'ejemplo'} />
               <Fuente texto="FAO, Guidelines for Soil Description; USDA-NRCS, Soil Survey Manual" />
             </Columna>
-            <Columna titulo="Medición">
-              <p className="text-sm font-medium">Método de la cinta: 25 g, humedece, bola de 3 cm; sin bola: arenoso; cinta ≤ 2,5 cm: francos; 2,5–5 cm: franco arcillosos; más de 5 cm: arcillosos.</p>
-              <img src="/imagenes/metodos/triangulo-usda.svg" alt="Triángulo textural oficial del USDA" loading="lazy" className="w-full max-w-[220px]" />
-              <p className="text-[11px] text-neutral-500">Triángulo USDA (C. Aragón, CC-BY-SA 4.0, Wikimedia Commons).</p>
-            </Columna>
-            <Columna titulo="Captura DUO">
-              <div className="grid gap-1">
-                <p className="text-[11px] font-semibold text-neutral-500">Campo · tacto</p>
-                <ArbolTextura alElegir={(c) => fijar('texturaTacto', c)} />
-                {valores.texturaTacto && <p className="mensaje-ok">Tacto: {valores.texturaTacto}</p>}
+            <Columna titulo="Laboratorio · granulometría %">
+              <p className="text-sm text-neutral-600">Si cuentas con el análisis de laboratorio, registra los porcentajes para confirmar la clase USDA.</p>
+              <div className="grid grid-cols-3 gap-2">
+                <label className="etiqueta-campo">Arena
+                  <input className="campo-entrada" type="number" step="0.1" min="0" {...registro('arenaPct')} />
+                </label>
+                <label className="etiqueta-campo">Limo
+                  <input className="campo-entrada" type="number" step="0.1" min="0" {...registro('limoPct')} />
+                </label>
+                <label className="etiqueta-campo">Arcilla
+                  <input className="campo-entrada" type="number" step="0.1" min="0" {...registro('arcillaPct')} />
+                </label>
               </div>
-              <div className="grid gap-2">
-                <p className="text-[11px] font-semibold text-neutral-500">Laboratorio · granulometría %</p>
-                <div className="grid grid-cols-3 gap-2">
-                  <label className="etiqueta-campo">Arena
-                    <input className="campo-entrada" type="number" step="0.1" min="0" {...registro('arenaPct')} />
-                  </label>
-                  <label className="etiqueta-campo">Limo
-                    <input className="campo-entrada" type="number" step="0.1" min="0" {...registro('limoPct')} />
-                  </label>
-                  <label className="etiqueta-campo">Arcilla
-                    <input className="campo-entrada" type="number" step="0.1" min="0" {...registro('arcillaPct')} />
-                  </label>
-                </div>
-                {errorGranulometria && <p className="mensaje-error">{errorGranulometria}</p>}
-                {auto && <p className="mensaje-ok">Clase USDA: {CLASES_ES[auto]}</p>}
-              </div>
+              {errorGranulometria && <p className="mensaje-error">{errorGranulometria}</p>}
+              {auto && <p className="mensaje-ok">Clase USDA: {CLASES_ES[auto]}</p>}
               <p className="mensaje-info">Esmectita (2:1) se siente jabonosa aun con % moderado; caolinita (1:1), menos plástica.</p>
+            </Columna>
+            <Columna titulo="Asesoría de la textura">
+              <AsesoriaTextura valores={valores} />
             </Columna>
           </>
         )}
 
         {indice === 1 && (
           <>
+            <div className="lg:col-span-3">
+              <FlujoColor fijar={fijar} valores={valores} />
+            </div>
             <Columna titulo="Fundamentos">
               <p className="text-sm text-neutral-600">El color indica materia orgánica, óxidos de hierro y drenaje: negros (humus fértil), rojos (hematita, oxidación), grises (anaerobio).</p>
               <img src="/imagenes/metodos/munsell-sistema.svg" alt="Diagrama del sistema de color Munsell" loading="lazy" className="w-full max-w-[220px]" />
               <p className="text-[11px] text-neutral-500">Sistema Munsell (Jacob Rus, CC-BY-SA 3.0, Wikimedia Commons).</p>
               <Fuente texto={`USDA-NRCS, Soil Survey Manual. ${FUENTE_MUNSELL}`} />
             </Columna>
-            <Columna titulo="Medición">
-              <p className="text-sm font-medium">Compara el terrón con la carta bajo luz natural, en seco y en húmedo. Anota tono, valor y croma (p. ej. 10YR 3/2 húmedo).</p>
-              <details className="border border-neutral-200">
-                <summary className="cursor-pointer text-xs font-medium text-emerald-700 p-2.5">Tabla mineral → Munsell → color</summary>
-                <div className="overflow-x-auto px-2.5 pb-2.5">
-                  <table className="w-full text-xs">
-                    <thead>
-                      <tr className="text-left text-neutral-400 border-b border-neutral-200">
-                        <th className="py-1 pr-2 font-medium">Mineral</th>
-                        <th className="py-1 pr-2 font-medium">Munsell</th>
-                        <th className="py-1 font-medium">Color</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-neutral-100">
-                      {MINERALES_MUNSELL.map((m) => (
-                        <tr key={m.mineral}>
-                          <td className="py-1 pr-2 text-neutral-700">{m.mineral}</td>
-                          <td className="py-1 pr-2 font-medium">{m.munsell}</td>
-                          <td className="py-1 text-neutral-600">{m.color}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                  <p className="text-[11px] text-neutral-500 mt-1">Fuente: {FUENTE_MINERALES}.</p>
-                </div>
-              </details>
-            </Columna>
-            <Columna titulo="Captura DUO">
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
-                <label className="etiqueta-campo">Tono (Hue)
-                  <select className="campo-entrada" defaultValue="" {...registro('munsellH')}>
-                    <option value="">—</option>
-                    {MUNSELL_TONOS.map((h) => <option key={h} value={h}>{h}</option>)}
-                  </select>
-                </label>
-                <label className="etiqueta-campo">Valor
-                  <select className="campo-entrada" defaultValue="" {...registro('munsellV')}>
-                    <option value="">—</option>
-                    {[2, 3, 4, 5, 6, 7, 8].map((vv) => <option key={vv} value={vv}>{vv}</option>)}
-                  </select>
-                </label>
-                <label className="etiqueta-campo">Croma
-                  <select className="campo-entrada" defaultValue="" {...registro('munsellC')}>
-                    <option value="">—</option>
-                    {[1, 2, 3, 4, 5, 6, 7, 8].map((c) => <option key={c} value={c}>{c}</option>)}
-                  </select>
-                </label>
-                <label className="etiqueta-campo">Estado
-                  <select className="campo-entrada" defaultValue="" {...registro('colorEstado')}>
-                    <option value="">—</option>
-                    <option value="humedo">Húmedo</option>
-                    <option value="seco">Seco</option>
-                  </select>
-                </label>
-              </div>
-              {valores.munsellH && munsell ? (
-                <div className="flex items-center gap-3 border border-neutral-200 p-3">
-                  <span className="w-14 h-14 rounded-sm border border-neutral-300 shrink-0" style={{ background: munsell.css }} aria-hidden />
-                  <p className="text-sm"><strong className="font-semibold">{munsell.etiqueta}</strong> {valores.colorEstado ? `(${valores.colorEstado})` : ''}</p>
-                </div>
-              ) : (
-                <p className="text-xs text-neutral-500">{ADVERTENCIA_MUNSELL}</p>
-              )}
+            <Columna titulo="Asesoría del color" className="lg:col-span-2">
+              <AsesoriaColor valores={valores} />
             </Columna>
           </>
         )}
 
         {indice === 2 && (
           <>
+            <div className="lg:col-span-3">
+              <FlujoDensidad fijar={fijar} valores={valores} claseTextural={claseDensidad} />
+            </div>
             <Columna titulo="Fundamentos">
               <p className="text-sm text-neutral-600">DA = masa seca ÷ volumen. Refleja compactación y porosidad total: valores altos frenan raíces y agua.</p>
               <img src="/imagenes/metodos/perfil-suelo.jpg" alt="Perfil de suelo con horizontes diferenciados" loading="lazy" className="w-full max-w-[220px] rounded-sm" />
               <p className="text-[11px] text-neutral-500">Perfil con horizontes (USDA, dominio público). La densidad aumenta con la profundidad.</p>
               <Fuente texto={FUENTE_DENSIDAD} />
             </Columna>
-            <Columna titulo="Medición">
-              <p className="text-sm font-medium">Cilindro: muestra indisturbada, 105 °C por 24 h (V = π·r²·h). Terrón: parafina + volumen desplazado. Reporte: transcribe la DA.</p>
-              <p className="text-xs text-neutral-500">SENA La Granja: terrón parafinado y cilindro con corrección de humedad.</p>
-              {volAnillo !== null && metodo === 'anillo' && <p className="text-xs text-neutral-500">Volumen del anillo: {volAnillo} cm³.</p>}
-            </Columna>
-            <Columna titulo="Captura DUO">
-              <div className="grid gap-1">
-                <p className="text-[11px] font-semibold text-neutral-500">Campo · cálculo</p>
-                <label className="etiqueta-campo">Método
-                  <select className="campo-entrada" value={metodo} onChange={(e) => setMetodo(e.target.value)}>
-                    <option value="anillo">Cilindro (anillo)</option>
-                    <option value="parafina">Terrón (volumen conocido)</option>
-                    <option value="directo">Valor de laboratorio</option>
-                  </select>
+            <Columna titulo="Laboratorio · reporte">
+              <label className="etiqueta-campo">DR real (g/cm³)
+                <input className="campo-entrada" type="number" step="0.01" min="0" {...registro('densidadReal')} />
+              </label>
+              <label className="etiqueta-campo">Porosidad (%)
+                <input className="campo-entrada" type="number" step="0.1" min="0" {...registro('porosidadPct')} />
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                <label className="etiqueta-campo">CC · capacidad de campo (%)
+                  <input className="campo-entrada" type="number" step="0.1" min="0" {...registro('capacidadCampoPct')} />
                 </label>
-                {metodo === 'anillo' && (
-                  <div className="grid grid-cols-3 gap-2">
-                    <label className="etiqueta-campo">Ø<input className="campo-entrada" type="number" step="0.1" min="0" value={diametro} onChange={(e) => setDiametro(e.target.value)} /></label>
-                    <label className="etiqueta-campo">h<input className="campo-entrada" type="number" step="0.1" min="0" value={altura} onChange={(e) => setAltura(e.target.value)} /></label>
-                    <label className="etiqueta-campo">P. seco<input className="campo-entrada" type="number" step="0.1" min="0" value={pesoSeco} onChange={(e) => setPesoSeco(e.target.value)} /></label>
-                  </div>
-                )}
-                {metodo === 'parafina' && (
-                  <div className="grid grid-cols-2 gap-2">
-                    <label className="etiqueta-campo">P. seco<input className="campo-entrada" type="number" step="0.1" min="0" value={pesoSeco} onChange={(e) => setPesoSeco(e.target.value)} /></label>
-                    <label className="etiqueta-campo">Volumen<input className="campo-entrada" type="number" step="0.1" min="0" value={volumen} onChange={(e) => setVolumen(e.target.value)} /></label>
-                  </div>
-                )}
-                {metodo === 'directo' && (
-                  <label className="etiqueta-campo">DA del reporte
-                    <input className="campo-entrada" type="number" step="0.01" min="0" value={daDirecta} onChange={(e) => setDaDirecta(e.target.value)} />
-                  </label>
-                )}
+                <label className="etiqueta-campo">PMP · marchitez permanente (%)
+                  <input className="campo-entrada" type="number" step="0.1" min="0" {...registro('pmpPct')} />
+                </label>
               </div>
-              <div className="grid gap-1">
-                <p className="text-[11px] font-semibold text-neutral-500">Laboratorio · reporte</p>
-                <label className="etiqueta-campo">DA (g/cm³)
-                  <input className="campo-entrada" type="number" step="0.01" min="0" {...registro('densidadAparente')} />
-                </label>
-                <label className="etiqueta-campo">DR real (g/cm³)
-                  <input className="campo-entrada" type="number" step="0.01" min="0" {...registro('densidadReal')} />
-                </label>
-                <div className="grid grid-cols-3 gap-2">
-                  <label className="etiqueta-campo">Porosidad (%)
-                    <input className="campo-entrada" type="number" step="0.1" min="0" {...registro('porosidadPct')} />
-                  </label>
-                  <label className="etiqueta-campo">CC · capacidad de campo (%)
-                    <input className="campo-entrada" type="number" step="0.1" min="0" {...registro('capacidadCampoPct')} />
-                  </label>
-                  <label className="etiqueta-campo">PMP · marchitez permanente (%)
-                    <input className="campo-entrada" type="number" step="0.1" min="0" {...registro('pmpPct')} />
-                  </label>
-                </div>
-                <AyudaCampo
-                  titulo="CC, PMP y agua disponible"
-                  porque="La capacidad de campo es el agua retenida a −10/−33 kPa y el punto de marchitez a −1500 kPa. Lo retenido cerca de −10 kPa es fácilmente disponible y vive en poros de 0,2–50 µm."
-                  como="Registra CC y PMP del reporte; el agua disponible (CC − PMP) se calcula sola. Si PMP supera a CC, revisa el reporte: es físicamente imposible."
-                  fuente={FUENTE_AGUA}
-                />
-                {(() => {
-                  const cc = valores.capacidadCampoPct;
-                  const pmp = valores.pmpPct;
-                  if (cc === undefined || pmp === undefined) return null;
-                  if (pmp > cc) {
-                    return <p className="mensaje-error">PMP ({pmp} %) mayor que CC ({cc} %): imposible en campo. Verifica el reporte de laboratorio.</p>;
-                  }
-                  return (
-                    <p className="mensaje-ok">
-                      Agua disponible ≈ <strong className="font-semibold">{calcularAguaDisponible(cc, pmp)} %</strong> (CC − PMP, calculado, no se almacena).
-                    </p>
-                  );
-                })()}
-              </div>
-              {daCalc !== null && !Number.isNaN(daCalc) ? (
-                <div className="grid gap-2 border border-neutral-200 p-3">
-                  <p className="text-sm">
-                    DA = <strong className="font-semibold">{daCalc} g/cm³</strong>
-                    {poroCalc !== null && <> · Porosidad ≈ <strong className="font-semibold">{poroCalc} % ({interpretarPorosidad(poroCalc)})</strong></>}
+              <AyudaCampo
+                titulo="CC, PMP y agua disponible"
+                porque="La capacidad de campo es el agua retenida a −10/−33 kPa y el punto de marchitez a −1500 kPa. Lo retenido cerca de −10 kPa es fácilmente disponible y vive en poros de 0,2–50 µm."
+                como="Registra CC y PMP del reporte; el agua disponible (CC − PMP) se calcula sola. Si PMP supera a CC, revisa el reporte: es físicamente imposible."
+                fuente={FUENTE_AGUA}
+              />
+              {(() => {
+                const cc = valores.capacidadCampoPct;
+                const pmp = valores.pmpPct;
+                if (cc === undefined || pmp === undefined) return null;
+                if (pmp > cc) {
+                  return <p className="mensaje-error">PMP ({pmp} %) mayor que CC ({cc} %): imposible en campo. Verifica el reporte de laboratorio.</p>;
+                }
+                return (
+                  <p className="mensaje-ok">
+                    Agua disponible ≈ <strong className="font-semibold">{calcularAguaDisponible(cc, pmp)} %</strong> (CC − PMP, calculado, no se almacena).
                   </p>
-                  {claseDensidad ? <SemaforoDensidad da={daCalc} clase={claseDensidad} /> : (
-                    <p className="mensaje-info">Registra la textura para interpretar.</p>
-                  )}
-                  <div>
-                    <button type="button" onClick={() => {
-                      fijar('densidadAparente', daCalc);
-                      if (poroCalc !== null) fijar('porosidadPct', poroCalc);
-                    }} className="boton-campo px-4 py-2 text-sm font-semibold rounded-sm bg-[#059669] text-white hover:bg-[#047857] transition-colors">
-                      Usar en la ficha
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <p className="text-xs text-neutral-500">Completa los datos para calcular.</p>
-              )}
-              {valores.densidadAparente !== undefined && claseDensidad && (
-                <SemaforoDensidad da={valores.densidadAparente} clase={claseDensidad} />
-              )}
-              {poroLab !== null && !Number.isNaN(poroLab) && (
-                <p className="text-xs text-neutral-500">
-                  Porosidad derivada: {poroLab} % ({interpretarPorosidad(poroLab)}).
-                  <button type="button" onClick={() => fijar('porosidadPct', poroLab)} className="ml-2 text-emerald-700 underline underline-offset-2">Usar</button>
-                </p>
-              )}
+                );
+              })()}
+            </Columna>
+            <Columna titulo="Asesoría de la densidad">
+              <AsesoriaDensidad valores={valores} claseTextural={claseDensidad} />
             </Columna>
           </>
         )}
 
         {indice === 3 && (
-          <FisicasEstructura registro={registro} fijar={fijar} valores={valores} alFoto={alFoto} />
+          <>
+            <div className="lg:col-span-3">
+              <FlujoEstructura fijar={fijar} valores={valores} />
+            </div>
+            <Columna titulo="Fundamentos">
+              <p className="text-sm text-neutral-600">El arreglo de agregados y poros regula agua, aire y raíces. VESS puntúa de Sq1 (friable) a Sq5 (macizo).</p>
+              <img src="/imagenes/3.jpg" alt="Agregados, raíces y poros del suelo en primer plano" loading="lazy" className="w-full max-w-[220px] rounded-sm" />
+              <Fuente texto={FUENTE_VESS} />
+            </Columna>
+            <Columna titulo="Medición en campo">
+              <p className="text-sm font-medium">Extrae un bloque de 20 cm sin pisar el borde, ábrelo como un libro y observa terrones, poros y raíces por capa. Puntúa cada capa y promedia por espesor.</p>
+              {alFoto && (
+                <div>
+                  <CapturaFoto texto="Foto del bloque VESS" tipo="vess" alCapturar={alFoto} />
+                  <p className="text-[11px] text-neutral-400 mt-1">Se guarda con la ficha al presionar Guardar.</p>
+                </div>
+              )}
+            </Columna>
+            <Columna titulo="Asesoría de la estructura">
+              <AsesoriaEstructura valores={valores} />
+            </Columna>
+          </>
         )}
 
         {indice === 4 && (

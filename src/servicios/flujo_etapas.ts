@@ -14,9 +14,9 @@ export async function calcularEtapas(predioIdentificador: string | null): Promis
   const vacias: Etapa[] = [
     { id: 1, titulo: 'Predio', ruta: '/predios', avance: 0, detalle: 'Sin predio' },
     { id: 2, titulo: 'Lotes', ruta: '/lote', avance: 0, detalle: 'Sin lotes' },
-    { id: 3, titulo: 'Suelos', ruta: '/ficha', avance: 0, detalle: 'Sin fichas' },
+    { id: 3, titulo: 'Suelos', ruta: '/suelos', avance: 0, detalle: 'Sin fichas' },
     { id: 4, titulo: 'SIG', ruta: '/sig', avance: 0, detalle: 'Sin capas precargadas' },
-    { id: 5, titulo: 'Diagnóstico', ruta: '/diagnostico', avance: 0, detalle: 'Sin diagnóstico' },
+    { id: 5, titulo: 'Lectura del suelo', ruta: '/suelos?vista=lectura', avance: 0, detalle: 'Sin lectura' },
     { id: 6, titulo: 'Plan', ruta: '/simulador', avance: 0, detalle: 'Sin escenarios ni diseños' },
     { id: 7, titulo: 'Monitoreo', ruta: '/informe', avance: 0, detalle: 'Sin monitoreo' },
   ];

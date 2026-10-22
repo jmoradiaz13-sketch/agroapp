@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" role="img" aria-label="Muestra de suelo humedecida para leer el color">
+  <rect width="160" height="120" fill="none"/>
+  <path d="M46 86c-6-16 3-34 23-40 18-5 36 3 41 21 4 14-5 27-21 31-13 3-28 0-37-6z" fill="#6F4A28" stroke="#4E341D" stroke-width="2"/>
+  <path d="M76 14c3 5 6 8 6 12a6 6 0 0 1-12 0c0-4 3-7 6-12z" fill="#3E9A90" stroke="#14736E" stroke-width="1.5"/>
+  <text x="80" y="112" font-family="system-ui, sans-serif" font-size="9" fill="#14736E" text-anchor="middle">humedece (referencia en húmedo)</text>
+</svg>

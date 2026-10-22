@@ -33,8 +33,7 @@ const COLOR_POR_GRUPO: Record<string, { color: string; sobre: string }> = {
 const DETALLE: Record<string, { descripcion: string; imagen: string; etapa: string; insignia: InsigniaConectividad }> = {
   predios: { descripcion: 'Registra el predio, su propietario y elige con cuál trabajar.', imagen: '/imagenes/2.jpg', etapa: 'Etapa 1 · Predio', insignia: 'OFFLINE' },
   lote: { descripcion: 'Delimita lotes y zonifica sobre el mapa con GPS.', imagen: '/imagenes/5.jpg', etapa: 'Etapa 2 · Lotes', insignia: 'OFFLINE' },
-  ficha: { descripcion: 'Evaluación visual VSA en campo + ficha de laboratorio inmutable.', imagen: '/imagenes/3.jpg', etapa: 'Etapa 3 · Suelos', insignia: 'OFFLINE' },
-  diagnostico: { descripcion: 'Salud del suelo 0-100, erosión RUSLE y enmiendas con cita.', imagen: '/imagenes/4.jpg', etapa: 'Etapa 5 · Diagnóstico', insignia: 'MIXTO' },
+  ficha: { descripcion: 'Ficha VSA, historial inmutable y lectura del suelo en un solo lugar.', imagen: '/imagenes/3.jpg', etapa: 'Etapa 3 · Suelos', insignia: 'MIXTO' },
   sig: { descripcion: 'Capas IGAC, pendiente DEM, NDVI satelital y frontera UPRA.', imagen: '/imagenes/5.jpg', etapa: 'Etapa 4 · SIG', insignia: 'MIXTO' },
   simulador: { descripcion: 'Escenarios A/B/C de sistemas: compatibilidad, costos y RUSLE.', imagen: '/imagenes/4.jpg', etapa: 'Etapa 6 · Plan', insignia: 'MIXTO' },
   diseno: { descripcion: 'Diseña arreglos agroforestales con especies nativas.', imagen: '/imagenes/2.jpg', etapa: 'Etapa 6 · Diseño', insignia: 'OFFLINE' },

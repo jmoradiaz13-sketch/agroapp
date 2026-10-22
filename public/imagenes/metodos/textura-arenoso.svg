@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 120" role="img" aria-label="Tacto áspero con granos de arena visibles">
+  <rect width="160" height="120" fill="none"/>
+  <rect x="26" y="34" width="108" height="52" rx="12" fill="#EFE7DD" stroke="#C9B79F" stroke-width="2"/>
+  <g fill="#C9A24B">
+    <circle cx="46" cy="52" r="6"/><circle cx="66" cy="58" r="5"/>
+    <circle cx="86" cy="48" r="6.5"/><circle cx="108" cy="56" r="5.5"/>
+    <circle cx="54" cy="70" r="5"/><circle cx="78" cy="72" r="6"/>
+    <circle cx="100" cy="70" r="5"/><circle cx="118" cy="44" r="4"/>
+    <circle cx="36" cy="64" r="4"/>
+  </g>
+  <text x="80" y="104" font-family="system-ui, sans-serif" font-size="9" fill="#14736E" text-anchor="middle">áspero · granos de arena</text>
+</svg>

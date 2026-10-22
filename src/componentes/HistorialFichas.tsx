@@ -5,21 +5,22 @@ import type { Diagnostico } from '../esquemas/diagnostico';
 const URL_API = import.meta.env.VITE_URL_API ?? 'http://localhost:8000';
 
 // Carga progresiva: primero historial liviano, detalle bajo demanda (No Saturar).
-export function HistorialFichas({ predioIdentificador }: { predioIdentificador: string }) {
+export function HistorialFichas({ predioIdentificador, loteNombre }: { predioIdentificador: string; loteNombre?: string }) {
+  const consultaLote = loteNombre ? `?lote_nombre=${encodeURIComponent(loteNombre)}` : '';
   const historial = useQuery({
-    queryKey: ['historial', predioIdentificador],
+    queryKey: ['historial', predioIdentificador, loteNombre ?? null],
     queryFn: async () => {
-      const r = await fetch(`${URL_API}/diagnostico/${predioIdentificador}/historial`);
+      const r = await fetch(`${URL_API}/diagnostico/${predioIdentificador}/historial${consultaLote}`);
       if (!r.ok) throw new Error('Sin conexión o sin historial (offline: usa caché local)');
-      return (await r.json()) as { version: number; fecha: string; referencia: string }[];
+      return (await r.json()) as { version: number; fecha: string; lote_nombre: string | null; referencia: string | null }[];
     },
     retry: 1
   });
 
   const diagnostico = useQuery({
-    queryKey: ['diagnostico', predioIdentificador],
+    queryKey: ['diagnostico', predioIdentificador, loteNombre ?? null],
     queryFn: async () => {
-      const r = await fetch(`${URL_API}/diagnostico/${predioIdentificador}/ultimo`);
+      const r = await fetch(`${URL_API}/diagnostico/${predioIdentificador}/ultimo${consultaLote}`);
       if (!r.ok) throw new Error('Sin diagnóstico');
       const crudo = await r.json();
       const adaptado: Diagnostico = {
@@ -50,7 +51,9 @@ export function HistorialFichas({ predioIdentificador }: { predioIdentificador: 
           {historial.data.map((f) => (
             <li key={f.version} className="px-4 py-2.5 text-sm grid sm:grid-cols-[auto_1fr] gap-1 sm:gap-3">
               <span className="font-semibold text-emerald-700">v{f.version}</span>
-              <span className="text-neutral-600">{f.fecha} — {f.referencia}</span>
+              <span className="text-neutral-600">
+                {f.fecha} · {f.lote_nombre ?? 'Todo el predio'} — {f.referencia ?? 'Sin referencia registrada'}
+              </span>
             </li>
           ))}
         </ol>
