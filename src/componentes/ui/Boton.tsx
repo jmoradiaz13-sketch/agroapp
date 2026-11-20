@@ -5,7 +5,7 @@ import { type ButtonHTMLAttributes, type ReactNode } from 'react';
 function Estructura({ children }: { children: ReactNode }) {
   return (
     <>
-      <span className="btn-mono-etiqueta">{children}</span>
+      <span className="btn-mono-etiqueta grow">{children}</span>
       <span className="btn-mono-lateral" aria-hidden>
         <span className="btn-mono-flecha">→</span>
       </span>
@@ -13,25 +13,25 @@ function Estructura({ children }: { children: ReactNode }) {
   );
 }
 
-export function Boton({ className = '', children, ...props }: ButtonHTMLAttributes<HTMLButtonElement>) {
+export function Boton({ className = '', children, type = 'button', ...props }: ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
-    <button {...props} className={`boton-campo btn-mono btn-mono-primario group disabled:opacity-50 ${className}`}>
+    <button type={type} {...props} className={`boton-campo btn-mono btn-mono-primario group disabled:opacity-50 ${className}`}>
       <Estructura>{children}</Estructura>
     </button>
   );
 }
 
-export function BotonSecundario({ className = '', children, ...props }: ButtonHTMLAttributes<HTMLButtonElement>) {
+export function BotonSecundario({ className = '', children, type = 'button', ...props }: ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
-    <button {...props} className={`boton-campo btn-mono btn-mono-secundario group ${className}`}>
+    <button type={type} {...props} className={`boton-campo btn-mono btn-mono-secundario group ${className}`}>
       <Estructura>{children}</Estructura>
     </button>
   );
 }
 
-export function BotonSol({ className = '', children, ...props }: ButtonHTMLAttributes<HTMLButtonElement>) {
+export function BotonSol({ className = '', children, type = 'button', ...props }: ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
-    <button {...props} className={`boton-campo btn-mono btn-mono-acento group ${className}`}>
+    <button type={type} {...props} className={`boton-campo btn-mono btn-mono-acento group ${className}`}>
       <Estructura>{children}</Estructura>
     </button>
   );

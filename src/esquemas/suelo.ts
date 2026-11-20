@@ -22,10 +22,15 @@ const textoOpcional = (v: unknown) => (v === '' || v === null || v === undefined
 
 export const esquemaFichaSuelo = z.object({
   predioIdentificador: z.string().min(1, 'Requerido'),
+  // Nombre visible del predio para esta ficha; obligatorio en el registro de terreno.
+  nombrePredio: z.string().trim().min(1, 'Requerido').max(200),
   // Lote/parcela opcional: la ficha siempre queda bajo un predio.
   loteNombre: z.string().max(200).optional(),
-  // Fecha opcional en formulario: si falta, se repone a hoy al guardar (trazabilidad §2.1).
-  fecha: z.string().optional(),
+  // Obligatorios del registro de terreno: fecha, municipio, departamento y solicitante.
+  fecha: z.string().min(1, 'Requerido'),
+  municipio: z.string().trim().min(1, 'Requerido').max(100),
+  departamento: z.string().trim().min(1, 'Requerido').max(100),
+  solicitante: z.string().trim().min(1, 'Requerido').max(200),
   tipoEvaluacion: z.preprocess(textoOpcional, z.enum(['campo', 'laboratorio', 'mixta']).optional()),
   climaReciente: z.string().max(500).optional(),
   profundidadCm: numero(200),
@@ -38,12 +43,9 @@ export const esquemaFichaSuelo = z.object({
   pendienteSitioPct: numero(200),
   posicionRelieve: z.preprocess(textoOpcional, z.enum(['cima', 'hombro', 'ladera', 'pie', 'valle']).optional()),
   usoActual: z.string().max(200).optional(),
-  solicitante: z.string().max(200).optional(),
   tenenciaSitio: z.preprocess(textoOpcional, z.enum(['propietario', 'arrendatario', 'poseedor', 'otro']).optional()),
   manejoReciente: z.string().max(1000).optional(),
   vereda: z.string().max(100).optional(),
-  municipio: z.string().max(100).optional(),
-  departamento: z.string().max(100).optional(),
   // Físicas campo
   texturaTacto: z.string().max(100).optional(),
   compactacion: z.string().max(100).optional(),

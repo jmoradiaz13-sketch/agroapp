@@ -6,6 +6,7 @@ export function AyudaCampo({ titulo, porque, como, fuente }: { titulo: string; p
   return (
     <div className="rounded-2xl p-3" style={{ border: '1px solid var(--borde)', background: 'var(--acento-suave)' }}>
       <button
+        type="button"
         className="boton-campo w-full flex items-center justify-between gap-2 text-left text-sm font-semibold"
         style={{ color: 'var(--texto)' }}
         onClick={() => setAbierto((v) => !v)}

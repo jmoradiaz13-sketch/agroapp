@@ -1,14 +1,37 @@
-// Cliente SIG Fase 1: habla con /sig del backend (oficina online),
-// con fallback offline honesto para campo sin red.
+// Cliente SIG Fase 2: DEM/NDVI reales desde el backend (oficina online) y
+// persistencia local para campo sin red. Sin fallback silencioso a demo.
 const URL_API = import.meta.env.VITE_URL_API ?? 'http://localhost:8000';
 
 export const BBOX_PREDETERMINADO = '-74.06,4.63,-74.03,4.66';
 
-// Base WMS IGAC (misma que el backend). El mapa la usa como teselas;
-// la copia GeoJSON precargada en Dexie cubre el campo offline.
-export const WMS_IGAC = {
-  url: 'https://mapas2.igac.gov.co/server/services/carto/carto1000lavega25402000/MapServer/WMSServer',
-  capa: 'carto1000lavega25402000',
+// Servicios WMS oficiales por capa. No compartir una sola URL: agrología
+// y catastro son servicios distintos y usan el id numérico de su capa.
+export interface CapaWmsIgac {
+  url: string;
+  capa: string;
+  version: '1.1.1';
+  crs: 'EPSG:4326';
+  fuente: string;
+}
+
+// WMS 1.1.1: agrología tarda más de 45 s con 1.3.0 por el orden de ejes
+// (lat,lon); con 1.1.1 (lon,lat y SRS) responde en segundos. Catastro
+// también funciona con esta versión.
+export const WMS_IGAC: Record<string, CapaWmsIgac> = {
+  agrologia: {
+    url: 'https://mapas.igac.gov.co/server/services/agrologia/suelosdecolombiaaniveldeorden/MapServer/WMSServer',
+    capa: '0',
+    version: '1.1.1',
+    crs: 'EPSG:4326',
+    fuente: 'IGAC · Suelos y Tierras de Colombia 2016 (1:100.000)',
+  },
+  predial: {
+    url: 'https://mapas.igac.gov.co/server/services/Dato_Fundamental_Catastro/MapServer/WMSServer',
+    capa: '1',
+    version: '1.1.1',
+    crs: 'EPSG:4326',
+    fuente: 'IGAC · Dato Fundamental Catastro (R_TERRENO)',
+  },
 };
 
 export interface PlanPrecarga {
@@ -110,7 +133,7 @@ export interface InterpretacionNdvi {
 export async function obtenerSerieNdvi(
   predioIdentificador: string,
   bbox: string,
-  modo: 'real' | 'demo' = 'demo',
+  modo: 'real' | 'demo' = 'real',
 ): Promise<{ ok: boolean; puntos?: PuntoNdvi[]; interpretacion?: InterpretacionNdvi; fuente?: string; error?: string }> {
   try {
     const url = new URL(`${URL_API}/analisis/ndvi-serie`);

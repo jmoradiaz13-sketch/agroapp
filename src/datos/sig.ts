@@ -1,4 +1,6 @@
 export type InsigniaSig = 'OFFLINE' | 'MIXTO' | 'ONLINE';
+export type BaseMapa = 'osm' | 'topo' | 'satelite';
+export type CapaWms = 'agrologia' | 'predial';
 
 export interface CapaSig {
   id: string;
@@ -9,38 +11,82 @@ export interface CapaSig {
   pesoEstimado: string;
   disponible: boolean;
   grupo: 'igac' | 'relieve' | 'vegetacion' | 'upra';
+  tipo: 'mapa' | 'analisis';
+  capaWms?: CapaWms;
 }
+
+export interface MapaBase {
+  id: BaseMapa;
+  titulo: string;
+  descripcion: string;
+  url: string;
+  attribution: string;
+  maxZoom: number;
+  subdominios?: string;
+}
+
+export const BASES_MAPA: MapaBase[] = [
+  {
+    id: 'osm',
+    titulo: 'Calles',
+    descripcion: 'OpenStreetMap',
+    url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+    attribution: '&copy; OpenStreetMap',
+    maxZoom: 19,
+  },
+  {
+    id: 'topo',
+    titulo: 'Relieve',
+    descripcion: 'Esri World Topographic Map',
+    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
+    attribution: '&copy; Esri · HERE · Garmin · OpenStreetMap',
+    maxZoom: 19,
+  },
+  {
+    id: 'satelite',
+    titulo: 'Satélite',
+    descripcion: 'Esri World Imagery',
+    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    attribution: '&copy; Esri · Maxar · Earthstar Geographics',
+    maxZoom: 19,
+  },
+];
 
 export const CAPAS_SIG: CapaSig[] = [
   {
     id: 'igac-agrologia',
-    titulo: 'Agrología IGAC',
-    descripcion: 'Clases agrológicas y aptitud de suelos por polígono.',
+    titulo: 'Agrología IGAC 1:100.000',
+    descripcion: 'Órdenes de suelos y correlación agrológica nacional.',
     insignia: 'MIXTO',
-    fuente: 'IGAC · Colombia en Mapas (WFS)',
+    fuente: 'IGAC · Suelos y Tierras de Colombia 2016',
     pesoEstimado: '~2 MB por predio',
     disponible: true,
     grupo: 'igac',
+    tipo: 'mapa',
+    capaWms: 'agrologia',
   },
   {
     id: 'igac-predial',
-    titulo: 'Predial y veredas',
-    descripcion: 'Límites prediales, veredas y municipios de referencia.',
+    titulo: 'Catastro rural IGAC',
+    descripcion: 'Terrenos rurales catastrales; cobertura parcial por municipio.',
     insignia: 'MIXTO',
-    fuente: 'IGAC · Geoportal / Catastro',
+    fuente: 'IGAC · Dato Fundamental Catastro (R_TERRENO)',
     pesoEstimado: '~1 MB por predio',
     disponible: true,
     grupo: 'igac',
+    tipo: 'mapa',
+    capaWms: 'predial',
   },
   {
     id: 'pendiente',
     titulo: 'Pendiente por lote',
-    descripcion: 'Pendiente % derivada del DEM, por zonas homogéneas.',
+    descripcion: 'Análisis DEM por lote; se activa desde las herramientas.',
     insignia: 'MIXTO',
     fuente: 'Copernicus GLO-30 + gdaldem',
-    pesoEstimado: '~4 MB por predio',
-    disponible: true,
+    pesoEstimado: 'Cálculo en oficina',
+    disponible: false,
     grupo: 'relieve',
+    tipo: 'analisis',
   },
   {
     id: 'rusle',
@@ -49,28 +95,31 @@ export const CAPAS_SIG: CapaSig[] = [
     insignia: 'MIXTO',
     fuente: 'DEM (LS) + ficha VSA/cobertura (C)',
     pesoEstimado: 'Cálculo en oficina',
-    disponible: true,
+    disponible: false,
     grupo: 'relieve',
+    tipo: 'analisis',
   },
   {
     id: 'ndvi',
     titulo: 'NDVI satelital',
-    descripcion: 'Salud vegetal Sentinel-2 (B8−B4)/(B8+B4), 10 m.',
+    descripcion: 'Serie demo mientras se integra Sentinel-2 real; se consulta aparte.',
     insignia: 'ONLINE',
-    fuente: 'Copernicus Sentinel-2 L2A',
+    fuente: 'Copernicus Sentinel-2 L2A (demo)',
     pesoEstimado: '~8 MB por fecha/lote',
-    disponible: true,
+    disponible: false,
     grupo: 'vegetacion',
+    tipo: 'analisis',
   },
   {
     id: 'upra-frontera',
     titulo: 'Frontera agrícola UPRA',
-    descripcion: 'Hectáreas del municipio dentro y condicionadas (1:100.000).',
+    descripcion: 'Consulta tabular del municipio; no se dibuja como capa.',
     insignia: 'MIXTO',
     fuente: 'UPRA · datos.gov.co fyc7-sbtz',
     pesoEstimado: 'Dato tabular, sin peso',
-    disponible: true,
+    disponible: false,
     grupo: 'upra',
+    tipo: 'analisis',
   },
   {
     id: 'upra-aptitud',
@@ -81,13 +130,22 @@ export const CAPAS_SIG: CapaSig[] = [
     pesoEstimado: 'Enlace externo',
     disponible: false,
     grupo: 'upra',
+    tipo: 'analisis',
   },
 ];
 
+// Serie demo explícita: no representa una consulta Sentinel-2 en vivo.
 export const FECHAS_NDVI = [
-  { id: '2026-09-10', etiqueta: '10 sep 2026 · despejado hace 30 d' },
-  { id: '2026-08-12', etiqueta: '12 ago 2026 · nubosidad parcial' },
-  { id: '2026-07-15', etiqueta: '15 jul 2026 · referencia seca' },
+  { id: 'demo-2026-09-10', etiqueta: '10 sep 2026 · demo despejado' },
+  { id: 'demo-2026-08-12', etiqueta: '12 ago 2026 · demo nubosidad parcial' },
+  { id: 'demo-2026-07-15', etiqueta: '15 jul 2026 · demo referencia seca' },
+];
+
+export const LEYENDA_GEOMETRIAS = [
+  { color: '#14736e', texto: 'Predio delimitado' },
+  { color: '#f59e0b', texto: 'Lote seleccionado' },
+  { color: '#2f855a', texto: 'Lote guardado' },
+  { color: '#b45309', texto: 'Borrador en edición' },
 ];
 
 export const LEYENDA_PENDIENTE = [

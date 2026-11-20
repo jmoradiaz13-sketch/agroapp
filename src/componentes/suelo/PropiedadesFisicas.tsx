@@ -5,17 +5,14 @@ import type { FotoLista } from '../../servicios/fotos';
 import {
   CLASES_ES, clasificarTextura,
   claseDeEtiqueta,
-  FUENTE_MUNSELL,
   FUENTE_DENSIDAD,
   interpretarPorosidad, FUENTE_POROSIDAD,
   FUENTE_AGUA, calcularAguaDisponible,
-  FUENTE_VESS,
 } from '../../datos/fisicas';
 import {
-  Fuente, Columna, Triangulo, SemaforoDensidad,
+  Fuente, Columna, SemaforoDensidad,
 } from './fisicas_apoyo';
-import { FlujoTextura } from './FlujoTextura';
-import { AsesoriaTextura } from './AsesoriaTextura';
+import { TexturaRecorrido } from './TexturaRecorrido';
 import { FlujoColor } from './FlujoColor';
 import { AsesoriaColor } from './AsesoriaColor';
 import { FlujoDensidad } from './FlujoDensidad';
@@ -49,20 +46,25 @@ export function variableFisicaDeSlide(indice: number): string | null {
   return ['textura', 'color', 'densidad', 'estructura', null][indice] ?? null;
 }
 
-// Deck estilo curso/MOOC: una variable por diapositiva con fundamentos,
-// medición y captura DUO (campo + laboratorio), hasta conclusiones.
+// Deck estilo curso/MOOC: una variable por diapositiva con medición
+// y captura DUO (campo + laboratorio), hasta conclusiones.
 export function PropiedadesFisicas({
-  registro, fijar, valores, errorGranulometria, alFoto, alIrResumen, diapositiva,
+  registro, fijar, valores, errorGranulometria, alFoto, alIrResumen, alNavegar, diapositiva,
 }: {
   registro: R; fijar: UseFormSetValue<FichaSueloFormulario>; valores: V; errorGranulometria?: string;
-  alFoto?: (f: FotoLista) => void; alIrResumen?: () => void; diapositiva?: number | null;
+  alFoto?: (f: FotoLista) => void; alIrResumen?: () => void; alNavegar?: (indice: number) => void;
+  diapositiva?: number | null;
 }) {
   const [indice, setIndice] = useState(0);
 
   const auto = clasificarTextura(valores.arenaPct, valores.limoPct, valores.arcillaPct);
   const claseDensidad = auto ?? claseDeEtiqueta(valores.texturaTacto);
 
-  const irA = (i: number) => setIndice(Math.max(0, Math.min(DIAPOSITIVAS.length - 1, i)));
+  const irA = (i: number) => {
+    const destino = Math.max(0, Math.min(DIAPOSITIVAS.length - 1, i));
+    setIndice(destino);
+    alNavegar?.(destino);
+  };
 
   useEffect(() => {
     if (diapositiva !== undefined && diapositiva !== null) irA(diapositiva);
@@ -76,51 +78,23 @@ export function PropiedadesFisicas({
       <div key={`titulo-${indice}`} className="animacion-entrada border-b-2 pb-1" style={{ borderColor: 'var(--acento)' }}>
         <h3 className="text-lg font-semibold leading-tight text-humus">{DIAPOSITIVAS[indice].titulo}</h3>
       </div>
-      <div key={indice} className="animacion-entrada bg-white border border-emerald-500/40 shadow-sm rounded-sm p-4 sm:p-5 grid gap-3 lg:grid-cols-3 content-start">
+      <div key={indice} className={`animacion-entrada bg-white border border-emerald-500/40 shadow-sm rounded-sm p-4 sm:p-5 grid gap-3 ${indice === 4 ? 'lg:grid-cols-3' : 'lg:grid-cols-2'} content-start`}>
         {indice === 0 && (
-          <>
-            <div className="lg:col-span-3">
-              <FlujoTextura fijar={fijar} valorActual={valores.texturaTacto} />
-            </div>
-            <Columna titulo="Fundamentos">
-              <p className="text-sm text-neutral-600">Arena (2–0,05 mm), limo (0,05–0,002 mm) y arcilla (&lt; 0,002 mm) definen retención de agua, aireación y manejo.</p>
-              <Triangulo arena={valores.arenaPct ?? 40} limo={valores.limoPct ?? 40} arcilla={valores.arcillaPct ?? 20} clase={auto ? CLASES_ES[auto] : 'ejemplo'} />
-              <Fuente texto="FAO, Guidelines for Soil Description; USDA-NRCS, Soil Survey Manual" />
-            </Columna>
-            <Columna titulo="Laboratorio · granulometría %">
-              <p className="text-sm text-neutral-600">Si cuentas con el análisis de laboratorio, registra los porcentajes para confirmar la clase USDA.</p>
-              <div className="grid grid-cols-3 gap-2">
-                <label className="etiqueta-campo">Arena
-                  <input className="campo-entrada" type="number" step="0.1" min="0" {...registro('arenaPct')} />
-                </label>
-                <label className="etiqueta-campo">Limo
-                  <input className="campo-entrada" type="number" step="0.1" min="0" {...registro('limoPct')} />
-                </label>
-                <label className="etiqueta-campo">Arcilla
-                  <input className="campo-entrada" type="number" step="0.1" min="0" {...registro('arcillaPct')} />
-                </label>
-              </div>
-              {errorGranulometria && <p className="mensaje-error">{errorGranulometria}</p>}
-              {auto && <p className="mensaje-ok">Clase USDA: {CLASES_ES[auto]}</p>}
-              <p className="mensaje-info">Esmectita (2:1) se siente jabonosa aun con % moderado; caolinita (1:1), menos plástica.</p>
-            </Columna>
-            <Columna titulo="Asesoría de la textura">
-              <AsesoriaTextura valores={valores} />
-            </Columna>
-          </>
+          <div className="lg:col-span-2">
+            <TexturaRecorrido
+              registro={registro}
+              fijar={fijar}
+              valores={valores}
+              errorGranulometria={errorGranulometria}
+            />
+          </div>
         )}
 
         {indice === 1 && (
           <>
-            <div className="lg:col-span-3">
+            <div className="lg:col-span-2">
               <FlujoColor fijar={fijar} valores={valores} />
             </div>
-            <Columna titulo="Fundamentos">
-              <p className="text-sm text-neutral-600">El color indica materia orgánica, óxidos de hierro y drenaje: negros (humus fértil), rojos (hematita, oxidación), grises (anaerobio).</p>
-              <img src="/imagenes/metodos/munsell-sistema.svg" alt="Diagrama del sistema de color Munsell" loading="lazy" className="w-full max-w-[220px]" />
-              <p className="text-[11px] text-neutral-500">Sistema Munsell (Jacob Rus, CC-BY-SA 3.0, Wikimedia Commons).</p>
-              <Fuente texto={`USDA-NRCS, Soil Survey Manual. ${FUENTE_MUNSELL}`} />
-            </Columna>
             <Columna titulo="Asesoría del color" className="lg:col-span-2">
               <AsesoriaColor valores={valores} />
             </Columna>
@@ -129,15 +103,9 @@ export function PropiedadesFisicas({
 
         {indice === 2 && (
           <>
-            <div className="lg:col-span-3">
+            <div className="lg:col-span-2">
               <FlujoDensidad fijar={fijar} valores={valores} claseTextural={claseDensidad} />
             </div>
-            <Columna titulo="Fundamentos">
-              <p className="text-sm text-neutral-600">DA = masa seca ÷ volumen. Refleja compactación y porosidad total: valores altos frenan raíces y agua.</p>
-              <img src="/imagenes/metodos/perfil-suelo.jpg" alt="Perfil de suelo con horizontes diferenciados" loading="lazy" className="w-full max-w-[220px] rounded-sm" />
-              <p className="text-[11px] text-neutral-500">Perfil con horizontes (USDA, dominio público). La densidad aumenta con la profundidad.</p>
-              <Fuente texto={FUENTE_DENSIDAD} />
-            </Columna>
             <Columna titulo="Laboratorio · reporte">
               <label className="etiqueta-campo">DR real (g/cm³)
                 <input className="campo-entrada" type="number" step="0.01" min="0" {...registro('densidadReal')} />
@@ -181,14 +149,9 @@ export function PropiedadesFisicas({
 
         {indice === 3 && (
           <>
-            <div className="lg:col-span-3">
+            <div className="lg:col-span-2">
               <FlujoEstructura fijar={fijar} valores={valores} />
             </div>
-            <Columna titulo="Fundamentos">
-              <p className="text-sm text-neutral-600">El arreglo de agregados y poros regula agua, aire y raíces. VESS puntúa de Sq1 (friable) a Sq5 (macizo).</p>
-              <img src="/imagenes/3.jpg" alt="Agregados, raíces y poros del suelo en primer plano" loading="lazy" className="w-full max-w-[220px] rounded-sm" />
-              <Fuente texto={FUENTE_VESS} />
-            </Columna>
             <Columna titulo="Medición en campo">
               <p className="text-sm font-medium">Extrae un bloque de 20 cm sin pisar el borde, ábrelo como un libro y observa terrones, poros y raíces por capa. Puntúa cada capa y promedia por espesor.</p>
               {alFoto && (

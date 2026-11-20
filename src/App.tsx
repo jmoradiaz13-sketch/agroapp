@@ -55,7 +55,7 @@ export default function App() {
               <Route path="/predios" element={<MarcoEscena><PaginaPredios /></MarcoEscena>} />
               <Route path="/diseno" element={<MarcoEscena><PaginaDiseno /></MarcoEscena>} />
               <Route path="/lote" element={<MarcoEscena><DashboardLote /></MarcoEscena>} />
-              <Route path="/suelos" element={<MarcoEscena><PaginaSuelos /></MarcoEscena>} />
+              <Route path="/suelos" element={<PaginaSuelos />} />
               <Route path="/ficha" element={<Navigate to="/suelos?vista=ficha" replace />} />
               <Route path="/suelo-historial" element={<Navigate to="/suelos?vista=lectura" replace />} />
               <Route path="/diagnostico" element={<Navigate to="/suelos?vista=lectura" replace />} />
@@ -79,17 +79,15 @@ export default function App() {
               </div>
               <nav className="grid content-start gap-1" aria-label="Otras secciones">
                 <p className="kicker mb-1" style={{ color: 'var(--marca-texto)' }}>Otras secciones</p>
-                <Link to="/suelos" className="text-xs transition-colors">Suelos · ficha y lectura</Link>
-                <Link to="/sig" className="text-xs transition-colors">SIG restauración ecológica</Link>
-                <Link to="/suelos?vista=lectura" className="text-xs transition-colors">Lectura y diagnóstico del suelo</Link>
-                <Link to="/informe" className="text-xs transition-colors">Informe del predio</Link>
-                <Link to="/diseno" className="text-xs transition-colors">Diseño de agroecosistemas</Link>
-                <Link to="/simulador" className="text-xs transition-colors">Simulador de sistemas</Link>
+                <Link to="/predios" className="text-xs transition-colors">Planificación de fincas</Link>
+                <Link to="/suelos?vista=ficha" className="text-xs transition-colors">Suelos · registrar y leer</Link>
+                <Link to="/suelos?vista=fichas" className="text-xs transition-colors">Terrenos registrados</Link>
+                <Link to="/biblioteca" className="text-xs transition-colors">Biblioteca de guías</Link>
+                <Link to="/sig" className="text-xs transition-colors">Herramientas SIG</Link>
               </nav>
               <div className="grid content-start gap-1" aria-label="Información">
                 <p className="kicker mb-1" style={{ color: 'var(--marca-texto)' }}>Información</p>
                 <Link to="/ingreso" className="text-xs transition-colors">Ingreso técnico</Link>
-                <Link to="/biblioteca" className="text-xs transition-colors">Biblioteca · aprende en campo</Link>
                 <p className="text-xs opacity-70">MAGNA-SIRGAS EPSG:4686 • WGS84 en campo</p>
                 <p className="text-xs opacity-70">Caché máx 200 MB por predio • Modo offline</p>
                 <p className="text-xs opacity-70 flex items-center gap-1.5">
