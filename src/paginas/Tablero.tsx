@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { usoFlujo } from '../estado/usoFlujo';
 import { usoPredio } from '../estado/usoPredio';
 import { baseDatos, etiquetaCache, type FichaSueloLocal, type LoteLocal, type PredioLocal } from '../base_datos/local';
@@ -7,7 +7,7 @@ import { calcularMadurez, type Madurez } from '../servicios/madurez';
 import { ESCENAS } from '../datos/escenas';
 import { Icono } from '../componentes/Iconos';
 import { MedidorRadial } from '../componentes/MedidorRadial';
-import { Boton, BotonSecundario } from '../componentes/ui/Boton';
+import { BotonSecundario } from '../componentes/ui/Boton';
 
 // Tablero (choice board): puerta de entrada a las escenas. Cada tarjeta es un
 // punto de entrada con foto, promesa, modo de conectividad y estado vivo
@@ -50,66 +50,75 @@ export function PaginaTablero() {
   const predio = predios.find((p) => p.identificador === predioIdentificador) ?? predios[0];
   const areaLotes = lotes.reduce((a, l) => a + (l.areaHa ?? 0), 0);
 
-  // Estado vivo por escena (Dexie): la tarjeta muestra dónde estás.
-  const estadoPorEscena: Record<string, string> = {
-    predios: predios.length === 0 ? 'Crea el primero' : `${predios.length} predio(s) · activo: ${predio?.nombre ?? '—'}`,
-    lote: lotes.length === 0 ? 'Dibuja el primero en el mapa' : `${lotes.length} lotes · ${areaLotes.toFixed(1)} ha`,
-    ficha: ficha ? `v${ficha.version} · pH ${ficha.phAgua ?? '?'} · MO ${ficha.materiaOrganicaPct ?? '?'} %` : 'Sin ficha registrada',
-    sig: lotes.length === 0 ? 'Delimita lotes para cruzar capas' : `${lotes.length} lotes para enriquecer`,
-    simulador: `${conteoPlan.escenarios} escenarios · ${conteoPlan.disenos} diseños`,
-    diseno: `${conteoPlan.disenos} diseños guardados`,
-    informe: ficha ? 'Listo para generar con la última ficha' : 'Requiere ficha y diagnóstico',
-    biblioteca: 'Guías offline + videos online',
+  // Estado vivo por frente (Dexie): la tarjeta muestra dónde estás.
+  const estadoPorGrupo: Record<string, string> = {
+    suelos: ficha ? `v${ficha.version} · pH ${ficha.phAgua ?? '?'} · MO ${ficha.materiaOrganicaPct ?? '?'} %` : 'Sin ficha registrada',
+    sig: lotes.length === 0 ? 'Delimita lotes para cruzar capas' : `${lotes.length} lotes para analizar`,
+    planificacion: `${predios.length} predio(s) · ${lotes.length} lotes · ${areaLotes.toFixed(1)} ha · ${conteoPlan.escenarios + conteoPlan.disenos} plan(es)`,
   };
 
   return (
     <div className="grid gap-5 animacion-entrada">
       {/* Hero editorial: declaración + recorrido */}
-      <section className="grid gap-5 py-6 sm:py-10" aria-label="Planificación de fincas">
-        <p className="kicker">SurcAF · Elige tu recorrido</p>
+      <section className="grid gap-5 py-6 sm:py-10" aria-label="Tres frentes de trabajo">
+        <p className="kicker">SurcAF · Tres frentes de trabajo</p>
         <h1 className="font-display font-medium leading-[1.02]" style={{ color: 'var(--texto)', fontSize: 'clamp(2.6rem, 7vw, 5.2rem)', maxWidth: '16ch' }}>
-          Planificación de fincas
+          Planificación, suelos y SIG
         </h1>
-        <p className="text-base sm:text-lg leading-relaxed" style={{ color: 'var(--muted)', maxWidth: '52ch' }}>
-          Suelos vivos, territorio y plan agroforestal paso a paso — en campo sin conexión o en oficina con datos.
-          {predio ? ` Hoy trabajas en ${predio.nombre}.` : ' Crea tu primer predio para empezar.'}
-        </p>
-        <div className="flex flex-wrap gap-3">
-          <Boton onClick={() => navegar(predio ? '/lote' : '/predios')}>Comenzar</Boton>
-          <BotonSecundario onClick={() => navegar('/ingreso')}>Ingresar</BotonSecundario>
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <p className="text-base sm:text-lg leading-relaxed" style={{ color: 'var(--muted)', maxWidth: '52ch' }}>
+            Gestiona predios, lotes y el plan agroforestal; interpreta análisis y registra muestras; y cruza tu finca con
+            capas oficiales — en campo sin conexión o en oficina con datos.
+            {predio ? ` Hoy trabajas en ${predio.nombre}.` : ' Crea tu primer predio para empezar.'}
+          </p>
+          <BotonSecundario onClick={() => navegar('/ingreso')}>
+            <span className="inline-flex items-center gap-2">
+              <Icono id="usuario" />
+              Ingresar
+            </span>
+          </BotonSecundario>
         </div>
       </section>
 
-      {/* Tablero de escenas: cada tarjeta lleva su color-espacio */}
-      <section aria-label="Tablero de escenas">
+      {/* Tablero de tres frentes: cada tarjeta lleva su color-espacio y sus submenús */}
+      <section aria-label="Tres frentes de trabajo">
         <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3 pt-2">
           {ESCENAS.map((e, i) => (
-            <button
+            <article
               key={e.id}
-              onClick={() => navegar(e.ruta)}
-              className="group text-left grid content-start transition-all hover:-translate-y-0.5"
+              className="grid content-start transition-all hover:-translate-y-0.5"
               style={{ background: 'var(--sup)', border: '1px solid var(--borde)', boxShadow: 'var(--sombra-suave)' }}
             >
-              <span className="flex items-center justify-between px-5 h-20" style={{ background: e.color }} aria-hidden>
+              <Link to={e.ruta} className="group flex items-center justify-between px-5 h-20" style={{ background: e.color }} aria-label={`Abrir ${e.titulo}`}>
                 <span className="font-display text-4xl font-medium" style={{ color: e.sobre }}>
                   {String(i + 1).padStart(2, '0')}
                 </span>
                 <span style={{ color: e.sobre, opacity: 0.9 }}><Icono id={e.icono} /></span>
-              </span>
-              <span className="grid gap-1.5 content-start p-5">
-                <span className="flex items-center justify-between gap-2">
+              </Link>
+              <div className="grid gap-1.5 content-start p-5">
+                <div className="flex items-center justify-between gap-2">
                   <span className="mono-micro" style={{ color: 'var(--acento)' }}>{e.etapa}</span>
                   <span className="mono-micro rounded-full px-2 py-0.5" style={{ background: 'var(--sup-2)', color: 'var(--muted)', border: '1px solid var(--borde)' }}>
                     {e.insignia}
                   </span>
-                </span>
-                <span className="fila-menu font-display text-2xl font-medium leading-tight" style={{ color: 'var(--texto)' }}>{e.titulo}</span>
-                <span className="text-sm leading-relaxed" style={{ color: 'var(--muted)', maxWidth: '42ch' }}>{e.descripcion}</span>
-                <span className="text-[12px] font-semibold inline-flex items-center gap-1.5" style={{ color: 'var(--texto)' }}>
-                  {estadoPorEscena[e.id] ?? ''} <span aria-hidden className="fila-flecha">→</span>
-                </span>
-              </span>
-            </button>
+                </div>
+                <Link to={e.ruta} className="font-display text-2xl font-medium leading-tight" style={{ color: 'var(--texto)' }}>{e.titulo}</Link>
+                <p className="text-sm leading-relaxed" style={{ color: 'var(--muted)', maxWidth: '42ch' }}>{e.descripcion}</p>
+                <p className="text-[12px] font-semibold" style={{ color: 'var(--texto)' }}>{estadoPorGrupo[e.id] ?? ''}</p>
+                <div className="flex flex-wrap gap-1.5 pt-1.5">
+                  {e.items.map((m) => (
+                    <Link
+                      key={m.id}
+                      to={m.ruta}
+                      className="boton-campo text-[11.5px] font-semibold rounded-full px-3 py-1.5 transition-colors"
+                      style={{ background: 'var(--sup-2)', color: 'var(--texto)', border: '1px solid var(--borde)' }}
+                    >
+                      {m.titulo}
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            </article>
           ))}
         </div>
       </section>

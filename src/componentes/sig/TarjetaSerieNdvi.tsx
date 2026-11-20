@@ -1,15 +1,18 @@
 import { Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { Tarjeta } from '../ui/Tarjeta';
 import { Boton } from '../ui/Boton';
+import { etiquetaCache } from '../../base_datos/local';
 import type { InterpretacionNdvi, PuntoNdvi } from '../../servicios/sig';
 
 // Tarjeta de serie temporal NDVI: gráfica con umbrales 0,3/0,6,
 // lectura por fecha y alerta de zona débil (patrón OneSoil).
 export function TarjetaSerieNdvi({
-  serie, interp, cargando, alActualizar,
+  serie, interp, fuente, fechaCache, cargando, alActualizar,
 }: {
   serie: PuntoNdvi[] | null;
   interp: InterpretacionNdvi | null;
+  fuente?: string;
+  fechaCache?: string;
   cargando: boolean;
   alActualizar: () => void;
 }) {
@@ -45,6 +48,12 @@ export function TarjetaSerieNdvi({
           {interp && (
             <p className={interp.alerta ? 'mensaje-error' : 'mensaje-ok'}>
               Tendencia {interp.tendencia} (Δ {interp.delta}). {interp.alerta ?? 'Sin zonas críticas.'}
+            </p>
+          )}
+          {fuente && <p className="text-[11px] text-neutral-500">Fuente: {fuente}</p>}
+          {fechaCache && (
+            <p className="text-[11px] font-semibold" style={{ color: 'var(--acento-fuerte)' }}>
+              {etiquetaCache(fechaCache)}
             </p>
           )}
         </>

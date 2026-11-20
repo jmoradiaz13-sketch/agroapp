@@ -3,7 +3,8 @@
 // esquinas redondas, 24x24, heredan currentColor. Temática agro: finca, suelo, SIG.
 export type IconoId =
   | 'dashboard' | 'predios' | 'lotes' | 'suelos' | 'sig'
-  | 'simulador' | 'diseno' | 'diagnostico' | 'informe' | 'biblioteca';
+  | 'simulador' | 'diseno' | 'diagnostico' | 'informe' | 'biblioteca'
+  | 'usuario' | 'menu' | 'eliminar';
 
 function Base({ children }: { children: React.ReactNode }) {
   return (
@@ -45,6 +46,12 @@ export function Icono({ id }: { id: IconoId }) {
       return <Base><path d="M7 3h7l4 4v14H7V3Z" /><path d="M14 3v4h4" /><path d="M9.5 13h5M9.5 16.5h5" /></Base>;
     case 'biblioteca':
       return <Base><path d="M12 6c-2-1.5-5-2-8-2v14c3 0 6 .5 8 2 2-1.5 5-2 8-2V4c-3 0-6 .5-8 2Z" /><path d="M12 6v14" /></Base>;
+    case 'usuario':
+      return <Base><circle cx="12" cy="8" r="3.5" /><path d="M5 20.5c0-3.4 3.1-5.7 7-5.7s7 2.3 7 5.7" /></Base>;
+    case 'menu':
+      return <Base><path d="M4 7h16M4 12h16M4 17h16" /></Base>;
+    case 'eliminar':
+      return <Base><path d="M4 7h16" /><path d="M9.5 7V4.5h5V7" /><path d="m6.5 7 .8 12.1a1.5 1.5 0 0 0 1.5 1.4h6.4a1.5 1.5 0 0 0 1.5-1.4L17.5 7" /><path d="M10 11v6M14 11v6" /></Base>;
     default:
       return <Base><circle cx="12" cy="12" r="8" /></Base>;
   }

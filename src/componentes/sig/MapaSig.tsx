@@ -28,6 +28,7 @@ export function MapaSig({
   const { pos: posGps, precision, mensaje, ubicar } = usarGps();
   const ubicarme = () => ubicar();
 
+  const wms = WMS_IGAC.agrologia;
   const verIgac = capasActivas.includes('igac-agrologia') || capasActivas.includes('igac-predial');
   const verPendiente = capasActivas.includes('pendiente') && modoNdvi === 'pendiente';
   const verNdvi = capasActivas.includes('ndvi') && modoNdvi === 'ndvi';
@@ -44,11 +45,11 @@ export function MapaSig({
         <TileLayer url="https://tile.openstreetmap.org/{z}/{x}/{y}.png" attribution="&copy; OpenStreetMap · IGAC · Copernicus" />
         {verIgac && mostrarWms && enLinea && (
           <WMSTileLayer
-            url={WMS_IGAC.url}
-            layers={WMS_IGAC.capa}
+            url={wms.url}
+            layers={wms.capa}
             format="image/png"
             transparent
-            version="1.3.0"
+            version={wms.version}
             opacity={opacidad}
             attribution="IGAC · Colombia en Mapas"
           />

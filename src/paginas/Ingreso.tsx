@@ -4,7 +4,7 @@ import { Boton, BotonSecundario } from '../componentes/ui/Boton';
 import { LogoMarca } from '../componentes/ui/Logo';
 
 export function PaginaIngreso() {
-  const [usuario, setUsuario] = useState('tecnico');
+  const [usuario, setUsuario] = useState('técnico');
   const [clave, setClave] = useState('');
   const [error, setError] = useState('');
   const [cargando, setCargando] = useState(false);
@@ -73,7 +73,7 @@ export function PaginaIngreso() {
             />
           </label>
           {error && <p className="mensaje-error" role="alert">{error}</p>}
-          <Boton type="submit" disabled={cargando} className="w-full !py-3">
+          <Boton type="submit" disabled={cargando} className="justify-self-center !py-3">
             {cargando ? 'Verificando…' : 'Ingresar'}
           </Boton>
           <p className="text-[11px] text-center text-neutral-400">

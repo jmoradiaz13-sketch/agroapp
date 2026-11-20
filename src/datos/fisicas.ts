@@ -17,10 +17,12 @@ export const CLASES_ES: Record<ClaseTextural, string> = {
 // Retorna null si faltan datos o no suman 100 ± 2.
 export function clasificarTextura(arena?: number, limo?: number, arcilla?: number): ClaseTextural | null {
   if (arena === undefined || limo === undefined || arcilla === undefined) return null;
-  if ([arena, limo, arcilla].some((v) => Number.isNaN(v) || v < 0)) return null;
-  const suma = arena + limo + arcilla;
+  const valores = [Number(arena), Number(limo), Number(arcilla)];
+  if (valores.some((v) => !Number.isFinite(v) || v < 0)) return null;
+  const [arenaNum, limoNum, arcillaNum] = valores;
+  const suma = arenaNum + limoNum + arcillaNum;
   if (Math.abs(suma - 100) > 2) return null;
-  const a = (arena / suma) * 100, l = (limo / suma) * 100, r = (arcilla / suma) * 100;
+  const a = (arenaNum / suma) * 100, l = (limoNum / suma) * 100, r = (arcillaNum / suma) * 100;
   if (l + 1.5 * r < 15) return 'arena';
   if (l + 1.5 * r >= 15 && l + 2 * r < 30) return 'arena-franca';
   if ((r <= 20 && a > 52 && l + 2 * r >= 30) || (r < 7 && l < 50 && l + 2 * r >= 30)) return 'franco-arenoso';

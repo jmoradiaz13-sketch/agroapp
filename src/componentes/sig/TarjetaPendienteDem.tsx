@@ -3,8 +3,8 @@ import { Boton } from '../ui/Boton';
 import type { LoteLocal } from '../../base_datos/local';
 import type { EstimacionDem } from '../../servicios/sig';
 
-// Tarjeta de pendiente DEM por lote: selector, cálculo SRTM y guardado
-// en Dexie para trabajo offline en campo.
+// Tarjeta de pendiente DEM por lote: selector, cálculo Copernicus GLO-30 y
+// guardado en Dexie para trabajo offline en campo.
 export function TarjetaPendienteDem({
   predioId, lotes, loteSel, alElegirLote, estimacion, calculando, alCalcular, alGuardar,
 }: {

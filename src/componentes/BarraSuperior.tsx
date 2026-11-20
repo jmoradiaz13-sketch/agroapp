@@ -1,20 +1,26 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, NavLink, useLocation } from 'react-router-dom';
-import { GRUPOS_NAV, MENU_VERDE } from '../datos/navegacion';
-import { ESCENA_POR_RUTA } from '../datos/escenas';
+import { Link, useLocation } from 'react-router-dom';
+import { GRUPOS_NAV, grupoDeRuta, type ItemNav } from '../datos/navegacion';
+import { COLOR_POR_GRUPO } from '../datos/escenas';
 import { Icono } from './Iconos';
 import { LogoMarca } from './ui/Logo';
 import { InterruptorTema } from './InterruptorTema';
 
-// Barra superior única: marca protagonista + grupos con panel desplegable.
-// Sin pastillas de sync ni ingreso (viven en el Tablero y el pie).
-// En móvil, header compacto + menú en cuadrícula.
-function grupoActivo(rutas: string[], pathname: string): boolean {
-  return rutas.some((r) => (r === '/' ? pathname === '/' : pathname.startsWith(r)));
+// Barra superior única: marca protagonista + tres frentes con panel
+// desplegable de submenús agrupados por categoría.
+// En móvil, header compacto + menú en cuadrícula con los mismos submenús.
+function categoriasDe(items: ItemNav[]): { nombre: string; items: ItemNav[] }[] {
+  return items.reduce<{ nombre: string; items: ItemNav[] }[]>((acc, item) => {
+    const ultima = acc[acc.length - 1];
+    if (ultima && ultima.nombre === item.categoria) ultima.items.push(item);
+    else acc.push({ nombre: item.categoria, items: [item] });
+    return acc;
+  }, []);
 }
 
 function BarraEscritorio() {
   const { pathname } = useLocation();
+  const activoId = grupoDeRuta(pathname)?.id ?? null;
   // Auto-ocultado: se cierra al elegir opción, con Escape o al salir del grupo.
   const [abierto, setAbierto] = useState<string | null>(null);
   const temporizador = useRef<number | null>(null);
@@ -57,7 +63,8 @@ function BarraEscritorio() {
         </Link>
         <nav className="flex items-center gap-1" aria-label="Secciones">
           {GRUPOS_NAV.map((g, gi) => {
-            const activo = grupoActivo(g.items.map((i) => i.ruta), pathname);
+            const activo = activoId === g.id;
+            const color = COLOR_POR_GRUPO[g.id]?.color ?? 'var(--acento)';
             return (
               <div key={g.id} className="relative" onMouseEnter={() => entrarGrupo(g.id)} onMouseLeave={salirGrupo}>
                 <button
@@ -73,26 +80,27 @@ function BarraEscritorio() {
                   <span aria-hidden className={`text-[10px] transition-transform ${abierto === g.id ? 'rotate-180' : ''}`}>▾</span>
                 </button>
                 {abierto === g.id && (
-                <div className="absolute left-0 top-full pt-2 min-w-[290px]">
+                <div className="absolute left-0 top-full pt-2 min-w-[320px]">
                   <div className="rounded-2xl p-2 grid gap-0.5 animacion-entrada" style={{ background: 'var(--sup)', border: '1px solid var(--borde)', boxShadow: '0 16px 40px -16px rgba(46,33,24,0.3)' }}>
-                    {g.items.map((m) => (
-                      <NavLink
-                        key={m.id}
-                        to={m.ruta}
-                        onClick={() => setAbierto(null)}
-                        className="boton-campo item-menu group flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors"
-                      >
-                        <span className="mt-0.5 shrink-0" style={{ color: ESCENA_POR_RUTA[m.ruta]?.color ?? 'var(--acento)' }}><Icono id={m.icono} /></span>
-                        <span className="grid gap-0.5 min-w-0 flex-1">
-                          <span className="fila-menu text-[13.5px] font-semibold leading-none" style={{ color: 'var(--texto)' }}>{m.titulo}</span>
-                          {ESCENA_POR_RUTA[m.ruta] && (
-                            <span className="text-[11px] leading-snug" style={{ color: 'var(--muted)' }}>
-                              {ESCENA_POR_RUTA[m.ruta].descripcion} · {ESCENA_POR_RUTA[m.ruta].insignia}
+                    {categoriasDe(g.items).map((cat, ci) => (
+                      <div key={cat.nombre} className="grid gap-0.5">
+                        <p className={`mono-micro px-3 pb-1 ${ci === 0 ? 'pt-1' : 'pt-2.5'}`} style={{ color: 'var(--muted)' }}>{cat.nombre}</p>
+                        {cat.items.map((m) => (
+                          <Link
+                            key={m.id}
+                            to={m.ruta}
+                            onClick={() => setAbierto(null)}
+                            className="boton-campo item-menu group flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors"
+                          >
+                            <span className="mt-0.5 shrink-0" style={{ color }}><Icono id={m.icono} /></span>
+                            <span className="grid gap-0.5 min-w-0 flex-1">
+                              <span className="fila-menu text-[13.5px] font-semibold leading-none" style={{ color: 'var(--texto)' }}>{m.titulo}</span>
+                              <span className="text-[11px] leading-snug" style={{ color: 'var(--muted)' }}>{m.descripcion}</span>
                             </span>
-                          )}
-                        </span>
-                        <span className="fila-flecha shrink-0" style={{ color: 'var(--texto)' }} aria-hidden>→</span>
-                      </NavLink>
+                            <span className="fila-flecha shrink-0" style={{ color: 'var(--texto)' }} aria-hidden>→</span>
+                          </Link>
+                        ))}
+                      </div>
                     ))}
                   </div>
                 </div>
@@ -112,7 +120,7 @@ function BarraEscritorio() {
 function BarraMovil() {
   const [abierto, setAbierto] = useState(false);
   const ubicacion = useLocation();
-  useEffect(() => setAbierto(false), [ubicacion.pathname]);
+  useEffect(() => setAbierto(false), [ubicacion.pathname, ubicacion.search]);
   useEffect(() => {
     const alTeclar = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setAbierto(false);
@@ -130,7 +138,7 @@ function BarraMovil() {
             </span>
             <span className="leading-none grid min-w-0">
               <span className="text-sm font-bold tracking-tight" style={{ color: 'var(--marca-texto)' }}>SURCAF</span>
-              <span className="text-[10px] font-medium tracking-wide" style={{ color: 'var(--marca-muted)' }}>Gestión de fincas y suelos</span>
+              <span className="text-[10px] font-medium tracking-wide" style={{ color: 'var(--marca-muted)' }}>Fincas · Suelos · SIG</span>
             </span>
           </Link>
           <div className="flex items-center gap-2 shrink-0">
@@ -147,12 +155,36 @@ function BarraMovil() {
           </div>
         </div>
         {abierto && (
-          <nav className="px-4 pb-3 grid grid-cols-2 gap-1.5 animacion-entrada" aria-label="Menú móvil">
-            {MENU_VERDE.map((m) => (
-              <NavLink key={m.id} to={m.ruta} className="boton-campo rounded-2xl px-3 py-2 text-xs font-semibold text-center transition-colors inline-flex items-center justify-center gap-1.5" style={({ isActive }) => (isActive ? { background: 'var(--marca-texto)', color: 'var(--marca)' } : { background: 'transparent', color: 'var(--marca-muted)', border: '1px solid var(--borde)' })}>
-                <Icono id={m.icono} /> {m.titulo}
-              </NavLink>
-            ))}
+          <nav className="px-4 pb-3 grid gap-3 animacion-entrada" aria-label="Menú móvil">
+            {GRUPOS_NAV.map((g) => {
+              const color = COLOR_POR_GRUPO[g.id]?.color ?? '#F2E9D8';
+              return (
+                <div key={g.id} className="grid gap-1.5">
+                  <Link
+                    to={g.ruta}
+                    onClick={() => setAbierto(false)}
+                    className="boton-campo inline-flex items-center gap-2 px-1 py-1 text-sm font-bold transition-colors"
+                    style={{ color: 'var(--marca-texto)' }}
+                  >
+                    <span style={{ color }}><Icono id={g.icono} /></span>
+                    {g.titulo}
+                  </Link>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {g.items.map((m) => (
+                      <Link
+                        key={m.id}
+                        to={m.ruta}
+                        onClick={() => setAbierto(false)}
+                        className="boton-campo rounded-2xl px-3 py-2 text-xs font-semibold transition-colors inline-flex items-center justify-center text-center"
+                        style={{ background: 'transparent', color: 'var(--marca-muted)', border: '1px solid var(--borde)' }}
+                      >
+                        {m.titulo}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
           </nav>
         )}
       </div>

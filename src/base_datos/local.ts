@@ -67,6 +67,8 @@ export interface EstrategiaLocal {
 export interface FichaSueloLocal {
   id?: number;
   predioIdentificador: string;
+  /** Nombre visible del predio al momento de registrar el terreno. */
+  nombrePredio?: string;
   /** Lote/parcela opcional. Si falta, la ficha queda a escala de predio. */
   loteNombre?: string;
   fecha: string; // serie temporal, nunca se sobrescribe
@@ -255,13 +257,15 @@ export interface PuntoMuestreoLocal {
   lng: number;
   fecha: string;
   sincronizada: boolean;
+  tipo?: 'muestra' | 'arbol' | 'agua' | 'infraestructura';
+  etiqueta?: string;
 }
 
 export interface CapaIgacLocal {
   id?: number;
   predioIdentificador: string;
   nombreCapa: string;
-  geojson: GeoJSON.Geometry;
+  geojson: GeoJSON.GeoJsonObject;
   fechaActualizacion: string;
 }
 
@@ -272,6 +276,16 @@ export interface GeotiffCache {
   blob: Blob;
   fechaActualizacion: string;
   tamanoBytes: number;
+}
+
+/** Resultado de análisis espacial cacheado para consulta offline (Fase 2). */
+export interface AnalisisSigLocal {
+  id?: number;
+  predioIdentificador: string;
+  tipo: 'NDVI' | 'DEM' | 'RUSLE';
+  datos: unknown;
+  fuente: string;
+  fechaActualizacion: string;
 }
 
 export const LIMITE_CACHE_PREDIO_BYTES = 200 * 1024 * 1024;
@@ -290,6 +304,7 @@ class BaseDatosAgroApp extends Dexie {
   puntosMuestreo!: Table<PuntoMuestreoLocal, number>;
   especies!: Table<EspecieLocal, number>;
   escenarios!: Table<EscenarioLocal, number>;
+  analisisSig!: Table<AnalisisSigLocal, number>;
 
   constructor() {
     super('agroapp_campo');
@@ -327,6 +342,10 @@ class BaseDatosAgroApp extends Dexie {
       fichasSuelo: '++id, predioIdentificador, fecha, version, loteNombre, [predioIdentificador+loteNombre]',
       monitoreos: '++id, loteNombre, fecha, fichaId, predioIdentificador',
       borradoresSuelo: '++id, clave, fechaActualizacion'
+    });
+    // Fase 2: análisis espacial real (NDVI/DEM/RUSLE) cacheado para campo offline.
+    this.version(8).stores({
+      analisisSig: '++id, predioIdentificador, tipo, [predioIdentificador+tipo]'
     });
   }
 }

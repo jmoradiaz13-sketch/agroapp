@@ -35,9 +35,10 @@ function Ilustracion({ id }: { id: IlustracionTextura }) {
 // Flujo guiado de determinación de textura al tacto (USDA-NRCS, Thien 1979).
 // Cada respuesta avanza el recorrido y, al llegar al resultado, deja la clase
 // en el campo texturaTacto de la ficha.
-export function FlujoTextura({ fijar, valorActual }: {
+export function FlujoTextura({ fijar, valorActual, alTerminarTacto }: {
   fijar: UseFormSetValue<FichaSueloFormulario>;
   valorActual?: string | null;
+  alTerminarTacto?: (clase: string) => void;
 }) {
   const [ruta, setRuta] = useState<string[]>([INICIO]);
   const [camino, setCamino] = useState<{ pregunta: string; respuesta: string }[]>([]);
@@ -48,7 +49,11 @@ export function FlujoTextura({ fijar, valorActual }: {
   const avanzar = (respuesta: string, destino: string) => {
     if (nodo?.tipo === 'pregunta') setCamino((c) => [...c, { pregunta: nodo.titulo, respuesta }]);
     const dest = NODOS[destino];
-    if (dest?.tipo === 'resultado') fijar('texturaTacto', nombreClase(dest.clase));
+    if (dest?.tipo === 'resultado') {
+      const clase = nombreClase(dest.clase);
+      fijar('texturaTacto', clase);
+      alTerminarTacto?.(clase);
+    }
     setRuta((r) => [...r, destino]);
   };
 
@@ -64,9 +69,9 @@ export function FlujoTextura({ fijar, valorActual }: {
 
   return (
     <div className="grid gap-3">
-      <ProgresoPasos pasos={PASOS} actual={pasoActual} />
+      <ProgresoPasos pasos={PASOS.slice(0, 4)} actual={pasoActual} />
 
-      <div className="border border-neutral-200 bg-neutral-50/60 p-3 sm:p-4">
+      <div key={actual} className="animacion-entrada border border-neutral-200 bg-neutral-50/60 p-3 sm:p-4">
         {nodo.tipo === 'accion' && (
           <div className="grid gap-3 sm:grid-cols-[168px_1fr] sm:items-start">
             <Ilustracion id={nodo.ilustracion} />

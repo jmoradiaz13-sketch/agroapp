@@ -87,7 +87,7 @@ export function SimuladorRusle({ predioIdentificador }: { predioIdentificador: s
           <p className="text-[11px] italic text-neutral-500">Fuente: {FUENTE_RUSLE} · Bajo &lt;5 · Moderado 5-15 · Severo 15-50 · Crítico &gt;50</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <button className="boton-campo px-4 py-2 text-sm font-semibold rounded-sm bg-[#059669] text-white hover:bg-emerald-700" onClick={() => void validarOficina()}>
+          <button type="button" className="boton-campo px-4 py-2 text-sm font-semibold rounded-sm bg-[#059669] text-white hover:bg-emerald-700" onClick={() => void validarOficina()}>
             Validar en oficina (DEM)
           </button>
           {mensaje && <p className="mensaje-info">{mensaje}</p>}
